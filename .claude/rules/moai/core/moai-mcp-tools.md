@@ -1,6 +1,6 @@
 # moai MCP tools
 
-The self-hosted `moai` MCP server (`.mcp.json` → `{command: "moai", args: ["mcp-server"]}`) exposes MoAI's CLI capabilities as tools prefixed `mcp__moai__`; the Go producer is `internal/cli/mcp_server.go`. When a tool is in your `tools:` list, prefer it over the equivalent `moai` CLI call: it backs the same implementation, returns structured output and avoids shell quoting. Use the CLI when the tool is not in your list.
+The 47 tools exposed by the self-hosted `moai` MCP server (`.mcp.json` → `{command: "moai", args: ["mcp-server"]}`) carry MoAI's CLI capabilities and are prefixed `mcp__moai__`; the Go producer is `internal/cli/mcp_server.go`. When a tool is in your `tools:` list, prefer it over the equivalent `moai` CLI call: it backs the same implementation, returns structured output and avoids shell quoting. Use the CLI when the tool is not in your list.
 
 ## The `project_root` input
 
