@@ -40,7 +40,7 @@ After the commit, backfill the real SHA into `sync_commit_sha` in a follow-up co
 
 Before pushing a branch that will get a PR, run the CI checks locally so failures show up in minutes instead of after the push. Skip this for a direct push and for a git-flow `WT-*` integration merge.
 
-Read `.github/workflows/` (or the project's CI config); if there is none, log "No CI config detected" and continue. Map each job to its local equivalent — tests, lint, type check, build, and the build matrix's cross-compile targets (for Go, each `GOOS`/`GOARCH` pair with `CGO_ENABLED=0`) — and run them in parallel. Jobs that cannot run on this machine (for example Windows-only tests on macOS) are listed as skipped with the reason. A tool that is not installed is skipped and noted in the PR body; an installed tool that fails is a failure.
+Read `.github/workflows/` (or the project's CI config); if there is none, log "No CI config detected" and continue. Map each job to its local equivalent — tests, lint, type check, build, and the build matrix's cross-compile targets (for Go, each pair the matrix lists, such as `GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build ./...`) — and run them in parallel. Jobs that cannot run on this machine (for example Windows-only tests on macOS) are listed as skipped with the reason. A tool that is not installed is skipped and noted in the PR body; an installed tool that fails is a failure.
 
 On failure, ask: fix now (recommended — `manager-develop`, then re-run the mirror), push anyway with the failure stated in the PR body, or abort and keep the commit locally. Put a results table (check, status, notes) in the PR body.
 
@@ -55,11 +55,11 @@ On failure, ask: fix now (recommended — `manager-develop`, then re-run the mir
 Evaluate in this order; the first match wins.
 
 1. `WT-*` branch — integration-worktree merge, no PR. The integration branch is checked out in exactly one designated worktree; if that worktree does not exist, stop and report, since creating it is the coordinating session's job. Otherwise:
-   1. Agree the merge window with the coordinating session, so one session integrates at a time.
+   1. Acquire the integration window with `moai integration acquire`, so one session integrates at a time.
    2. Enter the integration worktree; never check out the integration branch in the current one.
    3. `git merge --no-ff <branch>`; resolve conflicts, or report an unresolvable one back to the coordinating session instead of forcing it.
    4. `git push origin <integration-branch>` — never force. If the push is rejected, fetch, integrate, and push again.
-   5. Leave the integration worktree and report the branch, merge commit, and evidence path.
+   5. Release the window with `moai integration release`, leave the integration worktree, and report the branch, merge commit, and evidence path.
 2. `feature/*` — push, then create or update a PR to `develop`.
 3. `release/*` — push, then create or update a PR to `main`.
 4. `hotfix/*` — push, create or update a PR to `main`; after it merges, open a follow-up PR back-merging into `develop`.
