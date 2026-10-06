@@ -1,20 +1,18 @@
 ---
 name: moai-ref-git-workflow
 description: >
-  Git workflow patterns, branch strategies, conventional commits, and PR templates
-  reference for git operations. Agent-extending skill that amplifies manager-git
-  expertise with production-grade git workflow patterns.
-  NOT for: code implementation, testing, architecture design, documentation content.
+  Reference for MoAI git delivery: branch naming from the git-strategy
+  config, the two delivery strategies, merge-method selection, the PR body
+  template, the commit context section, and the git safety rules. Loaded by
+  manager-git. Not for writing code, tests, or documentation content.
 
 when_to_use: >
-  Use for git workflow reference: branch strategies, conventional commits,
-  PR templates, merge and rebase flows, and commit/branch/release
-  conventions. Amplifies manager-git expertise with production-grade git
-  workflow patterns.
+  Use when choosing a branch name, a merge method, or a PR body for a MoAI
+  SPEC, or when checking whether a git operation is safe to run.
 
 user-invocable: false
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
   category: "workflow"
   status: "active"
   updated: "2026-03-30"
@@ -29,170 +27,81 @@ progressive_disclosure:
 
 # Git Workflow Reference
 
-## Target Agent
+Settings come from `.moai/config/sections/git-strategy.yaml` (resolve `git_strategy.mode` first, then read `git_strategy.{mode}.*`), the commit convention from `git-convention.yaml`, and the commit language from `language.yaml` `git_commit_messages`.
 
-`manager-git` - Applies these patterns directly to git operations, branch management, and PR creation.
+## Strategies
 
-## Branch Strategy Patterns
+`git_strategy.{mode}.workflow` is exactly one of:
 
-### GitHub Flow (Default for Most Projects)
+- **github-flow** — feature branches off `main_branch`; every change reaches it through a PR; branches are deleted after merge.
+- **git-flow** — `feature/*` → PR to `develop`; `release/*` and `hotfix/*` → PR to `main` (hotfix then back-merged to `develop`); `WT-*` worktree branches → merged into the integration branch inside the integration worktree, holding `moai integration acquire` / `release`; no direct commits on `main`.
 
-```
-main ─────────────────────────────────────────
-  └── feat/SPEC-XXX-description ──── PR ──→ merge
-```
+The full routing, in order, is in `.claude/skills/moai/workflows/sync/delivery.md`.
 
-Rules:
-- `main` is always deployable
-- Feature branches from `main`
-- PR required for all merges
-- Delete branch after merge
+## Branch names
 
-### GitFlow (Complex Release Cycles)
+With `automation.auto_branch: true`, a SPEC branch is `<branch_prefix><SPEC-ID>` (the shipped prefix is `feature/SPEC-`, giving `feature/SPEC-AUTH-001`). Work in a Claude Code worktree runs on `worktree-<name>`. Branches outside a SPEC follow the change type:
 
-```
-main ──────────────────────────────────────────
-  └── develop ─────────────────────────────────
-        ├── feature/SPEC-XXX ──── PR ──→ develop
-        └── release/v1.2.0 ────── PR ──→ main + develop
-```
+| Pattern | Example |
+|---------|---------|
+| `fix/<SPEC-ID>-<slug>` | `fix/SPEC-BUG-042-null-check` |
+| `refactor/<slug>` | `refactor/extract-auth-middleware` |
+| `docs/<slug>` | `docs/api-reference-update` |
+| `chore/<slug>` | `chore/upgrade-dependencies` |
 
-### Trunk-Based (CI/CD Heavy)
+## Merge method
 
-```
-main ──────────────────────────────────────────
-  └── short-lived branch (< 1 day) ──→ merge
-```
+Every PR merge uses `git_strategy.{mode}.merge_method` (`squash`, `merge`, or `rebase`; default `squash`) as `gh pr merge --<merge_method> --delete-branch` — never a hardcoded method. Squash keeps feature history to one commit per PR; merge preserves the individual commits (useful for release branches); rebase suits a few clean commits.
 
-## Branch Naming Convention
-
-| Pattern | Example | Use Case |
-|---------|---------|----------|
-| `feat/SPEC-{ID}-{slug}` | `feat/SPEC-AUTH-001-jwt-auth` | New feature |
-| `fix/SPEC-{ID}-{slug}` | `fix/SPEC-BUG-042-null-check` | Bug fix |
-| `refactor/{slug}` | `refactor/extract-auth-middleware` | Refactoring |
-| `docs/{slug}` | `docs/api-reference-update` | Documentation |
-| `chore/{slug}` | `chore/upgrade-dependencies` | Maintenance |
-
-## Conventional Commits Reference
-
-| Type | When | Example |
-|------|------|---------|
-| `feat` | New feature | `feat(auth): add JWT refresh token flow` |
-| `fix` | Bug fix | `fix(api): handle null user in profile endpoint` |
-| `refactor` | Code restructure | `refactor(db): extract query builder` |
-| `test` | Test changes | `test(auth): add login edge case tests` |
-| `docs` | Documentation | `docs(api): update endpoint descriptions` |
-| `chore` | Maintenance | `chore(deps): upgrade Go to 1.23` |
-| `perf` | Performance | `perf(query): add index for user lookup` |
-| `style` | Formatting | `style: apply gofmt formatting` |
-| `ci` | CI/CD changes | `ci: add GitHub Actions workflow` |
-| `revert` | Revert commit | `revert: undo feat(auth) commit abc123` |
-
-### Commit Message Structure
-
-```
-<type>(<scope>): <description>    # max 72 chars
-
-[optional body]                    # what and why, not how
-
-[optional footer]                  # Breaking changes, issue refs
-BREAKING CHANGE: <description>
-Refs: #123, SPEC-AUTH-001
-```
-
-## Pull Request Template
+## PR body
 
 ```markdown
 ## Summary
-- [1-3 bullet points describing what this PR does]
+- <what this PR does, 1-3 bullets>
 
 ## Changes
-- [ ] File 1: description of change
-- [ ] File 2: description of change
+- <file or area>: <change>
 
-## Test Plan
-- [ ] Unit tests added/updated
-- [ ] Integration tests pass
-- [ ] Manual testing completed
+## Test plan
+- <tests added or updated, and what was run>
 
-## SPEC Reference
-- SPEC-{ID}: {title}
+## Local CI mirror
+| Check | Status | Notes |
+|-------|--------|-------|
 
-## Checklist
-- [ ] Tests pass (project test command)
-- [ ] Lint and format pass (project toolchain)
-- [ ] No secrets committed
-- [ ] Documentation updated if needed
+## Deployment notes
+- <migrations, new environment variables, breaking changes — or "none">
+
+## SPEC
+- <SPEC-ID>: <title>
+
+Fixes #<issue_number>
 ```
 
-## Merge Strategy Selection
+Include `Fixes #<issue_number>` only when the SPEC frontmatter has a non-zero `issue_number`. Create it as a draft when `git_strategy.team.draft_pr` is true.
 
-| Strategy | When | Command |
-|----------|------|---------|
-| Squash merge | Feature branches (clean history) | `gh pr merge --squash` |
-| Merge commit | Release branches (preserve history) | `gh pr merge --merge` |
-| Rebase | Small, clean commits | `gh pr merge --rebase` |
+## Commit context section
 
-The active method for sync-phase PR auto-merge is governed by the `git_strategy.<mode>.merge_method` config value (`squash` | `merge` | `rebase`; default `squash`), not hardcoded. The sync agent resolves it from the active mode profile and renders the matching `gh pr merge --<merge_method>` command.
-
-## Git Safety Rules
-
-| Action | Risk | Rule |
-|--------|------|------|
-| `git push --force` | Overwrites remote | NEVER on main/master, ask user first |
-| `git reset --hard` | Loses local changes | Confirm with user first |
-| `git checkout .` | Discards changes | Confirm with user first |
-| `git branch -D` | Deletes branch | Only after merge confirmed |
-| `--no-verify` | Skips hooks | NEVER unless user explicitly requests |
-| `git rebase -i` | Interactive (not supported) | NEVER use (requires interactive input) |
-
-## Context Memory in Commits
-
-Embed decision context in commit messages for future session continuity:
+Implementation and sync commits carry the decisions a later session needs:
 
 ```
-feat(auth): implement JWT refresh token rotation
+feat(SPEC-AUTH-001): M2 rotate refresh tokens
 
-Decision: Chose rotation over sliding window for security
-Pattern: Middleware chain: RateLimit -> Auth -> Authz -> Handler
-Gotcha: Token blacklist requires Redis, not just in-memory cache
-
-Refs: SPEC-AUTH-001
+## Context (AI-Developer Memory)
+- Decision: rotation instead of a sliding window (a stolen token stops working after one use)
+- Constraint: the token store must be shared across instances
+- Gotcha: the in-memory blacklist does not survive restarts; moved to Redis
+- Pattern: middleware chain RateLimit -> Auth -> Authz -> Handler
 ```
 
-<!-- moai:evolvable-start id="rationalizations" -->
-## Common Rationalizations
+## Safety
 
-| Rationalization | Reality |
-|---|---|
-| "I will clean up the commit messages before merging" | Interactive rebase is error-prone under pressure. Write clean commits from the start. |
-| "Force push is fine on my feature branch" | Collaborators or CI may have fetched the branch. Force push destroys their reference. Use --force-with-lease. |
-| "This commit is too small to need a conventional format" | Changelog generators, bisect, and blame all depend on consistent commit formats. Every commit matters. |
-| "I will push directly to main, it is a small fix" | Direct pushes bypass code review and CI. Even small fixes can break production. |
-| "Merge commits are messy, I always squash" | Squash loses individual commit context. Merge commits preserve the development narrative for future debugging. |
-
-<!-- moai:evolvable-end -->
-
-<!-- moai:evolvable-start id="red-flags" -->
-## Red Flags
-
-- Commit message does not follow conventional format (type(scope): description)
-- Force push to main or shared release branch
-- PR merged without CI passing
-- Branch name does not indicate feature, fix, or SPEC reference
-- Merge conflict markers found in committed files
-
-<!-- moai:evolvable-end -->
-
-<!-- moai:evolvable-start id="verification" -->
-## Verification
-
-- [ ] All commit messages follow conventional format (show git log --oneline)
-- [ ] Branch name follows convention (feat/, fix/, refactor/, docs/, chore/ prefix)
-- [ ] No force pushes to main or protected branches (check reflog or CI)
-- [ ] PR has passing CI checks before merge
-- [ ] No merge conflict markers in committed files (grep for <<<<<<<)
-- [ ] SPEC-ID referenced in commit message or PR description when applicable
-
-<!-- moai:evolvable-end -->
+| Operation | Rule |
+|-----------|------|
+| `git push --force` | never on `main`, `develop`, or any shared branch; on your own branch use `--force-with-lease`, with approval |
+| `git reset --hard`, `git checkout .`, `git clean -fd` | discard work: only with the user's approval |
+| `git branch -D` | only after the merge is confirmed |
+| `--no-verify` | never, unless the user explicitly asks |
+| `git rebase -i`, `git add -i` | not available (interactive) |
+| commit on a protected branch | never — see `workflow.branch_guard.deny_commits_on`; use the SPEC branch or worktree |
+| push, PR, merge, issue comment | only with the user's request or approval |
