@@ -1,6 +1,6 @@
 ---
 description: Implement SPEC requirements using DDD/TDD methodology
-argument-hint: "SPEC-XXX [--team] [--resume SPEC-XXX]"
+argument-hint: "SPEC-XXX [--pr] [--skip-audit] [--resume]"
 allowed-tools: Skill
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: Code review with security and @MX tag compliance check
-argument-hint: "[--staged] [--branch] [--security] [--deep] [--patch] [--commit <SHA>]"
+argument-hint: "[<PR> | --staged | --branch <base> | --commit <SHA> | --file <path>] [--security] [--deep] [--patch] [--lean] [--repo]"
 allowed-tools: Skill
 ---
 

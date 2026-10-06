@@ -15,7 +15,7 @@
 #     absent, emit an info log and exit 0 WITHOUT writing any output file.
 #   * Atomic writes (.tmp -> mv) and idempotence live inside the Go entry
 #     point; this script inherits both.
-#   * Fail-open on every error mode: exit 0 always (never aborts /moai codemaps).
+#   * Fail-open on every error mode: exit 0 always (never aborts the caller).
 #   * Provenance uses git (commit SHA + committer date), never wall-clock
 #     (the governing REQ idempotence).
 #

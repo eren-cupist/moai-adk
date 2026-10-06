@@ -1,6 +1,6 @@
 ---
-description: Auto-detect and fix LSP errors, linting issues, and type errors
-argument-hint: "[--dry] [--seq] [--level N] [--resume] [--team]"
+description: Reproduce and minimally fix a reported bug, failing test or CI check, or type and lint errors, then verify
+argument-hint: "[problem description | error | failing check] [--dry]"
 allowed-tools: Skill
 ---
 

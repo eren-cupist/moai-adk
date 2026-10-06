@@ -6,88 +6,88 @@ catalog:
             - name: moai
               tier: core
               path: templates/.claude/skills/moai/
-              hash: ac9577b9e66b9077c44bb39a3322b6646ad53384d35f16ac2902b1db2028fafd
+              hash: 48205e73db11cac8c71d51f2ec2df891975259f73a1a74f46476d3e4e66e3c56
               version: 1.0.0
             - name: moai-foundation-core
               tier: core
               path: templates/.claude/skills/moai-foundation-core/
-              hash: c18cc5506fad43be89faf3bd3d597ae6f9400d00af78e7311a41fa798eae0693
+              hash: 975e1865d615f6492c4f3a8e775f1caebebcb7ce580ecf9d09e6e29b0f00c287
               version: 1.0.0
             - name: moai-foundation-quality
               tier: core
               path: templates/.claude/skills/moai-foundation-quality/
-              hash: 66b9ddb3e234e7f2dfb990fc4a7067d9a0e0019efdd7f1e26cbd2e6c2a0e77fd
+              hash: c81e10afc08c442c6e3e517cb574524bd748e1bbacabd8e8d7eda88793c4c6c7
               version: 1.0.0
             - name: moai-ref-git-workflow
               tier: core
               path: templates/.claude/skills/moai-ref-git-workflow/
-              hash: 0440292378de665eb805deb439564984494411495946f9f7a96a740f54772d73
+              hash: 36113cf20e41324c749941c7378264d40fadf2890d1289428ba5b79dc8cd6ee2
               version: 1.0.0
             - name: moai-ref-testing-pyramid
               tier: core
               path: templates/.claude/skills/moai-ref-testing-pyramid/
-              hash: be77cf6a41f99e25cb1ff1c65690b955c490c9492aabe85cdb2174d42c3ef7fc
+              hash: ea08c04bde60ea6a53ee1791c777c53eb3bf33e7358fadf214f66f6de3c30c7e
               version: 1.0.0
             - name: moai-workflow-ddd
               tier: core
               path: templates/.claude/skills/moai-workflow-ddd/
-              hash: 163da2b86d0a027be3de591c5d03be1ef38d597aa165fd12288016d011d43e26
+              hash: 8b0277f5e1d797afcdcbf5a53fbbe396ad77c11dfb1df70ce25169bd77437b4b
               version: 1.0.0
             - name: moai-workflow-project
               tier: core
               path: templates/.claude/skills/moai-workflow-project/
-              hash: 05df0bb5c9af8d05c46e3ac70b3e1f395cd27bb5400dce2d715f7b2511b0ca52
+              hash: 0213c041a58a03c4aff1f3caa81f421260af7fca17226476f4a9a542330ee30e
               version: 1.0.0
             - name: moai-workflow-spec
               tier: core
               path: templates/.claude/skills/moai-workflow-spec/
-              hash: b835f9fa650a320c30f55b851bb6dab06089dd0a1c7fb57c86c531285f7d029d
+              hash: 45f64ee0803ddfb1f63483d342c65f59552b635afacde7ef210f122e0a0a810f
               version: 1.0.0
             - name: moai-workflow-tdd
               tier: core
               path: templates/.claude/skills/moai-workflow-tdd/
-              hash: 1f551af0f059a0e7df3135d7dad89db2d12596752fc3439cbfad03413c017709
+              hash: 752d80e68978f74211059d192df539d7bc43386263808949e47dc24ef4066cff
               version: 1.0.0
             - name: moai-workflow-testing
               tier: core
               path: templates/.claude/skills/moai-workflow-testing/
-              hash: d931de1cb66d9835c8a5c84d2687b199122717e4a2cf9aae83865db4cf2d3798
+              hash: b06c302f632d48b81ac6a67ef19813eecd21d38491608833439758b31bab8150
               version: 1.0.0
             - name: moai-workflow-worktree
               tier: core
               path: templates/.claude/skills/moai-workflow-worktree/
-              hash: fd34c14cb7c34247aa0d48d8e3f3a293202a26e69e67fd66123e92e3d21ea816
+              hash: 41374ea21d3928f0135ebe374180e4e45f52d690cfffd7a300d43c65b56e852f
               version: 1.0.0
         agents:
             - name: sync-auditor
               tier: core
               path: templates/.claude/agents/moai/sync-auditor.md
-              hash: 33e51c609a2cce55bb2027379b937900d0a7200ce1a445bc05b4e518304c5bcc
+              hash: ab0a9bc7caf66b6d2c3fda21e4c17d34a6cad04d9ac8cf1ae63aaa6308cc4cbc
               version: 1.0.0
             - name: manager-develop
               tier: core
               path: templates/.claude/agents/moai/manager-develop.md
-              hash: 16939213c23baf46a37a27f401621933c8bff10de5a831dc3beec17b159ff22c
+              hash: 4f8345794033d87ae4a857ae1622450f32d688c8751a5779961fbd40c4c6982d
               version: 1.0.0
             - name: manager-docs
               tier: core
               path: templates/.claude/agents/moai/manager-docs.md
-              hash: 604383eae9de6acb5dfea934a7cb329d6edad796f8d160d342aaab80e4eca53c
+              hash: cc5528ce30bde8109c466470c89060f50a52a8d8736caea35301d843e6fa4099
               version: 1.0.0
             - name: manager-git
               tier: core
               path: templates/.claude/agents/moai/manager-git.md
-              hash: bf7a21bd88de2341352634cf53e56bd93dc601beaa657406dcfca8daa163c594
+              hash: 4404eef73d9c175b9a2a2d79af99dc7fe77453737420d3bd3d86ed2a5ae00996
               version: 1.0.0
             - name: manager-spec
               tier: core
               path: templates/.claude/agents/moai/manager-spec.md
-              hash: 8b115cce72f8a3b51e74b96844b3e9f4f931cd03c0d56c8079f7e553cdd3d8e0
+              hash: 6725d59af49e4112eefb828366039100227ad8ac56c3ca896c8b1c5db0069347
               version: 1.0.0
             - name: plan-auditor
               tier: core
               path: templates/.claude/agents/moai/plan-auditor.md
-              hash: 92d284e554ed7925a7648abb108ad585c76ec9c68b1626c032d08dbb2d9abac5
+              hash: 2d89cc17d7c18c2b0eebc60b0ce5fa2c9d9a59caacc016bce6f75d8d09ff2371
               version: 1.0.0
     optional_packs:
         backend:
@@ -97,17 +97,17 @@ catalog:
                 - name: moai-domain-backend
                   tier: optional-pack:backend
                   path: templates/.claude/skills/moai-domain-backend/
-                  hash: 563a35038e06cf3478ab907892597a75d42d5882290dc1807c5a8d2dd6481000
+                  hash: a765b3fdd08003ebd0233f39e0a2530e3e9be3ce2d4f44776ec5988262b50fa4
                   version: 1.0.0
                 - name: moai-domain-database
                   tier: optional-pack:backend
                   path: templates/.claude/skills/moai-domain-database/
-                  hash: fb7cbf5ea66ae69fa2cae07f75a48369a24c9b55b2b9f9c1e7120b33ec409f71
+                  hash: 079e0f6d92b2a37ec60d9751e01197281a890ea8a35289ce3e92c7563da562b8
                   version: 1.0.0
                 - name: moai-ref-api-patterns
                   tier: optional-pack:backend
                   path: templates/.claude/skills/moai-ref-api-patterns/
-                  hash: 8c84e6cda6f315b4068cbfc29771d575d21d339a0697cf8d6c95cd494d75ff3c
+                  hash: b9a2663496770777938592de4fc18f15f97ff2710a12369236b205d50d29af19
                   version: 1.0.0
             agents: []
         deployment:
@@ -130,12 +130,12 @@ catalog:
                 - name: moai-ref-owasp-checklist
                   tier: optional-pack:devops
                   path: templates/.claude/skills/moai-ref-owasp-checklist/
-                  hash: b1a9e3252361ec447eced2da2997470330307a04dd3398cadc5c2da00704b624
+                  hash: a740d703896b126540dc5f05b40c4541314329eab029b969a93af9a8143c6af5
                   version: 1.0.0
                 - name: moai-ref-secops
                   tier: optional-pack:devops
                   path: templates/.claude/skills/moai-ref-secops/
-                  hash: c9907a5d35fc287a7c89b82528c2e9c388761bf3b0c7fcbdd3c227ab96430c6a
+                  hash: 04d4b0de49a5ea54f94d360cf5dc3e4b983346db9562cdcd7e7951e4f3271ca7
                   version: 1.0.0
             agents: []
         frontend:
@@ -145,12 +145,12 @@ catalog:
                 - name: moai-domain-frontend
                   tier: optional-pack:frontend
                   path: templates/.claude/skills/moai-domain-frontend/
-                  hash: 5a4a91c92fb2b2b1032f4e21ef4e04c70a337b704ff3e8c586e7ee245de1433a
+                  hash: 642c6ff4c476a9c5d34bddcb0ae8b5e1dcf10047731a440db3bf39e5378ef132
                   version: 1.0.0
                 - name: moai-ref-react-patterns
                   tier: optional-pack:frontend
                   path: templates/.claude/skills/moai-ref-react-patterns/
-                  hash: 1bf865afaa742266a1449546a58cca9fd405bd515fa3f490cbd9855d04437b4c
+                  hash: e41c64696ebebd17e2d4e11a5457720afa0671f5ab95bbc2975ca9401e11c384
                   version: 1.0.0
             agents: []
         testing:
