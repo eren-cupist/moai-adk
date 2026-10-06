@@ -48,8 +48,8 @@ func TestGoal_NoAskUserQuestion(t *testing.T) {
 // TestSpecAssembly_RewrittenToCLIPath verifies AC-WIRE-006: the rewritten
 // spec-assembly.md template source (Step 2.3.3a) no longer carries the dead
 // `RenderPlanHTML(specDir=` LLM-instruction and DOES carry the executable
-// `moai plan render-html` CLI path. The [HARD] Implementation Kickoff Approval
-// paragraph and the fail-open clause are preserved.
+// `moai plan render-html` CLI path. The Implementation Kickoff Approval gate
+// and the fail-open clause are preserved.
 func TestSpecAssembly_RewrittenToCLIPath(t *testing.T) {
 	path := "../template/templates/.claude/skills/moai/workflows/plan/spec-assembly.md"
 	src, err := os.ReadFile(path)
@@ -66,9 +66,12 @@ func TestSpecAssembly_RewrittenToCLIPath(t *testing.T) {
 	if !strings.Contains(body, "moai plan render-html") {
 		t.Errorf("spec-assembly.md missing the executable `moai plan render-html` CLI path")
 	}
-	// [HARD] Implementation Kickoff Approval paragraph preserved.
-	if !strings.Contains(body, "[HARD] The Implementation Kickoff Approval") {
-		t.Errorf("spec-assembly.md lost the [HARD] Implementation Kickoff Approval paragraph")
+	// Implementation Kickoff Approval gate preserved: asked via AskUserQuestion,
+	// independent of the plan-auditor score.
+	for _, want := range []string{"## Implementation Kickoff Approval", "AskUserQuestion", "regardless of the plan-auditor score"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("spec-assembly.md lost the Implementation Kickoff Approval gate text %q", want)
+		}
 	}
 	// Fail-open clause preserved.
 	if !strings.Contains(body, "Fail-open") {

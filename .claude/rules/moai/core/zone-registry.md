@@ -82,7 +82,7 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/workflow/spec-workflow.md
   anchor: "#plan-phase"
-  clause: "Create comprehensive specification using EARS format."
+  clause: "Planning writes no implementation code."
   canary_gate: true
 
 - id: CONST-V3R2-002
@@ -300,7 +300,7 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/workflow/spec-workflow.md
   anchor: "#spec-phase-discipline"
-  clause: "Step 1 (plan) MUST execute in main checkout on BOTH routes. NO L2/L3 worktree at this step"
+  clause: "Step 1 (plan) runs in the main checkout, not in a worktree."
   canary_gate: true
 
 - id: CONST-V3R5-028
@@ -318,7 +318,7 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/development/branch-origin-protocol.md
   anchor: "#hard-rules"
-  clause: "Skill body BODP gate MUST follow the askuser-protocol Socratic structure: `(권장)` first, ≤4 options, conversation_language match"
+  clause: "The BODP base question goes to the user through AskUserQuestion: recommended option first, at most 4 options, in the conversation language."
   canary_gate: true
 
 # ============================================================

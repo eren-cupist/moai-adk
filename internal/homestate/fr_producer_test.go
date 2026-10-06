@@ -14,10 +14,10 @@ import (
 // frRepoRoot is the repository root relative to this package directory.
 const frRepoRoot = "../.."
 
+// plan-auditor no longer writes the card verdict-file lines: its report is
+// the plan-audit review stream read by internal/auditverdict and the run gate.
 var frAuditorFiles = []string{
-	".claude/agents/moai/plan-auditor.md",
 	".claude/agents/moai/sync-auditor.md",
-	"internal/template/templates/.claude/agents/moai/plan-auditor.md",
 	"internal/template/templates/.claude/agents/moai/sync-auditor.md",
 }
 
@@ -65,7 +65,6 @@ func TestFR_AC020_VerdictLineProducer(t *testing.T) {
 		}
 	}
 	for _, rel := range []string{
-		"internal/template/templates/.codex/agents/moai/plan-auditor.toml",
 		"internal/template/templates/.codex/agents/moai/sync-auditor.toml",
 	} {
 		if !strings.Contains(frReadRepoFile(t, rel), "audited_sha") {

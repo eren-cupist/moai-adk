@@ -1,19 +1,8 @@
 // red_now_cell_test.go — repository-local verifier for the RED-now cell
 // adoption gate (card t343).
 //
-// The MP-8 form contract itself lives inside a sentinel pair in
-// .claude/agents/moai/plan-auditor.md and its template mirror. This test
-// EXTRACTS that contract rather than restating it: a copy kept here would keep
-// passing after the clause changed, which is the twin-drift failure this
-// repository has already met in its .sh / .sh.tmpl pairs. The pattern is the
-// one ac_count_clause_test.go established — sentinel extraction with
-// exactly-one-and-non-empty asserted BEFORE any comparison, so an anchor
-// matching zero or two spans cannot become a vacuous pass.
-//
-// The sentinel is an HTML comment rather than a `# `-prefixed line. A `# ` line
-// in markdown prose is an H1 heading: it renders visibly and it terminates the
-// enclosing section, which would break the `### M5` containment assertion this
-// file makes. The token inside the comment is unchanged.
+// It checks the rule clause in verification-completeness.md (both mirrors)
+// and runs the RED-now command form check over the fixtures.
 //
 // Nothing here ships. The test is repository-local and its fixtures live under
 // internal/spec/testdata/red_now, outside the distributed template tree.
@@ -30,22 +19,20 @@ import (
 )
 
 const (
-	redNowBeginSentinel = "<!-- MOAI-REDNOW-BEGIN -->"
-	redNowEndSentinel   = "<!-- MOAI-REDNOW-END -->"
-
-	redNowAuditorPath       = ".claude/agents/moai/plan-auditor.md"
-	redNowAuditorMirrorPath = "internal/template/templates/.claude/agents/moai/plan-auditor.md"
-	redNowRulePath          = ".claude/rules/moai/development/verification-completeness.md"
-	redNowRuleMirrorPath    = "internal/template/templates/.claude/rules/moai/development/verification-completeness.md"
+	redNowRulePath       = ".claude/rules/moai/development/verification-completeness.md"
+	redNowRuleMirrorPath = "internal/template/templates/.claude/rules/moai/development/verification-completeness.md"
 
 	redNowFixtureDir = "testdata/red_now"
 
-	redNowM5Heading         = "### M5: Must-Pass Firewall"
-	redNowGroup4Heading     = "### Group 4: Acceptance Criteria Quality"
-	redNowMustPassHeading   = "## Must-Pass Results"
-	redNowRuleSectionHead   = "## 2. Two-cell adoption discipline"
-	redNowMustPassMP8Prefix = "- [PASS/FAIL/N/A] MP-8"
+	redNowRuleSectionHead = "## 2. Two-cell adoption discipline"
 )
+
+// redNowForbidden is the machine-checkable half of the RED-now command form:
+// a cited command carrying one of these tokens unquoted is more than one shell
+// invocation. It used to be extracted from a sentinel span in the
+// plan-auditor agent; that agent now states the rule in prose ("a single
+// read-only invocation"), so the token list lives here.
+var redNowForbidden = []string{"|", "&&", ";", ">", "<", "$(", "("}
 
 // ---------------------------------------------------------------------------
 // span extraction
@@ -58,44 +45,6 @@ func redNowRead(t *testing.T, rel string) string {
 		t.Fatalf("read %s: %v", rel, err)
 	}
 	return string(raw)
-}
-
-// redNowExtractSentinelSpan returns the body between the sentinel pair.
-//
-// It returns an error rather than calling t.Fatalf so that the zero-pair and
-// two-pair mutants (M-2) can be OBSERVED failing instead of aborting the run.
-func redNowExtractSentinelSpan(content string) (string, error) {
-	lines := strings.Split(content, "\n")
-	var begins, ends []int
-	for i, ln := range lines {
-		switch strings.TrimSpace(ln) {
-		case redNowBeginSentinel:
-			begins = append(begins, i)
-		case redNowEndSentinel:
-			ends = append(ends, i)
-		}
-	}
-	if len(begins) != 1 || len(ends) != 1 {
-		return "", fmt.Errorf("expected exactly one %q / %q sentinel pair, got begin=%d end=%d",
-			redNowBeginSentinel, redNowEndSentinel, len(begins), len(ends))
-	}
-	if ends[0] <= begins[0] {
-		return "", fmt.Errorf("END sentinel at line %d precedes BEGIN sentinel at line %d", ends[0]+1, begins[0]+1)
-	}
-	body := strings.Join(lines[begins[0]+1:ends[0]], "\n")
-	if strings.TrimSpace(body) == "" {
-		return "", fmt.Errorf("sentinel pair delimits an empty span")
-	}
-	return body, nil
-}
-
-func redNowMustExtractSpan(t *testing.T, rel string) string {
-	t.Helper()
-	span, err := redNowExtractSentinelSpan(redNowRead(t, rel))
-	if err != nil {
-		t.Fatalf("%s: %v", rel, err)
-	}
-	return span
 }
 
 // redNowHeadingLevel returns the markdown heading level of a line, or 0.
@@ -156,31 +105,6 @@ func redNowMustExtractSection(t *testing.T, content, heading string) string {
 // ---------------------------------------------------------------------------
 // the extracted form contract
 // ---------------------------------------------------------------------------
-
-// redNowForbiddenMetachars reads the machine-readable half of the MP-8 span.
-// The tokens are EXTRACTED, never restated here: changing the contract in the
-// agent file changes what this test enforces.
-func redNowForbiddenMetachars(t *testing.T, span string) []string {
-	t.Helper()
-	var out []string
-	for _, ln := range strings.Split(span, "\n") {
-		ln = strings.TrimSpace(ln)
-		const key = "forbidden-metacharacter:"
-		if !strings.HasPrefix(ln, key) {
-			continue
-		}
-		tok := strings.TrimSpace(strings.TrimPrefix(ln, key))
-		tok = strings.Trim(tok, "`")
-		if tok != "" {
-			out = append(out, tok)
-		}
-	}
-	if len(out) < 5 {
-		t.Fatalf("MP-8 span yielded %d forbidden metacharacters (%v); a near-empty contract "+
-			"would make every form check vacuous", len(out), out)
-	}
-	return out
-}
 
 // redNowUnquotedMask marks the byte positions of a command that sit outside any
 // quoted span. A GFM table cell and a fenced ledger entry both routinely carry
@@ -494,175 +418,13 @@ func TestRuleClauseIsStructuralNotLexical(t *testing.T) {
 // L2 / L3 — the MP-8 clause (AC-RNT-004..007, -013, -014, -015)
 // ===========================================================================
 
-func redNowMP8Span(t *testing.T) string {
-	t.Helper()
-	return redNowMustExtractSpan(t, redNowAuditorPath)
-}
-
-// TestMP8SpanNamesReexecution covers AC-RNT-004.
-func TestMP8SpanNamesReexecution(t *testing.T) {
-	content := redNowRead(t, redNowAuditorPath)
-	span := redNowMP8Span(t)
-	for _, want := range []string{"re-execute", "current tree", "RED reproduces"} {
-		if !strings.Contains(span, want) {
-			t.Errorf("MP-8 span does not name %q", want)
-		}
-	}
-	m5 := redNowMustExtractSection(t, content, redNowM5Heading)
-	if !strings.Contains(m5, span) {
-		t.Errorf("MP-8 span is not reachable from %q — it sits outside the must-pass firewall", redNowM5Heading)
-	}
-}
-
-// TestMP8SpanIsScoreIndependent covers AC-RNT-005.
-func TestMP8SpanIsScoreIndependent(t *testing.T) {
-	span := redNowMP8Span(t)
-	for _, want := range []string{"severity=critical", "regardless of the aggregate score", "Verdict: FAIL"} {
-		if !strings.Contains(span, want) {
-			t.Errorf("MP-8 span does not carry %q", want)
-		}
-	}
-}
-
-// TestMP8SpanCarriesNABranch covers AC-RNT-006.
-func TestMP8SpanCarriesNABranch(t *testing.T) {
-	span := redNowMP8Span(t)
-	for _, want := range []string{"N/A", "state the reason", "MP-4 precedent"} {
-		if !strings.Contains(span, want) {
-			t.Errorf("MP-8 span does not carry %q", want)
-		}
-	}
-	report := redNowMustExtractSection(t, redNowRead(t, redNowAuditorPath), redNowMustPassHeading)
-	if !strings.Contains(report, redNowMustPassMP8Prefix) {
-		t.Errorf("the report template's MP-8 row does not admit N/A")
-	}
-}
-
-// TestGroup4AndReportRowExist covers AC-RNT-007. Both assertions are scoped to
-// a section span, so the six characters "AC-6:" pasted anywhere else in the
-// file satisfy neither.
-func TestGroup4AndReportRowExist(t *testing.T) {
-	content := redNowRead(t, redNowAuditorPath)
-	group4 := redNowMustExtractSection(t, content, redNowGroup4Heading)
-	if !strings.Contains(group4, "AC-6:") {
-		t.Errorf("%q carries no AC-6 checklist item", redNowGroup4Heading)
-	}
-	if !strings.Contains(group4, "MP-8") {
-		t.Errorf("the Group 4 AC-6 item does not feed MP-8")
-	}
-	report := redNowMustExtractSection(t, content, redNowMustPassHeading)
-	if !strings.Contains(report, redNowMustPassMP8Prefix) {
-		t.Errorf("the report template carries no %q row", redNowMustPassMP8Prefix)
-	}
-}
-
-// TestMP8SpanCarriesExecutionDiscipline covers AC-RNT-013.
-func TestMP8SpanCarriesExecutionDiscipline(t *testing.T) {
-	span := redNowMP8Span(t)
-	for _, want := range []string{
-		"shall not execute it further",
-		"shall not record the criterion as a pass",
-		"Repository execution discipline takes precedence",
-		"timeout",
-	} {
-		if !strings.Contains(span, want) {
-			t.Errorf("MP-8 span does not carry the execution-discipline branch %q", want)
-		}
-	}
-}
-
-// TestMP8SpanKeysOnExecutedCount covers AC-RNT-015.
-func TestMP8SpanKeysOnExecutedCount(t *testing.T) {
-	span := redNowMP8Span(t)
-	for _, want := range []string{
-		"count of tests actually executed",
-		"no tests to run",
-	} {
-		if !strings.Contains(span, want) {
-			t.Errorf("MP-8 span does not key the verdict on the executed-test count: missing %q", want)
-		}
-	}
-	reject := regexp.MustCompile("not treat the presence of an `ok` token")
-	if !reject.MatchString(span) {
-		t.Errorf("MP-8 span does not reject an `ok`-token-only verdict")
-	}
-}
-
-// TestMP8LivenessAnchors covers AC-RNT-014 and the §1.3 continued-firing axis:
-// MP-8 disappearing from the agent file must be distinguishable from MP-8
-// passing. The deletion is OBSERVED, on a mutated copy, not argued.
-func TestMP8LivenessAnchors(t *testing.T) {
-	content := redNowRead(t, redNowAuditorPath)
-
-	live := func(c string) error {
-		if _, err := redNowExtractSentinelSpan(c); err != nil {
-			return fmt.Errorf("sentinel span: %w", err)
-		}
-		report, err := redNowExtractSectionSpan(c, redNowMustPassHeading)
-		if err != nil {
-			return err
-		}
-		if !strings.Contains(report, redNowMustPassMP8Prefix) {
-			return fmt.Errorf("report template carries no %q row", redNowMustPassMP8Prefix)
-		}
-		return nil
-	}
-
-	if err := live(content); err != nil {
-		t.Fatalf("MP-8 liveness anchors absent on the live file: %v", err)
-	}
-
-	// Mutant: delete the MP-8 report row.
-	var kept []string
-	deleted := 0
-	for _, ln := range strings.Split(content, "\n") {
-		if strings.HasPrefix(strings.TrimSpace(ln), redNowMustPassMP8Prefix) {
-			deleted++
-			continue
-		}
-		kept = append(kept, ln)
-	}
-	if deleted == 0 {
-		t.Fatalf("mutation was a no-op — no %q row to delete", redNowMustPassMP8Prefix)
-	}
-	if err := live(strings.Join(kept, "\n")); err == nil {
-		t.Errorf("mutant survived: MP-8's report row was deleted and the liveness anchors still passed")
-	}
-}
-
-// TestMP8SentinelMutantsAreDetected covers mutant M-2 in both directions: a
-// zero-pair copy and a two-pair copy must each be REJECTED before any
-// comparison, so an anchor matching nothing cannot become a vacuous pass.
-func TestMP8SentinelMutantsAreDetected(t *testing.T) {
-	content := redNowRead(t, redNowAuditorPath)
-	if _, err := redNowExtractSentinelSpan(content); err != nil {
-		t.Fatalf("baseline extraction broken: %v", err)
-	}
-
-	zero := strings.ReplaceAll(strings.ReplaceAll(content, redNowBeginSentinel, ""), redNowEndSentinel, "")
-	if _, err := redNowExtractSentinelSpan(zero); err == nil {
-		t.Errorf("zero-pair mutant survived: extraction must fail when the sentinels are absent")
-	}
-
-	two := content + "\n" + redNowBeginSentinel + "\nplanted\n" + redNowEndSentinel + "\n"
-	if _, err := redNowExtractSentinelSpan(two); err == nil {
-		t.Errorf("two-pair mutant survived: extraction must fail when the sentinels match twice")
-	}
-
-	empty := strings.Replace(content, redNowBeginSentinel, redNowBeginSentinel+"\n"+redNowEndSentinel, 1)
-	empty = strings.Replace(empty, "\n"+redNowEndSentinel+"\n"+redNowEndSentinel, "\n"+redNowEndSentinel, 1)
-	if _, err := redNowExtractSentinelSpan(empty); err == nil {
-		t.Errorf("empty-span mutant survived: extraction must fail on an empty span")
-	}
-}
-
 // ===========================================================================
 // L1 — the form check over fixtures (AC-RNT-008, -009a, -009b)
 // ===========================================================================
 
 // TestRedNowViolatingFixtureIsReported covers AC-RNT-009a.
 func TestRedNowViolatingFixtureIsReported(t *testing.T) {
-	forbidden := redNowForbiddenMetachars(t, redNowMP8Span(t))
+	forbidden := redNowForbidden
 	content := redNowFixture(t, "violating")
 
 	elements := redNowElementFindings(content)
@@ -679,7 +441,7 @@ func TestRedNowViolatingFixtureIsReported(t *testing.T) {
 // TestRedNowLegitimateFixtureIsClean covers AC-RNT-009b. Confirming only the
 // fail direction is indistinguishable from a check that reports everything.
 func TestRedNowLegitimateFixtureIsClean(t *testing.T) {
-	forbidden := redNowForbiddenMetachars(t, redNowMP8Span(t))
+	forbidden := redNowForbidden
 	content := redNowFixture(t, "legitimate")
 
 	if got := redNowElementFindings(content); len(got) != 0 {
@@ -698,7 +460,7 @@ func TestRedNowLegitimateFixtureIsClean(t *testing.T) {
 // the deliberately narrowed cell-scoped predicate finds nothing to check. The
 // two predicates are run against the same input and observed to diverge.
 func TestCommandScopeIsCarrierIndependent(t *testing.T) {
-	forbidden := redNowForbiddenMetachars(t, redNowMP8Span(t))
+	forbidden := redNowForbidden
 	content := redNowFixture(t, "ledger")
 
 	carrierIndependent := redNowFormFindings(content, forbidden)
@@ -734,7 +496,7 @@ func TestCommandScopeIsCarrierIndependent(t *testing.T) {
 // by construction; the class-independent one — the one this SPEC adopts —
 // reports it. Both are run on the same input.
 func TestClassLaunderingMutantIsDetected(t *testing.T) {
-	forbidden := redNowForbiddenMetachars(t, redNowMP8Span(t))
+	forbidden := redNowForbidden
 	content := redNowFixture(t, "violating")
 
 	classIndependent := redNowFormFindings(content, forbidden)
@@ -771,7 +533,7 @@ func TestClassLaunderingMutantIsDetected(t *testing.T) {
 // be. Without observing both directions, a checker that refuses everything and
 // a checker that refuses nothing are indistinguishable.
 func TestRedNowFormCheckDivergesOnQuoting(t *testing.T) {
-	forbidden := redNowForbiddenMetachars(t, redNowMP8Span(t))
+	forbidden := redNowForbidden
 	cases := []struct {
 		cmd  string
 		want bool
@@ -796,44 +558,11 @@ func TestRedNowFormCheckDivergesOnQuoting(t *testing.T) {
 // mirrors and neutrality (AC-RNT-010, -011, -012)
 // ===========================================================================
 
-// TestMP8MirrorSpanIsByteEqual covers AC-RNT-010. The pair legitimately differs
-// elsewhere (expected neutralization), so the assertion is span-scoped rather
-// than whole-file.
-func TestMP8MirrorSpanIsByteEqual(t *testing.T) {
-	local := redNowMustExtractSpan(t, redNowAuditorPath)
-	mirror := redNowMustExtractSpan(t, redNowAuditorMirrorPath)
-	if local != mirror {
-		t.Errorf("MP-8 span drifted between carriers\nlocal:\n%s\n\nmirror:\n%s", local, mirror)
-	}
-	mirrorContent := redNowRead(t, redNowAuditorMirrorPath)
-	report := redNowMustExtractSection(t, mirrorContent, redNowMustPassHeading)
-	if !strings.Contains(report, redNowMustPassMP8Prefix) {
-		t.Errorf("mirror report template carries no %q row", redNowMustPassMP8Prefix)
-	}
-}
-
 // TestRuleMirrorIsByteIdentical covers REQ-RNT-010 for the rule pair, which was
 // byte-identical before this work and must stay so.
 func TestRuleMirrorIsByteIdentical(t *testing.T) {
 	if redNowRead(t, redNowRulePath) != redNowRead(t, redNowRuleMirrorPath) {
 		t.Errorf("%s and %s are not byte-identical", redNowRulePath, redNowRuleMirrorPath)
-	}
-}
-
-// TestMP8MirrorSpanIsNeutral covers AC-RNT-011. The scope is the ADDED clause,
-// not the whole file: the mirror already carries illustrative SPEC-AUTH-001
-// placeholders, which are neutral by construction.
-func TestMP8MirrorSpanIsNeutral(t *testing.T) {
-	span := redNowMustExtractSpan(t, redNowAuditorMirrorPath)
-	specID := regexp.MustCompile(`SPEC-([A-Z][A-Z0-9]+-)+[0-9]+`)
-	if hits := specID.FindAllString(span, -1); len(hits) != 0 {
-		t.Errorf("mirrored MP-8 span carries SPEC identifiers: %v", hits)
-	}
-	if strings.Contains(span, "t343") {
-		t.Errorf("mirrored MP-8 span carries a card id")
-	}
-	if hits := regexp.MustCompile(`\b\d{4}-\d{2}-\d{2}\b`).FindAllString(span, -1); len(hits) != 0 {
-		t.Errorf("mirrored MP-8 span carries an internal date: %v", hits)
 	}
 }
 
