@@ -630,16 +630,6 @@ func NumeralExemptions() []NumeralExempt {
 			Reason: "Template mirror of the row above; same two hits, same reason.",
 		},
 		{
-			ID:     "foundation-quality-reference-section-marker",
-			Path:   ".claude/skills/moai-foundation-quality/references/reference.md",
-			Reason: "MEASURED FALSE POSITIVE: the numeral is the section marker in \"CLAUDE.md §4 retained-agent catalog\".",
-		},
-		{
-			ID:     "foundation-quality-reference-section-marker-mirror",
-			Path:   "internal/template/templates/.claude/skills/moai-foundation-quality/references/reference.md",
-			Reason: "Template mirror of the row above; same section marker.",
-		},
-		{
 			ID:   "template-isolation-doctrine-forbidden-example",
 			Path: ".moai/docs/template-internal-isolation-doctrine.md",
 			Reason: "MEASURED FALSE POSITIVE: the hit is inside a table cell that QUOTES a forbidden-content " +
