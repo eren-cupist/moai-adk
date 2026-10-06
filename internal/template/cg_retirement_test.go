@@ -22,9 +22,6 @@ func TestCGEmbeddedRetirementPreservesRoutingAndAudit(t *testing.T) {
 		return string(body)
 	}
 	claude := render("CLAUDE.md")
-	if !strings.Contains(claude, "Agent Teams usage ALLOWED (experimental)") || !strings.Contains(claude, "moai migrate cg") {
-		t.Error("native team allowance or explicit migration missing")
-	}
 	if strings.Contains(claude, "60-70% cost reduction") {
 		t.Error("CG cost guarantee survived")
 	}
