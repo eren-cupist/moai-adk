@@ -4,71 +4,23 @@ paths: "**/NOTICE.md"
 
 # MoAI-ADK Third-Party Notices
 
-This product includes software developed by revfactory/harness and redistributed under the Apache License 2.0.
+## revfactory/harness (Apache License 2.0)
 
-## Apache License 2.0
+This product includes material developed by revfactory/harness contributors, redistributed under the Apache License 2.0.
 
-The following source material is licensed under Apache License 2.0:
+- Source: https://github.com/revfactory/harness
+- License: https://www.apache.org/licenses/LICENSE-2.0
+- Imported 2026-04-26: `qa-agent-guide.md` → `.claude/rules/moai/quality/boundary-verification.md`
 
-**Source Repository**: https://github.com/revfactory/harness  
-**License**: Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+The imported document was adapted to MoAI-ADK terminology while preserving its technical content and design patterns. Original authorship is retained.
 
-### Imported Components
+## Karpathy coding principles
 
-The following reference documents from `revfactory/harness` (imported 2026-04-26) are incorporated into MoAI-ADK as pattern cookbook rules:
+Concepts from Andrej Karpathy's coding principles, as packaged in https://github.com/forrestchang/andrej-karpathy-skills (imported 2026-04-28), are adapted in MoAI-ADK:
 
-1. `qa-agent-guide.md` → `.claude/rules/moai/quality/boundary-verification.md`
-2. `team-examples.md` → (retired — the derived team-pattern cookbook rule was removed in the Agent Teams static-layer retirement; no longer distributed)
+- The four principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution) → `.claude/rules/moai/development/karpathy-quickref.md` and the code-change behaviors in `AGENTS.md`.
+- The anti-pattern catalog → `.claude/skills/moai/references/anti-patterns.md`, with Go, Python and TypeScript examples.
 
-### Attribution
+## License compatibility
 
-This product includes software developed by revfactory/harness contributors. The original works and any modifications are provided under the terms of the Apache License 2.0.
-
-The imported documents have been adapted for MoAI-ADK terminology and 16-language neutrality while preserving the original technical content and design patterns. Original source authorship is retained.
-
-### Full Apache License 2.0 Text
-
-For the complete Apache License 2.0 text, visit: https://www.apache.org/licenses/LICENSE-2.0
-
----
-
-## Karpathy Coding Principles
-
-The following reference material is derived from Andrej Karpathy's coding philosophy:
-
-**Source Repository**: https://github.com/forrestchang/andrej-karpathy-skills
-
-### Imported Concepts
-
-The following concepts from Karpathy's 4 coding principles and anti-pattern catalog (imported 2026-04-28) are incorporated into MoAI-ADK:
-
-1. **4 Coding Principles** → `.claude/rules/moai/development/karpathy-quickref.md`
-   - Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution
-   - Mapped to MoAI's 6 Agent Core Behaviors with checkpoint questions
-
-2. **Anti-Pattern Catalog (8 categories)** → `.claude/skills/moai/references/anti-patterns.md`
-   - Premature Abstraction, Over-Engineering, Drive-By Refactoring, Style Drift
-   - Silent Assumption, Guessing Over Clarifying, Sycophantic Agreement, Claiming Without Evidence
-   - Adapted with Go/Python/TypeScript code examples for MoAI agent context
-
-3. **Constitution Amendments (3 additions)** → `.claude/rules/moai/core/moai-constitution.md`
-   - Behavior 4: Quantitative LOC trigger (Simplicity First)
-   - Behavior 5: Style-matching directive (Surgical Changes)
-   - Behavior 6: Goal-to-test pattern (Goal-Driven Execution)
-
-### Attribution
-
-Andrej Karpathy's coding principles are shared publicly as educational material. The `forrestchang/andrej-karpathy-skills` repository packages these principles into a structured reference. MoAI-ADK has adapted the concepts, mapped them to existing Agent Core Behaviors, and created concrete code examples specific to MoAI's orchestration context.
-
----
-
-**Import Date (harness)**: 2026-04-26
-**Import Date (Karpathy)**: 2026-04-28
-**MoAI-ADK License**: MIT
-**Combined Compatibility**: Apache 2.0 imports distributed under MIT with both Apache and MIT attributions preserved.
-
----
-
-## Anthropic 2026 Alignment
-
-Anthropic Claude Code documentation — fair-use academic attribution. The agent catalog was realigned to Anthropic 2026 best practices (8 retained agents at consolidation time; now 10 per CLAUDE.md §4). Realignment details: the agent-catalog realignment SPEC.
+MoAI-ADK is MIT-licensed. Apache 2.0 imports are distributed under MIT with both the Apache and MIT attributions preserved.

@@ -5,78 +5,32 @@ paths: "**/zone-registry.md,**/.moai/config/sections/constitution.yaml"
 
 # Zone Registry
 
-Single source of truth enumerating every HARD clause in the MoAI-ADK rules tree.
-Each entry carries a unique ID, Zone classification, source file, anchor, verbatim clause, and canary_gate field.
+The registry of constitution clauses that `moai constitution`, `moai doctor` and `moai spec lint` check. Each entry names a clause that must appear verbatim, on exactly one line, in its source file, under the heading its `anchor` points at. Entries pin the rules that must not drift silently: the SPEC format, approval before large changes, the question channel, concurrent writers, the CI auto-fix limits and secrets protection, and the plan and cleanup ordering of the SPEC workflow.
 
-## HISTORY
-
-| Version | Date | Author | Description |
-|---------|------|--------|-------------|
-| 1.0.0 | (initial) | maintainer | Initial creation — annotation pass over 4 load-bearing source files |
-| 1.1.0 | (later)   | maintainer | Coverage gap closure — CONST-V3R5-001..041 added (parallel namespace), zone_class 4-classification introduced (retroactive on all 115 entries) |
-
-## ID Allocation Policy
-
-ID format: `CONST-V3R2-NNN` (initial namespace) or `CONST-V3R5-NNN` (parallel namespace)
-
-Allocation rules:
-- Fixed file order: `CLAUDE.md` → `.claude/rules/moai/core/moai-constitution.md` → `.claude/rules/moai/core/agent-common-protocol.md`
-- Within each file, assign IDs in ascending `(anchor_line_number)` order
-- 001-050: pre-existing clauses (HARD clauses found in the 3 files above)
-- 150+: reserved for future additions (V3R2 namespace)
-
-V3R5 namespace policy:
-- New entries use the parallel namespace starting at `CONST-V3R5-001`
-- The 3 internal V3R2 gaps (047/048/050) are NOT filled — preserved as historical record
-- `zone_class` field (4-enum): `frozen-canonical` | `frozen-safety` | `evolvable-tuning` | `evolvable-experimental`
-
-CanaryGate defaults (plan.md §7 OQ6 decision):
-- Frozen → `canary_gate: true`
-- Evolvable → `canary_gate: false`
+Entry fields: `id` (`CONST-V3R2-NNN`, `CONST-V3R5-NNN` or `CONST-V3R6-NNN`; IDs are never reused), `zone` (`Frozen` or `Evolvable`), `zone_class` (`frozen-canonical`, `frozen-safety`, `evolvable-tuning` or `evolvable-experimental`), `file`, `anchor`, `clause`, and `canary_gate` (`true` for Frozen entries).
 
 ## Retiring an Entry
 
-A clause that is no longer in force is **retired, not deleted** — deleting it destroys the record that the clause once existed and was withdrawn.
-
-To retire an entry, prefix its `clause` with a `[SUPERSEDED …]` marker naming what replaced it:
+A clause that is no longer in force is retired by prefixing its `clause` with a marker naming what replaced it, so the record of the withdrawn clause survives:
 
 ```text
 clause: "[SUPERSEDED by <replacement>] <the original clause text>"
 ```
 
-(The fence above is deliberately tagged `text`, not `yaml`. The registry loader reads the **first** yaml-tagged fence in this file as the entry list, so a yaml-tagged example placed before `## Entries` would be parsed as the registry and fail to load — and so would that fence marker written out literally in prose.)
+(This example fence is tagged `text` on purpose: the loader reads the first yaml-tagged fence in this file as the entry list.) `moai constitution validate` counts retired entries and skips their drift, canary and source-file checks; `--strict` checks them verbatim. The marker must be a prefix; `canary_gate: false` alone does not retire an entry.
 
-`moai constitution validate` then counts the entry as retired and skips its drift, canary-gate, and source-file checks — the source text is gone by definition, so those checks could only ever fail. The entry still appears in `moai constitution list`, and the retired total is reported (`retired_count` in JSON output).
-
-Two boundaries:
-
-- The marker is a **prefix**, not a substring. A live clause that merely mentions `[SUPERSEDED …]` in its own text stays fully checked.
-- `canary_gate: false` is **not** a retirement marker — it is the documented default for every Evolvable entry. A retired Frozen entry may carry `canary_gate: false` because it is retired, not the other way round.
-
-`moai constitution validate --strict` ignores the marker and checks retired entries verbatim, for auditing what they still hold.
-
-## Usage Guide
+## Usage
 
 ```bash
-# List the entire registry
 moai constitution list
-
-# Filter by Frozen zone
 moai constitution list --zone frozen
-
-# List clauses from a specific file only
-moai constitution list --file .claude/rules/moai/core/moai-constitution.md
-
-# JSON-format output
+moai constitution list --file .claude/rules/moai/core/agent-common-protocol.md
 moai constitution list --format json
 ```
 
 ## Entries
 
 ```yaml
-# ============================================================
-# 001-010: CLAUDE.md HARD clauses (§1 Hard Rules)
-# ============================================================
 - id: CONST-V3R2-001
   zone: Frozen
   zone_class: frozen-canonical
@@ -90,151 +44,73 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/core/moai-constitution.md
   anchor: "#quality-gates"
-  clause: "All code changes must pass TRUST 5 validation"
+  clause: "Code changes are held to TRUST 5"
   canary_gate: true
 
-- id: CONST-V3R2-006
-  zone: Frozen
-  zone_class: frozen-canonical
-  file: .claude/rules/moai/core/agent-common-protocol.md
-  anchor: "#user-interaction-boundary"
-  clause: "`AskUserQuestion` is the **only** user-facing question channel"
-  canary_gate: true
-
-# ============================================================
-# 008-020: CLAUDE.md HARD clauses (§1 Hard Rules — orchestrator behavior)
-# ============================================================
+# --- CLAUDE.md ---
 - id: CONST-V3R2-014
   zone: Evolvable
   zone_class: evolvable-tuning
   file: CLAUDE.md
-  anchor: "#7-safe-development-protocol"
-  clause: "Before non-trivial code, explain the approach + which files change + why; get user approval"
+  anchor: "#approach-and-approval"
+  clause: "Before a large or ambiguous change, explain the approach and the files it touches, and get the user's approval."
   canary_gate: false
 
 - id: CONST-V3R2-018
   zone: Frozen
   zone_class: frozen-canonical
   file: CLAUDE.md
-  anchor: "#8-user-interaction-architecture"
-  clause: "Every question directed at the user MUST be asked via AskUserQuestion. Free-form prose questions in response text are prohibited."
+  anchor: "#questions"
+  clause: "use AskUserQuestion for questions that are genuinely the user's to answer"
   canary_gate: true
 
-# ============================================================
-# 020-030: CLAUDE.md §14 Worktree Isolation Rules + §11 Background Agent
-# ============================================================
 - id: CONST-V3R2-020
   zone: Evolvable
   zone_class: frozen-safety
   file: CLAUDE.md
-  anchor: "#14-parallel-execution-safeguards"
-  clause: "subagents run in the background by default (the runtime chooses foreground only when it needs the result; every permission prompt still surfaces in the main session); MoAI does not set `background:` — the retained safeguard is concurrency, not backgrounding"
+  anchor: "#safety-rails"
+  clause: "One writer per working tree: run write-capable agents in parallel only when each writes a different worktree"
   canary_gate: false
 
 - id: CONST-V3R2-021
   zone: Evolvable
   zone_class: evolvable-experimental
   file: CLAUDE.md
-  anchor: "#14-parallel-execution-safeguards"
-  clause: "[SUPERSEDED by worktree-opt-in policy — see CLAUDE.md §14 + worktree-integration.md § Terminology Glossary] Implementation teammates in team mode (role_profiles: implementer, tester, designer) MUST use isolation: worktree when spawned via Agent()"
+  anchor: "#safety-rails"
+  clause: "[SUPERSEDED by worktree-opt-in policy — see worktree-integration.md] Implementation teammates in team mode (role_profiles: implementer, tester, designer) MUST use isolation: worktree when spawned via Agent()"
   canary_gate: false
 
 - id: CONST-V3R2-022
   zone: Evolvable
   zone_class: evolvable-experimental
   file: CLAUDE.md
-  anchor: "#14-parallel-execution-safeguards"
-  clause: "[SUPERSEDED by worktree-opt-in policy — see CLAUDE.md §14 + worktree-integration.md § Terminology Glossary] Read-only teammates (role_profiles: researcher, analyst, reviewer) MUST NOT use isolation: worktree"
+  anchor: "#safety-rails"
+  clause: "[SUPERSEDED by worktree-opt-in policy — see worktree-integration.md] Read-only teammates (role_profiles: researcher, analyst, reviewer) MUST NOT use isolation: worktree"
   canary_gate: false
 
 - id: CONST-V3R2-023
   zone: Evolvable
   zone_class: evolvable-experimental
   file: CLAUDE.md
-  anchor: "#14-parallel-execution-safeguards"
-  clause: "[SUPERSEDED by worktree-opt-in policy — see CLAUDE.md §14 + worktree-integration.md § Terminology Glossary] One-shot sub-agents making cross-file changes SHOULD use isolation: worktree"
+  anchor: "#safety-rails"
+  clause: "[SUPERSEDED by worktree-opt-in policy — see worktree-integration.md] One-shot sub-agents making cross-file changes SHOULD use isolation: worktree"
   canary_gate: false
 
 - id: CONST-V3R2-024
   zone: Evolvable
   zone_class: evolvable-experimental
   file: CLAUDE.md
-  anchor: "#14-parallel-execution-safeguards"
-  clause: "[SUPERSEDED by worktree-opt-in policy — see CLAUDE.md §14 + worktree-integration.md § Terminology Glossary] GitHub workflow fixer agents MUST use isolation: worktree for branch isolation"
+  anchor: "#safety-rails"
+  clause: "[SUPERSEDED by worktree-opt-in policy — see worktree-integration.md] GitHub workflow fixer agents MUST use isolation: worktree for branch isolation"
   canary_gate: false
 
-# ============================================================
-# 025-035: moai-constitution.md HARD clauses
-# ============================================================
-- id: CONST-V3R2-025
-  zone: Frozen
-  zone_class: frozen-canonical
-  file: .claude/rules/moai/core/moai-constitution.md
-  anchor: "#moai-orchestrator"
-  clause: "AskUserQuestion is the sole user-facing question channel"
-  canary_gate: true
-
-- id: CONST-V3R2-026
-  zone: Frozen
-  zone_class: frozen-canonical
-  file: .claude/rules/moai/core/moai-constitution.md
-  anchor: "#moai-orchestrator"
-  clause: "used ONLY by the MoAI orchestrator (subagents must never prompt users)"
-  canary_gate: true
-
-# ============================================================
-# 036-045: agent-common-protocol.md HARD clauses
-# ============================================================
+# --- agent-common-protocol.md ---
 - id: CONST-V3R2-036
   zone: Frozen
   zone_class: frozen-canonical
   file: .claude/rules/moai/core/agent-common-protocol.md
   anchor: "#user-interaction-boundary"
-  clause: "Subagents MUST NOT prompt the user. AskUserQuestion is reserved exclusively for the MoAI orchestrator."
-  canary_gate: true
-
-- id: CONST-V3R2-038
-  zone: Frozen
-  zone_class: frozen-canonical
-  file: .claude/rules/moai/core/agent-common-protocol.md
-  anchor: "#user-interaction-boundary"
-  clause: "AskUserQuestion is reserved exclusively for the MoAI orchestrator"
-  canary_gate: true
-
-- id: CONST-V3R2-044
-  zone: Evolvable
-  zone_class: frozen-safety
-  file: .claude/rules/moai/core/agent-common-protocol.md
-  anchor: "#background-agent-execution"
-  clause: "The retained safeguard is **concurrency, not backgrounding**"
-  canary_gate: false
-
-# ============================================================
-# CONST-V3R5-001..041: new parallel namespace
-# Completes coverage of unmapped [HARD] rules — 11 source files newly registered
-# ============================================================
-- id: CONST-V3R5-001
-  zone: Frozen
-  zone_class: frozen-canonical
-  file: .claude/rules/moai/core/askuser-protocol.md
-  anchor: "#orchestratorsubagent-boundary"
-  clause: "Subagents MUST NOT invoke `AskUserQuestion`"
-  canary_gate: true
-
-- id: CONST-V3R5-002
-  zone: Frozen
-  zone_class: frozen-canonical
-  file: .claude/rules/moai/core/askuser-protocol.md
-  anchor: "#orchestratorsubagent-boundary"
-  clause: "Subagents MUST NOT output free-form prose questions directed at the user"
-  canary_gate: true
-
-- id: CONST-V3R5-003
-  zone: Frozen
-  zone_class: frozen-canonical
-  file: .claude/rules/moai/core/askuser-protocol.md
-  anchor: "#orchestratorsubagent-boundary"
-  clause: "Subagents MUST NOT embed AskUserQuestion call syntax in their response body"
+  clause: "Subagents cannot ask the user questions"
   canary_gate: true
 
 # --- ci-autofix-protocol.md (10 entries: V3R5-004..013) ---
