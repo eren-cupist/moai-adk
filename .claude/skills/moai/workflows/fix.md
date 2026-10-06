@@ -1,16 +1,15 @@
 ---
 description: >
-  One-shot autonomous fix workflow with parallel scanning and classification.
-  Finds LSP errors, linting issues, and type errors, classifies by severity,
-  applies safe fixes via agent delegation, and reports results.
-  Use when fixing errors, linting issues, or running diagnostics.
+  Fix workflow for a reported bug, a failing test or CI check, or typecheck
+  and lint errors: reproduce, fix minimally, verify, with bounded retries.
+  Not for new features (use plan and run).
 user-invocable: false
 metadata:
   version: "2.5.0"
   category: "workflow"
   status: "active"
   updated: "2026-02-21"
-  tags: "fix, auto-fix, lsp, linting, diagnostics, errors, type-check"
+  tags: "fix, bug, ci, lint, type-check, diagnostics"
 
 # MoAI Extension: Progressive Disclosure
 progressive_disclosure:
@@ -20,281 +19,33 @@ progressive_disclosure:
 
 # MoAI Extension: Triggers
 triggers:
-  keywords: ["fix", "auto-fix", "error", "lint", "diagnostic", "lsp", "type error"]
+  keywords: ["fix", "bug", "error", "lint", "type error", "failing test", "ci failure"]
   agents: ["manager-develop"]
   phases: ["fix"]
 ---
 
-# Workflow: Fix - One-Shot Auto-Fix
+# Fix Workflow
 
-Purpose: One-shot autonomous fix with parallel scanning and classification. AI finds issues, classifies by severity, applies safe fixes, and reports results.
+`/moai fix` repairs something that is broken — a reported bug, a failing test or CI check, or typecheck and lint errors — with the smallest change that addresses the root cause, and shows that it worked.
 
-Flow: Parallel Scan -> Classify -> Fix -> Verify -> Report
+## Input
 
-## Supported Flags
+`$ARGUMENTS` is a description of the problem, an error message or log, a failing test or check name, a path to examine, or nothing (then the target is the errors reported by the project's typecheck and lint). `--dry` reports the diagnosis and the proposed change without editing anything.
 
-- --dry (alias --dry-run): Preview only, no changes applied
-- --sequential (alias --seq): Sequential scan instead of parallel
-- --level N: Maximum fix level to apply (default 3)
-- --errors (alias --errors-only): Fix errors only, skip warnings
-- --security (alias --include-security): Include security issues in scan
-- --no-fmt (alias --no-format): Skip formatting fixes
-- --resume [ID] (alias --resume-from): Resume from snapshot (latest if no ID)
+## Steps
 
-## Pipeline Contract (Agentless Classification)
+1. **Reproduce.** Run the failing test or check, or the project's typecheck, lint and tests for the target scope, and keep that output as the baseline. Where a test harness exists, capture the bug as a failing test first; it becomes the proof of the fix. If the problem cannot be reproduced, say so and report what you tried instead of guessing at a fix.
+2. **Find the root cause.** Read the code involved, including its `@MX:ANCHOR` and `@MX:WARN` notes (`.claude/rules/moai/workflow/mx-tag-protocol.md`): an anchored function has callers that depend on its contract.
+3. **Fix minimally.** Change what the root cause requires and nothing around it. Formatting and import-order errors are fixed by running the project's formatter. Before a change that alters a public API, behavior beyond the bug, or security-relevant code, explain it and get the user's confirmation through AskUserQuestion.
+4. **Verify.** The reproduction test passes. Re-run the same commands as step 1 over the same scope and compare with the baseline: the targeted failures are gone and nothing new fails. A regression the fix introduced is reverted or reported by file and line — never left in silently.
+5. **Report.** The root cause, the change, the commands with their observed results, and anything still open.
 
-<!-- @MX:NOTE - Agentless fixed-pipeline classification; localize→repair→validate contract. See spec-workflow.md#subcommand-classification. -->
+Up to three fix attempts per failure. When the third attempt does not resolve it, stop and ask through AskUserQuestion: continue investigating manually, revert the attempted changes, or stop. Never edit `.env*`, credentials or CI workflow definitions to make a check pass, and never weaken or delete a test to turn it green.
 
-This subcommand is classified as **Agentless fixed-pipeline**.
-It executes a deterministic 3-phase contract: **localize → repair → validate**.
+Leave the changes uncommitted unless the user asked for a commit; a CI auto-fix commits as its protocol describes.
 
-- **Phase mapping**: localize ← Phase 1+2+2.5; repair ← Phase 4; validate ← Phase 4
-- **No LLM-driven control flow**: Agent() invocations exist for executor delegation within phases (e.g., a per-spawn `Agent(general-purpose)` backend specialist for auto-fix) but never select the next phase.
-- **No-op exit**: When the localize phase finds zero targets, the pipeline exits with status `no-op` and exit code 0, skipping repair and validate.
-- **Fail-fast**: When repair encounters an unresolvable error, the pipeline terminates and reports the error. There is no multi-agent fallback.
-- **`--mode` flag handling**: Any `--mode` flag passed to this subcommand is ignored. The system logs `MODE_FLAG_IGNORED_FOR_UTILITY` at info level and proceeds with the fixed pipeline.
-- **Repeatability**: Even when the parent invocation supplies `--mode loop`, the pipeline runs once per command invocation. Re-entry requires explicit user re-invocation.
+## Who does the work
 
-See [Subcommand Classification matrix](../../rules/moai/workflow/spec-workflow.md#subcommand-classification) for the full pipeline-vs-multi-agent contract.
+Fix it directly in the main session; most fixes are a few reads and edits. Hand a fix to manager-develop only when it is large enough to deserve its own worktree, briefed per `.claude/rules/moai/development/manager-develop-prompt-template.md`. A failing required CI check on a pull request goes to manager-develop with `cycle_type=autofix`, under `.claude/rules/moai/workflow/ci-autofix-protocol.md`: at most three iterations, each patch a new commit, no force-push, semantic failures (test assertions, panics, races, deadlocks) escalated to the user instead of patched.
 
-## Phase 1: Parallel Scan
-
-Launch three diagnostic tools simultaneously using Bash with run_in_background for 3-4x speedup (8s vs 30s).
-
-Scanner 1 - LSP Diagnostics:
-Language-specific type checking via auto-detection. Indicator file determines language, then the corresponding LSP tool is executed:
-
-| Language | Indicator File | LSP Command |
-|----------|---------------|-------------|
-| Go | go.mod | `go vet ./...` |
-| Python | pyproject.toml / setup.py | `mypy --output json` |
-| TypeScript | package.json (tsconfig.json present) | `tsc --noEmit` |
-| JavaScript | package.json (no tsconfig.json) | `node --check` or skip |
-| Rust | Cargo.toml | `cargo check --message-format json` |
-| Java (Maven) | pom.xml | `mvn compile -q` |
-| Java (Gradle) | build.gradle | `gradle compileJava -q` |
-| Kotlin | build.gradle.kts | `gradle compileKotlin -q` |
-| C# | *.csproj / *.sln | `dotnet build --no-restore -q` |
-| Ruby | Gemfile | `bundle exec rubocop --format json` |
-| PHP | composer.json | `php -l` on changed files |
-| Scala | build.sbt | `sbt compile` |
-| Elixir | mix.exs | `mix compile` |
-| Swift | Package.swift | `swift build` |
-| Flutter/Dart | pubspec.yaml | `dart analyze` |
-| R | DESCRIPTION | `R CMD check --no-manual` |
-| C++ | CMakeLists.txt | `cmake --build build --target all` |
-
-Output: Parsed error list with file, line, column, severity, message for each diagnostic.
-
-Scanner 2 - AST-grep Scan:
-- Structural pattern matching with sgconfig.yml rules
-- Security patterns and code quality rules
-
-Scanner 3 - Linter:
-Language-specific linting via auto-detection:
-
-| Language | Linter Command |
-|----------|---------------|
-| Go | `golangci-lint run --out-format json` |
-| Python | `ruff check --output-format json` |
-| TypeScript/JavaScript | `eslint --format json` |
-| Rust | `cargo clippy --message-format json` |
-| Java | `checkstyle` (if configured) or skip |
-| Kotlin | `detekt --output-format xml` (if configured) |
-| C# | `dotnet format --verify-no-changes` |
-| Ruby | `bundle exec rubocop --format json` |
-| PHP | `composer exec phpcs -- --report=json` (if configured) |
-| Swift | `swiftlint lint --reporter json` (if configured) |
-| Elixir | `mix credo --format json` |
-| Flutter/Dart | `dart analyze` (covers linting) |
-| Scala / R / C++ | Language-specific tool if configured, else skip |
-
-If linter not installed or configured: Skip Scanner 3 and note absence in report.
-
-After all scanners complete:
-- Parse output from each tool into structured issue list
-- Remove duplicate issues appearing in multiple scanners
-- Sort by severity: Critical, High, Medium, Low
-- Group by file path for efficient fixing
-
-**Structured Error Output (Language-Agnostic):**
-Normalize all scanner output into a unified issue record format regardless of language:
-- `file`: relative path from project root
-- `line`: integer line number
-- `column`: integer column number (0 if not available)
-- `severity`: "error" | "warning" | "info"
-- `code`: diagnostic code or rule name (if available)
-- `message`: human-readable description
-- `source`: "lsp" | "lint" | "ast-grep"
-- `language`: detected project language
-
-This normalization enables language-agnostic fix agents to work without language-specific logic.
-
-Language auto-detection uses indicator files and covers all 16 MoAI-supported languages equally (C++, C#, Elixir, Flutter, Go, Java, JavaScript, Kotlin, PHP, Python, R, Ruby, Rust, Scala, Swift, TypeScript). Each language has its own marker files (for example `go.mod` for Go, `pyproject.toml` for Python, `tsconfig.json` for TypeScript, `Cargo.toml` for Rust, `pubspec.yaml` for Flutter); the scanner inspects project root and activates the corresponding toolchain. See `.claude/skills/moai/workflows/sync/quality-gates-quality.md` Step 0.6.1 for the complete Language Detection table.
-
-Error handling: If any scanner fails, continue with results from successful scanners. Note the failed scanner in the report.
-
-If --sequential flag: Run LSP, then AST-grep, then Linter sequentially.
-
-## Phase 2: Classification
-
-Issues classified into four levels:
-
-- Level 1 (Immediate): No approval required. Examples: import sorting, whitespace, formatting
-- Level 2 (Safe): Log only, no approval. Examples: rename variable, add type annotation
-- Level 3 (Review): User approval required. Examples: logic changes, API modifications
-- Level 4 (Manual): Auto-fix not allowed. Examples: security vulnerabilities, architecture changes
-
-## Phase 3: Pre-Fix MX Context Scan
-
-Before applying fixes, scan target files for existing @MX tags to understand context and constraints:
-
-**Scan Target:** All files with classified issues (from Phase 2 results).
-
-**MX Context Extraction:**
-- @MX:ANCHOR functions: Flag as critical path. Pass fan_in context to fix agent. Warn that signature changes may break multiple callers.
-- @MX:WARN zones: Pass danger context to fix agent. Ensure fix does not worsen the warned condition.
-- @MX:NOTE context: Pass business logic context to fix agent to prevent fixing symptoms while breaking intent.
-- @MX:TODO items: Check if any classified issues match existing TODOs (enables removal upon fix).
-
-**Output:** MX context map passed to Phase 4 agents as part of the fix prompt. Each fix agent receives:
-- List of @MX:ANCHOR functions in the target file (do not break these contracts)
-- List of @MX:WARN zones (approach with caution)
-- Relevant @MX:NOTE context (understand before modifying)
-
-**Skip Condition:** If no @MX tags found in target files, proceed directly to Phase 4.
-
-See .claude/rules/moai/workflow/mx-tag-protocol.md for tag type definitions.
-
-## Phase 4: Auto-Fix
-
-<!-- @MX:WARN @MX:REASON - Future PRs may be tempted to add LLM-driven Level-to-agent dispatch here. The current static lookup table (lines 185-188) MUST remain a fixed mapping. Any LLM-decided dispatch fails TestAgentlessUtilityNoLLMControlFlow. -->
-
-[HARD] Agent delegation mandate (Level 2+): ALL Level 2 and above fix tasks MUST be delegated to specialized agents. NEVER execute Level 2+ fixes directly. Level 1 (import sorting, whitespace, formatting) is exempt: the orchestrator runs the language's deterministic formatter command directly (e.g., gofmt/goimports, ruff format, prettier, rustfmt) without an Agent() spawn — a formatter run needs no agent specialization.
-
-Executor selection by fix level (static lookup table — domain expertise injected per-spawn):
-- Level 1 (import, formatting): orchestrator-direct formatter command (no Agent() spawn)
-- Level 2 (rename, type): manager-develop (cycle_type=ddd) or per-spawn `Agent(general-purpose)` refactoring specialist — inject `At start, invoke Skill("moai-workflow-ddd") for the DDD refactor cycle.`
-- Level 3 (logic, API): manager-develop subagent (after user approval) — inject the cycle_type skill (`moai-workflow-ddd`|`moai-workflow-tdd`) plus 0-3 domain `moai-ref-*` skills per the mission domain (`.moai/config/sections/delegation.yaml` domain_skills)
-
-Execution order:
-- Level 1 fixes applied automatically via the orchestrator-direct formatter command
-- Level 2 fixes applied automatically via agent delegation, with logging
-- Level 3 fixes require AskUserQuestion approval, then delegated to agent
-- Level 4 fixes listed in report as manual action items
-
-A Level 2 fix that is a bounded mechanical subtask may use the optional external-model delegation described in `.claude/skills/moai/workflows/run/external-delegation.md` § External Model Delegation.
-
-If --dry flag: Display preview of all classified issues and exit without changes.
-
-## Phase 5: Verification
-
-<!-- @MX:NOTE - Evidence-bearing verification per verification-claim-integrity.md §1.1: every PASS claim below MUST be backed by a re-executed scanner exit code and parsed count, not prose self-assessment. -->
-
-Phase 5 verification MUST produce claim/evidence pairs, never prose self-assessment. Every claim in the fix report's verification section cites the exact command re-run and its parsed exit code / issue count, per `.claude/rules/moai/core/verification-claim-integrity.md` §1.1 (no unobserved verification claim) and §3 (5-section evidence format).
-
-**Step 1 — Full re-scan (baseline-comparable regression guard):** Re-run the same three Phase 1 scanners (LSP, AST-grep, Linter) against the FULL target scope, not only the files Phase 4 modified — a regression can land in an untouched file or in an already-scanned file that had no prior issue.
-
-**Step 2 — Diff against the Phase 1 baseline:** Compare the Phase 5 full-rescan issue list against the Phase 1 baseline issue list (parsed lists, not eyeballed) to derive three sets: Resolved (baseline-only), Persisting (both lists — targeted issue NOT fixed), and Regression (Phase-4-only — a NEW issue absent from the baseline).
-
-**Step 3 — Regression handling:** Every issue in the Regression set MUST be either (a) reverted — undo the specific Phase-3 change that introduced it, then re-run Steps 1-2 to confirm it is gone — or (b) explicitly reported as failed in the fix report, naming the offending fix and the regression's file:line. Silent acceptance of a regression is prohibited; the fix run MUST NOT be reported as successful while an unreverted, unreported regression exists.
-
-**Claim/Evidence table (required report format):**
-
-| Claim | Verification command | Evidence (parsed) |
-|-------|----------------------|--------------------|
-| N targeted issues resolved | Phase-4 Step 1 re-run command | exit code + parsed count, diffed against Phase 1 baseline (Step 2) |
-| 0 regressions | Phase-4 Step 1 re-run command | Regression set (Step 2) == empty |
-
-## Phase 6: MX Tag Update
-
-After fixes are verified, update @MX tags for modified files:
-
-**Tag Actions by Fix Level:**
-| Fix Level | MX Action |
-|-----------|-----------|
-| Level 1 (formatting) | No tag changes typically needed |
-| Level 2 (rename, type) | Update @MX:NOTE if signature changed |
-| Level 3 (logic, API) | Add @MX:NOTE for new logic, re-evaluate ANCHOR |
-| Level 4 (manual) | Requires @MX:WARN with @MX:REASON if security-related |
-
-**Specific Actions:**
-- Bug fix applied: Remove corresponding @MX:TODO if exists
-- New code introduced: Add appropriate @MX tags per protocol
-- Function signature changed: Re-evaluate @MX:ANCHOR (fan_in may change)
-- Complexity increased: Add @MX:WARN if cyclomatic complexity >= 15
-- Dangerous pattern introduced: Add @MX:WARN with @MX:REASON
-
-**MX Tag Report Generation:**
-Generate MX_TAG_REPORT section in fix report:
-```markdown
-## MX Tag Report
-
-### Tags Added (N)
-- file:line: @MX:NOTE: [description]
-
-### Tags Removed (N)
-- file:line: @MX:TODO (resolved)
-
-### Tags Updated (N)
-- file:line: @MX:ANCHOR (fan_in updated)
-
-### Attention Required
-- Files with new @MX:WARN requiring review
-```
-
-See .claude/rules/moai/workflow/mx-tag-protocol.md for complete tag rules.
-
-## Task Tracking
-
-[HARD] Task management tools mandatory:
-- All discovered issues added as pending via TaskCreate
-- Before each fix: change to in_progress via TaskUpdate
-- After each fix: change to completed via TaskUpdate
-
-## Safe Development Protocol
-
-All fixes follow CLAUDE.md Section 7 Safe Development Protocol:
-- Reproduction-first: Write a failing test that reproduces the bug before fixing
-- Approach-first: For Level 3+ fixes, explain approach before applying
-- Post-fix review: List potential side effects after each fix
-
-## Snapshot Save/Resume
-
-Snapshot location: $CLAUDE_PROJECT_DIR/.moai/cache/fix-snapshots/
-
-Snapshot contents:
-- Timestamp
-- Target path
-- Issues found, fixed, and pending counts
-- Current fix level
-- TODO state
-- Scan results
-
-Resume commands:
-- /moai:fix --resume (uses latest snapshot)
-- /moai:fix --resume fix-20260119-143052 (uses specific snapshot)
-
-## Execution Summary
-
-1. Parse arguments (extract flags: --dry, --sequential, --level, --errors, --security, --resume)
-2. If --resume: Load snapshot and continue from saved state
-3. Detect project language from indicator files
-4. Execute parallel scan (LSP + AST-grep + Linter)
-5. Aggregate results and remove duplicates
-6. Classify into Levels 1-4
-7. Scan target files for @MX tags (Phase 3: Pre-Fix MX Context Scan)
-8. TaskCreate for all discovered issues
-9. If --dry: Display preview and exit
-10. Apply Level 1 fixes orchestrator-direct via the formatter command; apply Level 2 fixes via agent delegation (with MX context)
-11. Request approval for Level 3 fixes via AskUserQuestion
-12. Verify fixes by re-running diagnostics
-13. Update @MX tags for modified files (Phase 6)
-14. Save snapshot to $CLAUDE_PROJECT_DIR/.moai/cache/fix-snapshots/
-15. Report with evidence (file:line changes)
-
----
-
-Version: 3.0.0
-Updated: removed the Related Skills CI watch/auto-fix routing entry (3.0.0 — the CI watch loop is not part of the distributed toolchain).
-Previous: 2.4.0 — Phase 5 rewritten into an evidence-bearing claim/evidence contract with a full-rescan-vs-baseline regression guard (revert-or-report-failed, never silent acceptance); added Phase 8 (residue persistence to the loop-verdict schema + non-auto-invoking `/moai loop` recommendation); added the Loop Taxonomy Position section placing this workflow in the turn-based quadrant. 2.2.0 — added 16-language LSP/linter tables and structured error output normalization for language-agnostic fix agents.
+A bounded mechanical subtask may use the optional external-model delegation in `.claude/skills/moai/workflows/run/external-delegation.md`, section "External Model Delegation".

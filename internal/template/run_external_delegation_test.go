@@ -161,16 +161,17 @@ const rxdReadOnlySentence = "The agent never sets the write argument, so a deleg
 
 var rxdListMarker = regexp.MustCompile(`^\s*([-*]|[0-9]+\.)\s`)
 
-// rxdPairs are the mirrored pairs that differ by design (the live copy
-// and the template copy are NOT byte-identical), with the multiset line
-// difference measured on the tree before the delegation change. A hunk applied
-// to one copy only, or worded differently in the two, moves the measure.
+// rxdPairs are the mirrored pairs whose live/template multiset line
+// difference is pinned. manager-develop differs by design by one line (the
+// template frontmatter declares `isolation: worktree`; the maintainer working
+// copy does not); fix.md is identical in both trees. A hunk applied to one
+// copy only, or worded differently in the two, moves the measure.
 var rxdPairs = []struct {
 	path  string
 	delta int
 }{
-	{".claude/agents/moai/manager-develop.md", 5},
-	{".claude/skills/moai/workflows/fix.md", 4},
+	{".claude/agents/moai/manager-develop.md", 1},
+	{".claude/skills/moai/workflows/fix.md", 0},
 }
 
 // rxdPointerFiles carry a pointer to the section and nothing else of it.

@@ -1,6 +1,6 @@
 ---
-description: {{if eq .ConversationLanguage "ko"}}LSP 오류, 린트 문제, 타입 오류 자동 감지 및 수정{{else if eq .ConversationLanguage "ja"}}LSPエラー、リント問題、型エラーを自動検出して修正{{else if eq .ConversationLanguage "zh"}}自动检测并修复LSP错误、lint问题和类型错误{{else}}Auto-detect and fix LSP errors, linting issues, and type errors{{end}}
-argument-hint: "[--dry] [--seq] [--level N] [--resume] [--team]"
+description: {{if eq .ConversationLanguage "ko"}}보고된 버그, 실패한 테스트·CI 체크, 타입·린트 오류를 재현하고 최소 수정 후 검증{{else if eq .ConversationLanguage "ja"}}報告されたバグ、失敗したテスト・CIチェック、型・リントエラーを再現し、最小限の修正後に検証{{else if eq .ConversationLanguage "zh"}}复现所报告的缺陷、失败的测试或CI检查、类型和lint错误，最小化修复后验证{{else}}Reproduce and minimally fix a reported bug, failing test or CI check, or type and lint errors, then verify{{end}}
+argument-hint: "[problem description | error | failing check] [--dry]"
 allowed-tools: Skill
 ---
 
