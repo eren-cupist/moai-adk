@@ -1,8 +1,8 @@
 ---
 description: >
-  DDD/TDD implementation workflow for SPEC requirements. Second step
-  of the Plan-Run-Sync workflow. Routes to manager-develop based
-  on quality.yaml constitution.development_mode setting.
+  Run phase of Plan-Run-Sync: implements an approved SPEC so its acceptance
+  criteria are met, the project's tests pass, and progress.md records the
+  evidence. Methodology follows quality.yaml constitution.development_mode.
 user-invocable: false
 metadata:
   version: "2.6.0"
@@ -20,154 +20,62 @@ progressive_disclosure:
 # MoAI Extension: Triggers
 triggers:
   keywords: ["run", "implement", "build", "create", "develop", "code"]
-  agents: ["manager-develop", "manager-git", "Explore"]
+  agents: ["manager-develop", "manager-git"]
   phases: ["run"]
 ---
 
-<!-- TRACE PROBE: activation hint only; runtime evidence is .moai/state/workflow-trace.jsonl -->
-<!-- When MOAI_TRACE_PHASES=1, call .claude/hooks/moai/trace-ledger.sh record at each phase entry/exit. -->
-<!-- A comment or empty ledger is not an execution trace; see trace-ledger-contract.md. -->
+# Run Workflow
 
-# Run Workflow Entry Router
+`/moai run SPEC-XXX` turns an approved SPEC into working code. The run is done when every acceptance criterion in scope is met in the codebase, the project's tests, typecheck and lint pass, and `progress.md` records the evidence. `/moai sync` follows and owns documentation, the independent sync audit and the PR.
 
-이 파일은 `/moai run` 진입점 라우터입니다. 각 Phase는 on-demand로 해당 sub-skill을 `Read`하여 로드합니다.
+## Inputs
 
-## Phase Owners (per the canonical agent catalog policy)
+- `$ARGUMENTS`: the SPEC-ID (e.g. `SPEC-AUTH-001`), plus optional flags: `--skip-audit` (bypass the Plan Audit Gate, recorded as BYPASSED), `--pr` (take the PR route regardless of tier), `--resume` (continue from what `progress.md` shows as done; re-running `/moai run` on a SPEC with recorded run evidence resumes the same way).
+- `.moai/specs/SPEC-{ID}/`: `spec.md` (requirements; frontmatter `tier:` and `status:`), `plan.md`, `acceptance.md` (Tier M/L), and when present `tasks.md`, `research.md`, `design.md`, `spec-compact.md` (a shorter spec.md; read it instead when present), `progress.md` (scaffolded by plan, filled by run).
+- `.moai/config/sections/quality.yaml`: `constitution.development_mode` (`tdd` or `ddd`), `test_coverage_target`, `lsp_quality_gates.run` (max errors / type errors / lint errors, `allow_regression`), `memory_guard` (when enabled, run tests in module-sized batches).
+- `.moai/config/sections/git-strategy.yaml` (mode, `automation.*`, branch prefix) and `language.yaml` (`git_commit_messages`, `code_comments`).
+- `.moai/project/structure.md` and `tech.md` when present, for architecture conventions.
 
-Phase Owners: `manager-develop` (run-phase implementation — single-spawn per Anthropic's coding-task parallelism caveat "most coding tasks involve fewer truly parallelizable tasks than research"; `cycle_type` ∈ `{tdd, ddd, autofix}` per the canonical cycle-type contract) + `manager-git` (Tier L PR creation OR `--pr` flag per the canonical Tier-based PR routing policy) + `Explore` (read-only investigation when scope discovery needed).
+If the SPEC directory does not exist, say so and offer `/moai plan` through AskUserQuestion.
 
-Skill injection: at each `manager-develop` spawn the orchestrator injects the cycle_type skill (`moai-workflow-tdd` | `moai-workflow-ddd`) plus 0-3 domain `moai-ref-*` skills matched to the mission domain, as `At start, invoke Skill("<name>") for <reason>` lines, per the delegation map (`.moai/config/sections/delegation.yaml`).
+## Flow
 
-Phase 4 Mode Selection: orchestrator autonomous decision over the 4-mode catalog (trivial / background / agent-team / parallel / sub-agent / workflow) per `.claude/rules/moai/workflow/orchestration-mode-selection.md` §A, logged at `.moai/specs/SPEC-{ID}/progress.md` § Phase 4 Mode Selection. Phase 4 SHOULD be invoked before any manager-develop spawn for SPECs sized ≥ Tier M. The `--mode` dispatch axis below is a SEPARATE axis — see that rule's §G.1 crosswalk (correspondence, not merge).
+1. **Load context.** Read the SPEC files and config above, and `git status` / current branch. If `progress.md` already carries run evidence, resume from the first unmet criterion instead of starting over.
+2. **Plan Audit Gate.** Every run passes it before code is written — procedure in `workflows/run/phase-execution.md`.
+3. **Implementation Kickoff Approval** (below).
+4. **Decide who implements** and implement with the configured methodology — `workflows/run/task-decomposition.md`, with the decision rule in `.claude/rules/moai/workflow/orchestration-mode-selection.md`.
+5. **Verify in the main loop**, record `progress.md`, commit per the git strategy, and offer the next step — also in `workflows/run/task-decomposition.md`.
 
-`cycle_type=autofix` mode: `/moai fix` workflow integration delegates to manager-develop with the utility-class pipeline 3-phase contract (localize → repair → validate per `.claude/rules/moai/workflow/spec-workflow.md` § Subcommand Classification) and the max-3-iteration contract per `.claude/rules/moai/workflow/ci-autofix-protocol.md`.
+| Sub-file | Read when |
+|---|---|
+| `workflows/run/phase-execution.md` | Plan Audit Gate, methodology routing, `[MODIFY]`/`[NEW]` delta markers |
+| `workflows/run/task-decomposition.md` | implementing, briefing manager-develop, verification, progress.md, git, completion |
+| `workflows/run/external-delegation.md` | optional hand-off of a bounded mechanical subtask to an external model |
 
-## Phase Routing Table
+## Implementation Kickoff Approval
 
-| Phase Group | Sub-skill 경로 | 내용 |
-|------------|----------------|------|
-| Phase 0: Context Loading | `Read workflows/run/context-loading.md` | Mode dispatch, UltraThink, harness level, context loading, worktree path rules |
-| Phase 1~1.8: Phase Execution | `Read workflows/run/phase-execution.md` | Plan Audit Gate, environment assessment, JIT language detection, scale-based mode, analysis/planning, task decomposition, development mode routing |
-| Phase 11~4: Implementation | `Read workflows/run/task-decomposition.md` | DDD/TDD cycles, quality validation (Phase 13/2.8), git operations (Phase 19), completion guidance (Phase 20) |
-| Mode Routing + Completion | `Read workflows/run/mode-orchestration.md` | Execution mode gate, mode dispatch routing, context propagation, completion criteria, verify exit gate, test scenarios |
-| External Model Delegation | `Read workflows/run/external-delegation.md` | Optional hand-off of bounded mechanical subtasks to an external model — the single home of the delegation procedure |
+Code for a SPEC is written only after the user has approved starting implementation — the Implementation Kickoff Approval, the one human gate between plan and run. If this conversation already holds the user's yes to the plan phase's Kickoff question for this SPEC and the plan artifacts have not changed since, do not ask again. Otherwise, once the Plan Audit Gate has passed, ask a single AskUserQuestion round: start implementation (recommended), revise the plan, or stop. Put any other preference the run needs from the user (for example the PR route when the tier leaves it open) in the same round, so nothing has to be asked mid-run.
 
-## Fan-Out Index
-
-| Fan-Out ID | Trigger condition | Target file | What is parallelised |
-|---|---|---|---|
-| `FO-RUN-1` | the MX scan target spans many files across several packages | `workflows/run/phase-execution.md` | Phase 1.8 MX context-map scan — one read-only shard per package |
-| `FO-RUN-2` | a milestone's RED stage spans several independent test targets | `workflows/run/task-decomposition.md` | RED-stage test drafting — one read-only drafter per target |
-| `FO-RUN-4` | the modified files span several packages | `workflows/run/task-decomposition.md` | Phase 18 MX tag scan — one read-only shard per package; tag application stays single-writer |
-
-## Invocation Flow
-
-```
-/moai run SPEC-XXX
-  ├── [trace] /moai run Phase 0 enter
-  │   Read workflows/run/context-loading.md  → Mode dispatch + context setup
-  ├── [trace] /moai run Phase 1 enter
-  │   Read workflows/run/phase-execution.md  → Phase Sequence (0.5~1.8) + mode routing
-  ├── [trace] /moai run Phase 11 enter
-  │   Read workflows/run/task-decomposition.md → Implementation + quality + git
-  └── [trace] /moai run Mode enter
-      Read workflows/run/mode-orchestration.md → Mode dispatch + completion criteria
-```
-
-## Quick Reference
-
-**Purpose**: SPEC 요구사항을 DDD 또는 TDD 방법론으로 구현합니다.
-
-**Input**: `$ARGUMENTS` = SPEC-ID (예: `SPEC-AUTH-001`)
-
-**Development mode**: `.moai/config/sections/quality.yaml` `constitution.development_mode` 설정 (`ddd` 또는 `tdd`)에 따라 자동 선택.
-
-**Mode dispatch** (`--mode` flag):
-- `autopilot` (기본): Phase 4 scale-based 선택 후 Phase 11/2B 실행
-- `loop`: Ralph engine 위임 (see `loop.md`)
-- `team`: experimental — `--mode team` selects the Agent Teams layer (re-allowed, operator decision; flag `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` ships on; constraints per `orchestration-mode-selection.md` §C.1). Historical: the retired era emitted `MODE_TEAM_UNAVAILABLE` and fell back to `autopilot`
-- `pipeline`: REJECTED — `MODE_PIPELINE_ONLY_UTILITY` 오류 반환
-
-**Harness levels**: `minimal` → skip optional phases | `standard` → all phases | `thorough` → GAN-loop Sprint Contract Protocol + sync-auditor
-
-**Phase 1 (Plan Audit Gate)**: 모든 harness level에서 SKIP 불가. SPEC plan 아티팩트 독립 감사 필수. The audit always runs (once) for every tier — Tier S changes only the re-run loop, never whether the audit runs: for Tier S SPECs the gate applies a single audit pass by default (the iterative verdict re-execution loop defaults OFF; a PASS verdict is final without a score-threshold re-run, while FAIL/INCONCLUSIVE still halts and escalates as today). Tier M/L iterative audit behavior is unchanged. See `workflows/run/phase-execution.md` § Tier S Single-Audit-Pass Default.
-
-**Worktree path rules**: [HARD] 모든 에이전트 프롬프트에 절대 경로 금지. project-root-relative 경로 사용.
-
-**Chaining (single-phase contract)**: an explicit `/moai run` invocation carries a `single-phase` pipeline contract — on run-phase completion, the sync chain is surfaced as the "(Recommended)" first option of the next-step AskUserQuestion; it never fires silently. The `full-pipeline` auto-chain applies only to the default `/moai` route (see `workflows/moai.md` § run→sync chaining policy).
-
-## On-Demand Sub-skill Loading
-
-각 Phase 진입 시점에 해당 sub-skill을 로드합니다:
-
-```
-# Phase 0: Context loading 및 mode dispatch 시작 시
-Read .claude/skills/moai/workflows/run/context-loading.md
-
-# Phase 1 (Plan Audit Gate) 진입 시
-Read .claude/skills/moai/workflows/run/phase-execution.md
-
-# Phase 11 (Implementation) 진입 시
-Read .claude/skills/moai/workflows/run/task-decomposition.md
-
-# Mode dispatch 또는 completion criteria 확인 시
-Read .claude/skills/moai/workflows/run/mode-orchestration.md
-```
-
-## Custom Harness Extension
-
-@.moai/harness/run-extension.md
-
-## Sentinel Error Keys
-
-A CI audit verifies the literal `MODE_UNKNOWN` sentinel remains present in this skill body (shared with `design.md`). `MODE_UNKNOWN` is emitted when `--mode <value>` is supplied to `/moai run` but `<value>` is not in the valid set `{autopilot, loop, team, pipeline}` (note: pipeline is itself rejected with the separate `MODE_PIPELINE_ONLY_UTILITY` sentinel — see line 71). The complementary `MODE_PIPELINE_ONLY_UTILITY` and `MODE_TEAM_UNAVAILABLE` sentinels are documented in this skill body and in `design.md`. `MODE_TEAM_UNAVAILABLE` is retained as the historical retired-era fallback marker (the `team` mode is now experimental-live; see the Mode dispatch list above).
-
-Ordering invariant (read before the autonomy section below): the plan→run Kickoff gate is always met FIRST — its default autonomous form (audit-cross evidence + decision record) or the operator form keep-set cases keep; any run-phase autonomy set is downstream of it. The next section documents that ordering and the autonomy condition together.
-
-## Run-phase Autonomy (ac_converge)
-
-This section wires the run-phase autonomy mechanisms — the plan→run Kickoff gate ordering reference and the `ac_converge` goal condition — into a single co-located place. The two parts are ORDERED: the Kickoff gate is described FIRST (it must be met before any autonomy begins), then the `ac_converge` arming (entered only after the gate is met).
-
-### 1. Kickoff gate ordering (the gate comes first)
-
-[HARD] Before any run-phase autonomy (arming a goal, a sweep Workflow launch, or any autonomous loop), the orchestrator MUST have already met the plan→run Kickoff gate in one of its two forms. DEFAULT form — autonomous: the independent audit cross (plan-auditor verdict PASS; FAIL / INCONCLUSIVE fail closed), the SPEC's plan phase recorded audit-ready, artifact-hash integrity since that verdict, and no open blocker — the transition writes a decision record the sync audit re-reads. Operator form — keep-set cases only: an orchestrator-issued `AskUserQuestion` round (run-phase entry / further review / abort, first option marked "(Recommended)" — the label is withheld while `interview.recommendation_mode` is `pull`, per `.claude/rules/moai/core/askuser-protocol.md` § Recommendation Placement Principles) presented after Phase 1 (Plan Audit Gate) and before Phase 4 (Mode Selection); The gate is never embedded inside a subagent body (subagents cannot prompt the user — the asymmetric boundary in `.claude/rules/moai/core/agent-common-protocol.md` § User Interaction Boundary).
-
-[HARD] The gate's entry evidence is verdict-governed: the adjudication consumes the plan-auditor verdict itself, not a raw score claim. Skip-eligibility (a high autonomous-bypass score) applies ONLY to Phase 1 plan-auditor verdict re-execution — NOT to the Kickoff gate. Implementation Kickoff Approval is emitted regardless of the plan-auditor score — the per-tier skip-eligible thresholds (S 0.75 / M 0.80 / L 0.85) waive nothing here. Under the default-autonomous transition, a PASS verdict + unchanged artifact hashes + audit-ready status + no open blocker is not a bypass of the gate — it IS the gate's autonomous entry evidence, written as a decision record; keep-set cases still take the operator form.
-
-Because Implementation Kickoff Approval also drains all user preferences (Tier, mode preference, PR strategy), the orchestrator collects every preference at this gate BEFORE launching any autonomy — goal-loop turn agents and sweep Workflow agents cannot prompt the user mid-run, so the one decision that must involve the user is taken here.
+The approval is required regardless of the plan-auditor score: a high score only lets the gate reuse a prior PASS instead of re-auditing; it never stands in for the user's approval. The question is always the orchestrator's — subagents cannot ask the user, so it is never delegated.
 
 <!-- moai:contract-mode-start id="contract-signing-run" -->
-Where `workflow.autonomy.mode: contract` — the gate above is `moai contract kickoff-check <SPEC-ID> --card <card>` exiting 0, and no Kickoff question is emitted. A kickoff decision outcome of reject or human refuses the receipt signature and needs a human decision, so follow the human signing procedure for both. A non-zero exit is escalated, never downgraded to guided mode. See `.claude/rules/moai/workflow/contract-autonomy.md` § The signing gate.
+Where `workflow.autonomy.mode: contract` — the gate above is `moai contract kickoff-check <SPEC-ID> --card <card>` exiting 0, and no Kickoff question is emitted. A kickoff decision outcome of reject or human refuses the receipt signature and needs a human decision, so follow the human signing procedure for both. A non-zero exit is escalated, never downgraded to guided mode. See `.claude/rules/moai/workflow/contract-autonomy.md`, section "The signing gate".
 
 <!-- moai:contract-mode-end -->
-### Cross-references (cite, do not restate)
-
-- `.claude/rules/moai/workflow/orchestration-mode-selection.md` § C.3 — sweep capability gate (Implementation Kickoff Approval-passed + preferences-collected; scaling-not-nesting; named-script-API prohibition).
-- `.claude/rules/moai/workflow/runtime-recovery-doctrine.md` §3 — the 5 circuit-breaker invariants the bounded self-diagnosis loop (below) complies with.
-- `.claude/rules/moai/workflow/ci-autofix-protocol.md` + `.claude/rules/moai/development/manager-develop-prompt-template.md` § cycle_type Mode Reference — the DIAGNOSE-PATCH-VERIFY max-3 mechanical-autofix contract the loop inherits.
-
----
-
 <!-- moai:contract-mode-start id="contract-lifecycle-run" -->
-Where `workflow.autonomy.mode: contract` — the run phase carries the first four stages of the one-pass lifecycle: Discovery (re-observe the contract's `reobserve` list), RED (commit the failing tests first), GREEN (the same tests pass), Qualification (scoped tests, lint, coverage, mutation check, second-model review). Record each stage's evidence and run `moai contract kickoff-check` at every stage boundary; an open escalation record or a revocation stops the run there. See `.claude/rules/moai/workflow/contract-autonomy.md` § One-pass lifecycle.
+Where `workflow.autonomy.mode: contract` — the run phase carries the first four stages of the one-pass lifecycle: Discovery (re-observe the contract's `reobserve` list), RED (commit the failing tests first), GREEN (the same tests pass), Qualification (scoped tests, lint, coverage, mutation check, second-model review). Record each stage's evidence and run `moai contract kickoff-check` at every stage boundary; an open escalation record or a revocation stops the run there. See `.claude/rules/moai/workflow/contract-autonomy.md`, section "One-pass lifecycle".
 
 <!-- moai:contract-mode-end -->
-## Recursive Self-Diagnosis Loop (bounded — DIAGNOSE-PATCH-VERIFY)
+## Scope and judgment
 
-The bounded self-diagnosis loop handles MECHANICAL run-phase failures fast (DIAGNOSE-PATCH-VERIFY, max 3 iterations) and escalates SEMANTIC failures immediately. It is the run-phase projection of the `cycle_type=autofix` DIAGNOSE-PATCH-VERIFY contract; the canonical doctrine lives in the cross-referenced rules above. Summary contract:
+Deliver what the SPEC asks, at the scope it states. Make routine judgment calls yourself and check in only when different readings would lead to materially different work. If the SPEC looks mistaken, say so in a sentence and continue as written. When implementation shows that a requirement or acceptance criterion itself has to change, stop and route that change back through manager-spec rather than editing the SPEC body during run. Finish the whole SPEC; if something genuinely can't be completed, do the rest and state plainly what is missing and why.
 
-| Item | Contract | Canonical SSOT |
-|------|----------|----------------|
-| Classification | Mechanical (lint / type / build / import / format) → DIAGNOSE-PATCH-VERIFY; Semantic (data race / deadlock / panic / **test assertion failure**) → IMMEDIATE escalate | `runtime-recovery-doctrine.md` §3 + `ci-autofix-protocol.md` |
-| Iteration bound | [HARD] max 3 iterations; iteration 4 PROHIBITED; on iteration-3 fail the orchestrator runs an `AskUserQuestion` escalation (continue / revert+re-plan / abort) with no auto-resume | `ci-autofix-protocol.md` max-3 + `runtime-recovery-doctrine.md` §3 invariant 1 |
-| Semantic safety | [HARD] semantic failures NEVER auto-patched (the constitutional rule) | `ci-autofix-protocol.md` |
-| PATCH scope | [HARD] SPEC scope ONLY; MUST NOT touch `.env*` / credentials / CI watch infrastructure and workflow definitions / files outside plan.md §A EXTEND envelope (the constitutional rule/013) | `manager-develop-prompt-template.md` § cycle_type=autofix |
-| Concurrency | the sub-agent patches code, so it is the only write-capable agent running; orchestrator work alongside it stays read-only, and foreground vs background is left to the runtime | `agent-common-protocol.md` § Background Agent Execution |
-| Flat hierarchy | spawned BY THE ORCHESTRATOR (not manager-develop — subagents cannot spawn subagents); blocker reports never direct user prompts | `agent-common-protocol.md` § User Interaction Boundary |
-| Ledger | [HARD] each iteration appended to the `progress.md` Recursive Self-Diagnosis Log section, lettered per `spec-frontmatter-schema.md` § progress.md Section Map (iteration #, classification, root-cause, patch, VERIFY result, escalation reason); grep-verifiable via `grep -A 10 "Recursive Self-Diagnosis Log" .moai/specs/<SPEC-ID>/progress.md` | `runtime-recovery-doctrine.md` §3 invariant 4 (abort-closes-ledger) |
+## Bounded fix loops
 
-This loop is COMPLEMENTARY to the independent audits (plan-auditor Phase 5, sync-auditor Phase 19) — self-audit handles mechanical failures fast; independent audit handles SPEC-quality assurance. See `orchestration-mode-selection.md` §J.3.
+A mechanical failure (lint, format, type, build, import) is fixed and re-checked; after three attempts on the same failure without progress, stop and ask through AskUserQuestion whether to continue manually, revert and re-plan, or stop. A failing test, panic, data race or deadlock means the code is wrong: fix the code, not the test, and never weaken, skip or delete an existing test to get a green run unless the SPEC requires that change. Never edit `.env*`, credentials, or CI workflow definitions as part of a fix.
 
-## Routing Ledger Recording
+## Communication
 
-At run dispatch, the orchestrator records the routing decision to the routing-ledger via `moai harness ledger record` (per the SKILL.md router recording obligation). As run-phase gates complete, it appends machine evidence via `moai harness ledger evidence` — a terminal gate exit (`--kind gate_exit --value 0 --terminal --ref "go test ./..."`) or a verify-log path (`--kind verify_path --ref <.moai/reports/<card-id>/... log>`). The `--ref` value is read later by a person auditing the ledger, not opened by the finalizer, so it names an **exported tracked file** — a scratch path recorded there resolves nowhere but the machine that wrote it. Outcome is finalized from that machine evidence only — never supplied as an input. The recording is opt-in and fail-open; it never blocks the run phase.
+Your text between tool calls is what the user reads. Before the first tool call say in a sentence what you're about to do; give brief updates when you find something load-bearing or change direction. Lead the final report with the outcome, in complete sentences, then the detail a reader needs to act. Keep reports to the length the work needs.
+
+@.moai/harness/run-extension.md

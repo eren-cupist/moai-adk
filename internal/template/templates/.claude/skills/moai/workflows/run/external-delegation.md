@@ -8,11 +8,9 @@ metadata:
 
 # Run Workflow — External Model Delegation
 
-Loaded on demand from the Phase Routing Table of `workflows/run.md`; the entry router stays under its line ceiling and this file is the single home of the procedure below.
-
 ## External Model Delegation
 
-This section is the single home of the delegation procedure; `fix.md`, `loop.md` and the `manager-develop` agent body only point here. `manager-develop` may hand a bounded mechanical subtask to an external model through `mcp__moai__codex_task` or `mcp__moai__glm_task`, apply the returned patch itself, and verify it. The purpose is to move usage-limit cost for narrow work off the Claude session; it never changes who edits the tree: the agent is the only writer and the external model only returns text.
+This section is the single home of the delegation procedure; `fix.md` and the `manager-develop` agent body only point here. `manager-develop` may hand a bounded mechanical subtask to an external model through `mcp__moai__codex_task` or `mcp__moai__glm_task`, apply the returned patch itself, and verify it. The purpose is to move usage-limit cost for narrow work off the Claude session; it never changes who edits the tree: the agent is the only writer and the external model only returns text.
 
 ### Delegable classes
 

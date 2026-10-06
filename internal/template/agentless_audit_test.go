@@ -1,20 +1,12 @@
-// agentless_audit_test.go: Audit suite for SPEC-V3R2-WF-004 Agentless contract
-// and SPEC-V3R2-WF-003 execution-mode routing sentinels.
+// agentless_audit_test.go: Audit suite for the Agentless contract of the
+// utility workflow (fix.md) and the pipeline-rejection sentinel of the
+// implementation workflows.
 //
-// SPEC-V3R2-WF-004 tests (three):
-// @MX:NOTE - Audit suite for SPEC-V3R2-WF-004 Agentless contract. Three tests:
-// TestAgentlessUtilityNoLLMControlFlow (REQ-WF004-013),
-// TestUtilitySkillsContainModeFlagIgnoredSentinel (REQ-WF004-011),
+// @MX:NOTE - Two tests: TestAgentlessUtilityNoLLMControlFlow (REQ-WF004-013),
 // TestImplementationSkillsContainPipelineRejectionSentinel (REQ-WF004-014).
-//
-// SPEC-V3R2-WF-003 tests (three — RED phase, M1):
-// TestRunSkillContainsModeUnknownSentinel (REQ-WF003-010),
-// TestRunSkillContainsModeTeamUnavailableSentinel (REQ-WF003-011),
-// TestLoopAliasCrossReference (REQ-WF003-004).
-// @MX:ANCHOR fan_in=1 - SPEC-V3R2-WF-003 REQ-WF003-010 enforcer; guards
-// run.md against sentinel drift. Touching this test signature
-// affects mode dispatch contract for the run implementation skill.
-// @MX:REASON - The run implementation skill depends on this audit; dropping it permits silent contract regression.
+// The run.md mode-dispatch sentinels (MODE_UNKNOWN, MODE_TEAM_UNAVAILABLE) and
+// the utility MODE_FLAG_IGNORED_FOR_UTILITY sentinel were retired with the
+// --mode flag; no non-test Go code matched them.
 package template
 
 import (
@@ -37,7 +29,6 @@ var utilitySkillPaths = []string{
 // (design.md removed by SPEC-SUBCOMMAND-RETIRE-001, 2026-07-01.)
 var implementationSkillPaths = []string{
 	".claude/skills/moai/workflows/plan.md",
-	".claude/skills/moai/workflows/run.md",
 	".claude/skills/moai/workflows/sync.md",
 }
 
@@ -109,36 +100,6 @@ func TestAgentlessUtilityNoLLMControlFlow(t *testing.T) {
 	}
 }
 
-// TestUtilitySkillsContainModeFlagIgnoredSentinel verifies that each of the 5 utility
-// skills contains the literal sentinel string MODE_FLAG_IGNORED_FOR_UTILITY
-// (REQ-WF004-011). At M1 (RED), all 5 subtests fail because the sentinel has not yet
-// been added to the skill files.
-func TestUtilitySkillsContainModeFlagIgnoredSentinel(t *testing.T) {
-	t.Parallel()
-
-	fsys, err := EmbeddedTemplates()
-	if err != nil {
-		t.Fatalf("EmbeddedTemplates() error: %v", err)
-	}
-
-	const sentinel = "MODE_FLAG_IGNORED_FOR_UTILITY"
-
-	for _, skillPath := range utilitySkillPaths {
-		t.Run(path.Base(skillPath), func(t *testing.T) {
-			t.Parallel()
-
-			data, readErr := fs.ReadFile(fsys, skillPath)
-			if readErr != nil {
-				t.Fatalf("ReadFile(%q) error: %v", skillPath, readErr)
-			}
-
-			if !strings.Contains(string(data), sentinel) {
-				t.Errorf("file %s missing sentinel %s", skillPath, sentinel)
-			}
-		})
-	}
-}
-
 // TestImplementationSkillsContainPipelineRejectionSentinel verifies that each of the
 // 4 implementation skills contains the literal sentinel string MODE_PIPELINE_ONLY_UTILITY
 // (REQ-WF004-014). At M1 (RED), all 4 subtests fail because the sentinel has not yet
@@ -167,76 +128,4 @@ func TestImplementationSkillsContainPipelineRejectionSentinel(t *testing.T) {
 			}
 		})
 	}
-}
-
-// @MX:ANCHOR fan_in=1 - SPEC-V3R2-WF-003 REQ-WF003-010 enforcer; guards
-// run.md against sentinel drift. Touching this test signature
-// affects mode dispatch contract for the run implementation skill.
-// @MX:REASON - The run implementation skill depends on this audit; dropping it permits silent contract regression.
-// (design.md removed by SPEC-SUBCOMMAND-RETIRE-001, 2026-07-01.)
-//
-// TestRunSkillContainsModeUnknownSentinel verifies that run.md
-// contains the literal sentinel string MODE_UNKNOWN (REQ-WF003-010).
-//
-// @MX:NOTE: [AUTO] REQ-WF003-010 enforcer — run.md must document
-// MODE_UNKNOWN handling for unrecognized --mode values passed to the run implementation skill.
-func TestRunSkillContainsModeUnknownSentinel(t *testing.T) {
-	t.Parallel()
-
-	fsys, err := EmbeddedTemplates()
-	if err != nil {
-		t.Fatalf("EmbeddedTemplates() error: %v", err)
-	}
-
-	const sentinel = "MODE_UNKNOWN"
-
-	runDesignSkillPaths := []string{
-		".claude/skills/moai/workflows/run.md",
-	}
-
-	for _, skillPath := range runDesignSkillPaths {
-		t.Run(path.Base(skillPath), func(t *testing.T) {
-			t.Parallel()
-
-			data, readErr := fs.ReadFile(fsys, skillPath)
-			if readErr != nil {
-				t.Fatalf("ReadFile(%q) error: %v", skillPath, readErr)
-			}
-
-			if !strings.Contains(string(data), sentinel) {
-				t.Errorf("file %s missing sentinel %s", skillPath, sentinel)
-			}
-		})
-	}
-}
-
-// TestRunSkillContainsModeTeamUnavailableSentinel verifies that run.md contains the
-// literal sentinel string MODE_TEAM_UNAVAILABLE (REQ-WF003-011).
-// At M1 (RED), the single subtest fails because the sentinel has not yet been added.
-//
-// @MX:NOTE: [AUTO] REQ-WF003-011 enforcer — run.md must document MODE_TEAM_UNAVAILABLE
-// fallback behavior when --mode team is requested but Agent Teams are unavailable.
-func TestRunSkillContainsModeTeamUnavailableSentinel(t *testing.T) {
-	t.Parallel()
-
-	fsys, err := EmbeddedTemplates()
-	if err != nil {
-		t.Fatalf("EmbeddedTemplates() error: %v", err)
-	}
-
-	const sentinel = "MODE_TEAM_UNAVAILABLE"
-
-	const skillPath = ".claude/skills/moai/workflows/run.md"
-	t.Run(path.Base(skillPath), func(t *testing.T) {
-		t.Parallel()
-
-		data, readErr := fs.ReadFile(fsys, skillPath)
-		if readErr != nil {
-			t.Fatalf("ReadFile(%q) error: %v", skillPath, readErr)
-		}
-
-		if !strings.Contains(string(data), sentinel) {
-			t.Errorf("file %s missing sentinel %s", skillPath, sentinel)
-		}
-	})
 }

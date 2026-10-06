@@ -39,11 +39,6 @@ var cardIDBaseline = []cardIDBaselineEntry{
 	{".claude/hooks/moai/sync-phase-quality-gate.sh", "t664"},
 	{".claude/rules/moai/core/askuser-protocol-reference.md", "t1303"},
 	{".claude/rules/moai/workflow/session-handoff-format.md", "t1303"},
-	{".claude/rules/moai/workflow/worktree-integration-ops.md", "t529"},
-	{".claude/rules/moai/workflow/worktree-integration-ops.md", "t741"},
-	{".claude/rules/moai/workflow/worktree-integration-ops.md", "t852"},
-	{".claude/rules/moai/workflow/worktree-integration-ops.md", "t880"},
-	{".claude/rules/moai/workflow/worktree-integration.md", "t1398"},
 }
 
 // isCardIDBaselined reports whether the (relPath, matched) pair is a baseline

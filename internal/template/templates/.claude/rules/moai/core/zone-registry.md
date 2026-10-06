@@ -243,7 +243,7 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/workflow/ci-autofix-protocol.md
   anchor: "#entry-condition"
-  clause: "The CI auto-fix loop MUST be entered ONLY when the orchestrator hands off"
+  clause: "Enter the auto-fix loop only when the orchestrator hands off a failing required check"
   canary_gate: true
 
 - id: CONST-V3R5-005
@@ -251,7 +251,7 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/workflow/ci-autofix-protocol.md
   anchor: "#iteration-cap"
-  clause: "The auto-fix loop MUST attempt at most **3 iterations**"
+  clause: "Attempt at most three iterations per pull request"
   canary_gate: true
 
 - id: CONST-V3R5-006
@@ -259,7 +259,7 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/workflow/ci-autofix-protocol.md
   anchor: "#iteration-cap"
-  clause: "The AskUserQuestion at iteration > 3 MUST be a blocking call"
+  clause: "After the third failed iteration, ask the user through a blocking AskUserQuestion with no timeout"
   canary_gate: true
 
 - id: CONST-V3R5-007
@@ -267,7 +267,7 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/workflow/ci-autofix-protocol.md
   anchor: "#patch-commit-rule-no-force-push"
-  clause: "Every auto-fix patch MUST be applied as a **new commit** on the PR branch"
+  clause: "Apply every auto-fix patch as a new commit on the PR branch"
   canary_gate: true
 
 - id: CONST-V3R5-010
@@ -275,7 +275,7 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/workflow/ci-autofix-protocol.md
   anchor: "#semantic-failure-no-auto-patch"
-  clause: "The orchestrator MUST immediately escalate via AskUserQuestion with the diagnosis report."
+  clause: "For a semantic failure, do not patch: escalate immediately through AskUserQuestion with the diagnosis"
   canary_gate: true
 
 - id: CONST-V3R5-011
@@ -283,7 +283,7 @@ moai constitution list --format json
   zone_class: frozen-safety
   file: .claude/rules/moai/workflow/ci-autofix-protocol.md
   anchor: "#secrets-and-credentials-protection"
-  clause: "The auto-fix loop MUST NOT modify `.env`, `.env.*`, credentials files"
+  clause: "The auto-fix loop never modifies `.env`, `.env.*`, credentials files"
   canary_gate: true
 
 - id: CONST-V3R5-013
@@ -291,7 +291,7 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/workflow/ci-autofix-protocol.md
   anchor: "#ci-infrastructure-preservation"
-  clause: "The auto-fix loop MUST NOT modify CI watch infrastructure scripts or"
+  clause: "The auto-fix loop never modifies CI watch infrastructure scripts or workflow definitions"
   canary_gate: true
 
 # --- spec-workflow.md (2 new entries: V3R5-027..028; CONST-V3R2-001 covers the third) ---
@@ -330,7 +330,7 @@ moai constitution list --format json
   zone: Evolvable
   zone_class: frozen-safety
   file: .claude/rules/moai/workflow/runtime-recovery-doctrine.md
-  anchor: "#4-anti-death-spiral-hook-carve-out-documentation-only-policy"
-  clause: "Stop/PostToolUse hooks SHOULD exit 0 (allow the turn to end / the tool call to proceed) rather than exit 2 (block), so that recovery turns are NOT placed into the `error → stop-hook-blocks → retry → error` loop"
+  anchor: "#anti-death-spiral-hook-carve-out"
+  clause: "Stop and PostToolUse hooks should exit 0 on a recovery turn (letting the turn end or the tool call proceed) rather than exit 2"
   canary_gate: true
 ```

@@ -860,24 +860,20 @@ func acWriteSnapshot(t *testing.T, snapshotPath string, data []byte) {
 	}
 }
 
-// TestACPromptTemplateMirrorParity covers AC-ACD-005 item 4: the pair's only
-// permitted difference is the line-171 SPEC-ID neutralization. A verbatim copy
-// would silently revert it (plan.md §B-3).
+// TestACPromptTemplateMirrorParity covers AC-ACD-005 item 4: the brief template
+// pair is byte-identical and the distributed mirror carries no internal SPEC
+// identifier. (The pair once differed on a single SPEC-ID neutralization line;
+// the rewritten template has no provenance line, so both copies are neutral.)
 func TestACPromptTemplateMirrorParity(t *testing.T) {
 	root := repoRoot(t)
 	localLines := readLinesForAC(t, filepath.Join(root, acLocalPromptTemplatePath))
 	mirrorLines := readLinesForAC(t, filepath.Join(root, acMirrorPromptTemplatePath))
-	if len(localLines) != len(mirrorLines) {
-		t.Fatalf("prompt-template pair differs in line count: local=%d mirror=%d", len(localLines), len(mirrorLines))
+	if strings.Join(localLines, "\n") != strings.Join(mirrorLines, "\n") {
+		t.Errorf("prompt-template pair must be byte-identical: %s vs %s", acLocalPromptTemplatePath, acMirrorPromptTemplatePath)
 	}
-	var differing []int
-	for i := range localLines {
-		if localLines[i] != mirrorLines[i] {
-			differing = append(differing, i+1)
-		}
-	}
-	if len(differing) != 1 || differing[0] != 171 {
-		t.Errorf("prompt-template pair must differ on line 171 only; differing lines: %v", differing)
+	specIDRe := regexp.MustCompile(`SPEC-([A-Z][A-Z0-9]+-)+[0-9]+`)
+	if hits := specIDRe.FindAllString(strings.Join(mirrorLines, "\n"), -1); len(hits) != 0 {
+		t.Errorf("%s carries internal SPEC identifiers: %v", acMirrorPromptTemplatePath, hits)
 	}
 }
 

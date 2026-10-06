@@ -1,6 +1,6 @@
 ---
-description: LSP 오류, 린트 문제, 타입 오류 자동 감지 및 수정
-argument-hint: "[--dry] [--seq] [--level N] [--resume] [--team]"
+description: 보고된 버그, 실패한 테스트·CI 체크, 타입·린트 오류를 재현하고 최소 수정 후 검증
+argument-hint: "[problem description | error | failing check] [--dry]"
 allowed-tools: Skill
 ---
 
