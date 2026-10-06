@@ -2,13 +2,13 @@
 name: moai-foundation-quality
 description: >
   TRUST 5 quality principles and how MoAI enforces them through agents,
-  the 3-level harness, /moai gate, and sync-auditor scoring. Use for code
+  the 3-level harness, and sync-auditor scoring. Use for code
   review, quality gate checks, coverage targets, or TRUST 5 compliance.
 
 when_to_use: >
   Use for code-quality guidance: TRUST 5 principles (Tested, Readable,
   Unified, Secured, Trackable), the 3-level harness (minimal/standard/
-  thorough), /moai gate (lint+format+type+test), coverage targets,
+  thorough), coverage targets,
   security checks, language-aware toolchains, code-smell detection, and
   technical-debt triage.
 
@@ -36,10 +36,10 @@ progressive_disclosure:
 
 This skill provides background knowledge on MoAI's quality model: the five
 TRUST 5 principles, how agents enforce them, the 3-level harness, and the
-language-aware toolchains that `/moai gate` runs. MoAI does NOT ship a
+language-aware toolchains the quality gate runs. MoAI does NOT ship a
 quality-validation library — quality is enforced through agents
-(`manager-develop`, `sync-auditor`), slash commands (`/moai gate`,
-`/moai review`), and the harness (minimal/standard/thorough).
+(`manager-develop`, `sync-auditor`), slash commands (`/moai review`),
+and the harness (minimal/standard/thorough).
 
 ## Quick Reference
 
@@ -49,9 +49,6 @@ all five.
 
 **Quality Mechanisms** (the real enforcement layer):
 
-- `/moai gate` — runs lint + format + type-check + test in parallel as a
-  pre-commit quality gate (<30s). Auto-detects the project language and runs
-  the appropriate toolchain.
 - `manager-develop` (run-phase) — implements via `cycle_type` ∈ {tdd, ddd,
   autofix}; the chosen cycle shapes how tests and behavior are produced.
 - `sync-auditor` — independent skeptical quality assessment with 4-dimension
@@ -91,8 +88,8 @@ The run-phase `cycle_type` selects how quality is built in:
 - **autofix** — diagnostic-driven fixing (LSP / lint / type errors). Best for
   `/moai fix` and regression recovery.
 
-See Skill("moai-workflow-tdd"), Skill("moai-workflow-ddd"), and
-Skill("moai-workflow-loop") for the per-cycle mechanics.
+See Skill("moai-workflow-tdd") and Skill("moai-workflow-ddd") for the
+per-cycle mechanics.
 
 ## TRUST 5 Principles
 
@@ -129,10 +126,6 @@ auto-determined by the Complexity Estimator based on SPEC scope.
 | standard | Default checks (lint + type + test + format) | Most SPECs |
 | thorough | Full sync-auditor + 4-dimension TRUST 5 scoring | Large SPECs, high risk |
 
-`/moai gate` is the lightweight pre-commit entry point: it runs lint +
-format + type-check + test in parallel and applies no fixes. It is the
-fastest way to get a quality signal. For deeper review use `/moai review`.
-
 ## Language-Aware Toolchains
 
 The quality gate auto-detects the project language and runs the appropriate
@@ -151,7 +144,7 @@ language-neutral — the 16 supported languages are treated equally.
 | PHP | phpstan / phpcs | php-cs-fixer | pest / phpunit |
 | ... | (16 languages supported; auto-detected) | | |
 
-For the full toolchain mapping and how `/moai gate` detects the language,
+For the full toolchain mapping and how the quality gate detects the language,
 see [Language-Aware Toolchains](references/reference.md#language-aware-toolkchains).
 
 ## Module Reference
@@ -161,8 +154,8 @@ Each module is loaded on demand. Load the one relevant to the current task.
 - [TRUST 5 Principles](modules/trust5-validation.md) — the five dimensions as
   assessment questions, per-principle checklists, and the "not applicable"
   guard.
-- [Proactive Analysis](modules/proactive-analysis.md) — how `/moai gate`,
-  `/moai review`, and `/moai loop` surface quality issues proactively, and
+- [Proactive Analysis](modules/proactive-analysis.md) — how
+  `/moai review` and `/moai fix` surface quality issues proactively, and
   how to triage findings.
 - [Best Practices](modules/best-practices.md) — using WebSearch / WebFetch for
   up-to-date framework/library best practices, and validating against them.
@@ -180,7 +173,7 @@ Each module is loaded on demand. Load the one relevant to the current task.
 
 ## Works Well With
 
-Agents (see CLAUDE.md §4 for the 11-agent catalog):
+Agents (see CLAUDE.md §4 for the 7-agent catalog):
 
 - `manager-develop` — run-phase implementation; owns the Tested and Unified
   principles through cycle_type.
@@ -197,15 +190,13 @@ Skills:
   test patterns.
 - `moai-ref-owasp-checklist` — OWASP Top 10 security checklist for the
   Secured principle.
-- `moai-workflow-tdd` / `moai-workflow-ddd` / `moai-workflow-loop` — the
+- `moai-workflow-tdd` / `moai-workflow-ddd` — the
   cycle_type workflows that manager-develop uses.
 
 Commands:
 
-- `/moai gate` — pre-commit quality gate (lint + format + type + test).
 - `/moai review` — code review with security and MX-tag compliance.
 - `/moai fix` — auto-detect and fix LSP/lint/type errors.
-- `/moai loop` — iterative fix loop until resolved or max iterations.
 
 <!-- moai:evolvable-start id="rationalizations" -->
 ## Common Rationalizations

@@ -30,7 +30,7 @@ Core principles (1-4) + six Agent Core Behaviors: `.claude/rules/moai/core/moai-
 
 **Analyze-First** is the default main-session orchestration behavior: every request — in any input language, with or without a `/moai` subcommand — flows through one ordered pipeline, beginning with intent analysis (classify meaning, language-independent, never keyword-gated). The structured Intent Router lives in the `/moai` skill (`.claude/skills/moai/SKILL.md`).
 
-Five ordered stages: ① intent analysis → ② context-sufficiency check (insufficient → Rule 5 Context-First Discovery rounds, §7) → ③ execution-plan composition (`orchestration-mode-selection.md`; surfaced before execution per Approach-First, §7 Rule 1) → ④ **approval gates** — the plan→run Kickoff in its default autonomous form (independent audit cross + evidence criteria + a written decision record; `.claude/rules/moai/workflow/auto-semantics.md` §9.1; keep-set cases keep the operator answer) (§8; the progression axis is post-gate, never a bypass) → ⑤ execute → verify → iterate against acceptance criteria (an armed `/moai goal` is the termination judge).
+Five ordered stages: ① intent analysis → ② context-sufficiency check (insufficient → Rule 5 Context-First Discovery rounds, §7) → ③ execution-plan composition (`orchestration-mode-selection.md`; surfaced before execution per Approach-First, §7 Rule 1) → ④ **approval gates** — the plan→run Kickoff in its default autonomous form (independent audit cross + evidence criteria + a written decision record; keep-set cases keep the operator answer) (§8; the progression axis is post-gate, never a bypass) → ⑤ execute → verify → iterate against acceptance criteria.
 
 <!-- moai:contract-mode-start id="contract-signing-pipeline" -->
 Where `workflow.autonomy.mode: contract` — the plan→run gate at ④ is the signed SPEC contract: `moai contract kickoff-check <SPEC-ID> --card <card>` must exit 0, and no Kickoff `AskUserQuestion` is emitted. See `.claude/rules/moai/workflow/contract-autonomy.md` § The signing gate.
@@ -56,11 +56,8 @@ Single entry point for all MoAI development workflows. Default (natural language
 2. SPEC plan / run / sync → `manager-spec` / `manager-develop` / `manager-docs`
 3. PR creation (Tier L OR `--pr`) → `manager-git`
 4. Independent audit: plan-phase / sync-quality → `plan-auditor` / `sync-auditor`
-5. Harness specialist → `builder-harness` (optional pack — not installed by default init); high-reasoning consult (E1-E4) → `super-advisor`
-6. Design collaboration → `manager-design`; E2E tests → `e2e-tester`
-7. Multi-milestone Tier L (≥3 milestones AND ≥10 files) → `manager-lead` (sole Agent-carrier, depth-2 sealed; the same role covers the -f factory leader session)
 
-**Retained agents (13)**: `manager-spec`, `manager-develop`, `manager-docs`, `manager-git`, `plan-auditor`, `sync-auditor`, `builder-harness` (optional pack — not installed by default init), `super-advisor`, `manager-design`, `e2e-tester`, `manager-lead`, `manager-todo` (12 MoAI-custom) + Anthropic built-in `Explore`. `manager-todo` carries no Selection Decision Tree row by design — it is the todo-queue management agent (queue lifecycle, `/moai:todo --auto` serial processing, dispatch guidance, Jev display-only consultation; the `--auto` ranking is the one auto-scoped ranking exception, selection order only); its read-only sealed-snapshot judgment continues as a sub-role dispatched by the GTD auto-mission flow rather than selected by the orchestrator. Class / phase scope / reference per agent: `.claude/agents/moai/*.md` + `.moai/config/sections/delegation.yaml`. Archived names (`manager-strategy`, `manager-quality`, `expert-*`, etc.) MUST NOT be spawned — reject and consult `.claude/rules/moai/workflow/archived-agent-rejection.md` §C (the built-in `claude-code-guide` is distinct, NOT rejected). Agent Teams usage is re-allowed as experimental (operator decision; the flag `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` ships enabled in settings + template) — see §15. `MODE_TEAM_UNAVAILABLE` survives only as the historical fallback sentinel documented in `run.md`. Agent authoring: `.claude/rules/moai/development/agent-authoring.md`. The agent name `manager-lead` is kept unchanged in every file name, path, identifier, and configuration key, while the role it plays is called the leader — `manager-lead` is the leader's coordination agent.
+**Retained agents (7)**: `manager-spec`, `manager-develop`, `manager-docs`, `manager-git`, `plan-auditor`, `sync-auditor` (6 MoAI-custom) + Anthropic built-in `Explore`. Class / phase scope / reference per agent: `.claude/agents/moai/*.md` + `.moai/config/sections/delegation.yaml`. Archived names (`manager-strategy`, `manager-quality`, `expert-*`, etc.) MUST NOT be spawned (the built-in `claude-code-guide` is distinct, NOT rejected). Agent Teams usage is re-allowed as experimental (operator decision; the flag `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` ships enabled in settings + template) — see §15. `MODE_TEAM_UNAVAILABLE` survives only as the historical fallback sentinel documented in `run.md`.
 
 ---
 
@@ -115,7 +112,7 @@ User and language configuration:
 @.moai/config/sections/user.yaml
 @.moai/config/sections/language.yaml
 
-Rules live at `.claude/rules/moai/` (core / workflow / development / language / design). Language rules: user responses in `conversation_language`; internal agent comms + Commands/Agents/Skills instructions always English; code comments per `code_comments` (default English); memory files always English (`moai-memory.md` § Rules). Design-system config: `.moai/config/sections/{design,constitution,harness}.yaml` · `.moai/project/brand/` · `.moai/config/evaluator-profiles/`.
+Rules live at `.claude/rules/moai/` (core / workflow / development / language). Language rules: user responses in `conversation_language`; internal agent comms + Commands/Agents/Skills instructions always English; code comments per `code_comments` (default English); memory files always English (`moai-memory.md` § Rules).
 
 ---
 
@@ -129,7 +126,7 @@ Never generate URLs not found in WebSearch results, never present uncertain info
 
 ## 13. Progressive Disclosure System
 
-Bodies retired to their canonical rules; load on the named trigger. Anti-hallucination policy and GLM web-tool routing: `moai-constitution.md` § URL Verification · `glm-web-tooling.md` · `dynamic-workflows.md` (`/deep-research`). Error recovery, archived-agent rejection and token-limit resume: `agent-common-protocol-reference.md` § Error Recovery Pattern · `archived-agent-rejection.md` §C · `session-handoff.md`. Thinking modes, MCP configuration and dynamic workflows: `moai-constitution.md` § Opus 5.5 Prompt Philosophy · `settings-management.md` · `dynamic-workflows.md` · Skill("moai-foundation-thinking"). Progressive-disclosure token budget: `skill-authoring.md` § Progressive Disclosure.
+Bodies retired to their canonical rules; load on the named trigger. Anti-hallucination policy: `moai-constitution.md` § URL Verification. Error recovery and token-limit resume: `agent-common-protocol-reference.md` § Error Recovery Pattern · `session-handoff.md`. Thinking modes: `moai-constitution.md` § Opus 5.5 Prompt Philosophy.
 
 ---
 
@@ -141,13 +138,13 @@ For core principles, see `.claude/rules/moai/core/moai-constitution.md`. Operati
 
 ## 15. Agent Teams (Re-allowed, experimental)
 
-**Agent Teams usage ALLOWED (experimental)** — operator decision; `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` ships enabled. Explicit `--team` selects the layer; the Phase 4 decision tree still auto-routes Tier L coordination to `manager-lead`. **Legacy CG**: `moai cg` is retired — run `moai migrate cg` to preview an explicit role migration. This does not retire native Agent Teams or waive independent audits. Migration flags: `model-policy.md` § Legacy CG Configuration.
+**Agent Teams usage ALLOWED (experimental)** — operator decision; `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` ships enabled. Explicit `--team` selects the layer. **Legacy CG**: `moai cg` is retired — run `moai migrate cg` to preview an explicit role migration. This does not retire native Agent Teams or waive independent audits.
 
 ## 16. Context Search Protocol
 
-When compacting, always preserve modified/created files, verification commands + exit codes + evidence paths, active SPEC ID/phase, unresolved blockers, and any armed goal condition — load-bearing per `verification-claim-integrity.md` §2.
+When compacting, always preserve modified/created files, verification commands + exit codes + evidence paths, active SPEC ID/phase, and unresolved blockers — load-bearing per `verification-claim-integrity.md` §2.
 
-Remaining bodies retired to their canonical rules. Agent Teams constraints, `--team` selection and CG-role migration: `orchestration-mode-selection.md` §C.1 · `spec-workflow.md` § Agent Teams Variant · `glm-web-tooling.md`. Previous-session search, context thresholds and the reduction ladder: `context-window-management.md` · `session-handoff.md`.
+Remaining bodies retired to their canonical rules. Agent Teams constraints, `--team` selection and CG-role migration: `orchestration-mode-selection.md` §C.1 · `spec-workflow.md` § Agent Teams Variant. Previous-session search, context thresholds and the reduction ladder: `context-window-management.md` · `session-handoff.md`.
 
 ---
 
@@ -174,7 +171,6 @@ the file is absent or only exists outside the project, Claude Code skips the imp
 ---
 
 Version: 14.3.0 | Language: English | Core Rule: MoAI orchestrates complex work; simple bounded operations may run directly
-For detailed patterns (plugins, sandboxing, headless mode, version management), see Skill("moai-foundation-cc").
 
 ---
 

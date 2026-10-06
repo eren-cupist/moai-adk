@@ -34,7 +34,7 @@ any layer ships with it. Scan the image and gate admission on the result.
 | Minimal / distroless base image | A smaller base has fewer packages and therefore fewer vulnerabilities and a smaller attack surface |
 | No secrets in any layer | A secret in an early layer is recoverable even if a later layer deletes it; keep secrets out of the build entirely (inject at runtime) |
 | Pin the base image by digest | Pinning by digest freezes the scanned content; a moving tag can change under you |
-| Sign and verify the image | Sign the image and verify the signature at admission (see `moai-ref-supply-chain` for the signing mechanism) so only built-and-scanned images run |
+| Sign and verify the image | Sign the image and verify the signature at admission so only built-and-scanned images run |
 | Re-scan on advisory update | A clean image becomes vulnerable when a new advisory drops; re-scan running images, not just build-time ones |
 
 ### Admission control on scan result
@@ -149,7 +149,7 @@ correlations:
 | T1611 | Escape to Host | Non-root, read-only root, dropped capabilities, seccomp, no privileged mode, no host mounts |
 | T1613 | Container and Resource Discovery | Least-privilege RBAC, ServiceAccount token hygiene, network policy |
 | T1609 | Container Administration Command | RBAC restriction on exec, runtime detection of shell-in-container |
-| T1525 | Implant Internal Image | Image signing + verification at admission, registry hardening (see `moai-ref-supply-chain`) |
+| T1525 | Implant Internal Image | Image signing + verification at admission, registry hardening |
 
 Each technique is cited to state how to detect and defend, never how to execute. A
 technique ID accompanied by an exploitation procedure for that technique is the anti-pattern

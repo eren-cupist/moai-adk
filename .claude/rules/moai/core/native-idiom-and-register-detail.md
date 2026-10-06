@@ -1,6 +1,6 @@
 ---
 description: "Detail companion for native-idiom-and-register.md — why calques survive generation, and the illustrative Korean calque hazard table"
-paths: "**/native-idiom-and-register.md,**/.claude/skills/moai-domain-humanize/**"
+paths: "**/native-idiom-and-register.md"
 ---
 
 # Native Idiom & Register — Detail Companion
@@ -12,12 +12,11 @@ paths: "**/native-idiom-and-register.md,**/.claude/skills/moai-domain-humanize/*
 
 ## Why calques survive (the mechanism)
 
-A calque survives generation because the conceptual skeleton is English-shaped and the model emits the nearest dictionary equivalent without checking whether that word carries the same figurative sense in the target language. English technical and marketing prose favors architectural and geometric metaphors ("pillars", "axes", "three-legged stool", "budget defense"); these metaphors are vivid inside English idiom but become awkward literal translations in Korean / Japanese / Chinese, where the register is more direct. The absence of a mechanical de-calque step in the default path is what lets the calque through — which is why this rule exists and why heavy artifacts route through `moai-domain-humanize`.
+A calque survives generation because the conceptual skeleton is English-shaped and the model emits the nearest dictionary equivalent without checking whether that word carries the same figurative sense in the target language. English technical and marketing prose favors architectural and geometric metaphors ("pillars", "axes", "three-legged stool", "budget defense"); these metaphors are vivid inside English idiom but become awkward literal translations in Korean / Japanese / Chinese, where the register is more direct. The absence of a mechanical de-calque step in the default path is what lets the calque through — which is why this rule exists.
 
 
 ## Calque hazard list (illustrative — Korean)
 
-The authoritative per-locale catalogue is the `moai-domain-humanize` skill, Category A (번역투 / Translationese / Calque) and A-23 (metaphor calque). The table below is a short pointer, not a duplicate — when in doubt, defer to the skill's catalogue.
 
 | Calque (avoid) | Native idiom (prefer) |
 |---|---|
@@ -32,8 +31,7 @@ Deliberately-coined brand terms (e.g. "토크노믹스" / "tokenomics") and esta
 
 ---
 
-Classification: Lazy companion — mechanism and illustrative examples only. The authoritative
-per-locale catalogue is the `moai-domain-humanize` skill; every rule stays in
+Classification: Lazy companion — mechanism and illustrative examples only. Every rule stays in
 `native-idiom-and-register.md`.
 
 ## Two registers — do not conflate
@@ -52,8 +50,7 @@ defense"); the model emits the nearest dictionary equivalent without checking wh
 carries the same figurative sense in the target language, and no de-calque step in the default path
 catches it. Illustrative Korean substitutions — 3축/기둥 → 세 가지 핵심, 검증경제 → 검증 비용을 줄이는
 방식, 예산방어 → 예산 초과 전에 중단하기 — and the mechanism in full:
-`native-idiom-and-register-detail.md`. The authoritative per-locale catalogue is the
-`moai-domain-humanize` skill, Category A. Deliberately-coined brand terms and established loanwords
+`native-idiom-and-register-detail.md`. Deliberately-coined brand terms and established loanwords
 are not calques; the prohibition binds figurative and structural carry-over only.
 
 ## Pre-emit self-check (non-English output only)
@@ -61,5 +58,5 @@ are not calques; the prohibition binds figurative and structural carry-over only
 - [ ] Did I read `conversation_language`? If `en`, this policy does not apply — stop here.
 - [ ] Chat reply: colloquial native register, with no English-mapped figurative nouns in headings or body?
 - [ ] Artifact: clean native written register — no calqued metaphors (축 / 기둥 / 검증경제 type), no English-syntax carry-over?
-- [ ] Heavy artifact: has the `moai-domain-humanize` final pass run (or is it scheduled)?
+- [ ] Heavy artifact: has the humanize final pass run (or is it scheduled)?
 

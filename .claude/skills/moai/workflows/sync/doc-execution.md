@@ -47,7 +47,7 @@ Scan ALL source files (not just changed files) for:
 
 Agent: manager-docs subagent
 
-Skill injection (applies to every manager-docs spawn in this workflow, per skill-routing.md §1): inject `At start, invoke Skill("moai-workflow-project") for the sync-phase documentation cycle.` into each manager-docs spawn prompt (per `.moai/config/sections/delegation.yaml` sync designation).
+Skill injection (applies to every manager-docs spawn in this workflow): inject `At start, invoke Skill("moai-workflow-project") for the sync-phase documentation cycle.` into each manager-docs spawn prompt (per `.moai/config/sections/delegation.yaml` sync designation).
 
 Create synchronization strategy based on Git changes, mode, project verification results, and deployment readiness report from Phase 0. Output: documents to update, SPECs requiring sync, project improvements needed, estimated scope, deployment notes to include in PR.
 
@@ -231,7 +231,6 @@ Tasks for manager-docs:
 - If new dependencies added: Update tech.md with new technology stack entries and rationale
 - If new features implemented: Update product.md with new feature descriptions and use cases
 - If architectural changes: Update structure.md with revised architecture patterns
-- If architectural changes: Regenerate .moai/project/codemaps/ via codemaps workflow (workflows/codemaps.md) when significant structural changes (new directories, dependency graph changes, or module reorganization) are detected
 
 Constraints:
 - Only update sections relevant to detected changes (do not regenerate entire files)

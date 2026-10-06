@@ -3,14 +3,14 @@
 How MoAI surfaces quality issues proactively — through gate commands,
 review, and iterative fix loops. MoAI does not ship a scanner library;
 proactive analysis is done by running the project's own toolchain via
-`/moai gate`, `/moai review`, and `/moai loop`, then triaging the output.
+`/moai review` and `/moai fix`, then triaging the output.
 
 ## Overview
 
 Proactive quality analysis covers:
 
-- **Lint / type / format violations** — caught by `/moai gate` running the
-  project's toolchain.
+- **Lint / type / format violations** — caught by running the project's
+  toolchain.
 - **Security vulnerabilities** — caught by `/moai review` against the OWASP
   checklist (see moai-ref-owasp-checklist).
 - **Coverage gaps** — caught by running the coverage command and comparing
@@ -22,28 +22,16 @@ Proactive quality analysis covers:
 
 ## The Gate Commands
 
-### `/moai gate` — pre-commit quality gate
-
-Runs lint + format + type-check + test in parallel. Applies no fixes.
-Auto-detects the project language and runs the appropriate toolchain.
-Tools not installed are skipped gracefully.
-
-Use it:
-- Before committing, to get a fast quality signal.
-- After pulling changes, to catch regressions early.
-- As the minimal/standard harness quality check.
-
 ### `/moai review` — code review
 
-Reviews the diff with a security and @MX-tag compliance check. Deeper than
-`/moai gate` — it reasons about design, not just syntax. Use it before a
+Reviews the diff with a security and @MX-tag compliance check. It
+reasons about design, not just syntax. Use it before a
 PR or when a change is non-trivial.
 
-### `/moai fix` and `/moai loop` — iterative fixing
+### `/moai fix` — auto-fixing
 
-`/moai fix` auto-detects and fixes LSP/lint/type errors. `/moai loop` runs
-the fix iteratively until all issues are resolved or a max iteration count
-is reached. These are the proactive remediation tools.
+`/moai fix` auto-detects and fixes LSP/lint/type errors. It is the proactive
+remediation tool.
 
 ## Triage Process
 

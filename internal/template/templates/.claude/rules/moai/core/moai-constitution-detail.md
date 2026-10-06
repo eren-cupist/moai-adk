@@ -1,6 +1,6 @@
 ---
 description: "Detail companion for moai-constitution.md — the Opus 5.5 prompt-philosophy guidance and the full Lessons Protocol operational detail (topic-file store, harness edit discipline, auto-capture triggers, domain matching, integration points)"
-paths: "**/moai-constitution.md,**/agent-authoring.md,**/.claude/skills/moai/workflows/*.md"
+paths: "**/moai-constitution.md,**/.claude/skills/moai/workflows/*.md"
 ---
 
 # MoAI Constitution — Detail Companion
@@ -74,7 +74,6 @@ Domain Matching Algorithm:
 Integration Points:
 - run.md Phase 1: Load filtered lessons into agent context before implementation (see Lessons Loading section)
 - /moai fix completion: Propose lesson capture after successful fix
-- /moai loop completion: Propose lesson capture after successful iteration cycle
 
 <!-- moai:evolvable-start id="agent-core-behaviors" -->
 

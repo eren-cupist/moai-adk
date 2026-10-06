@@ -151,4 +151,3 @@ Changes: Added Phase 3 JIT Language Detection, Phase 4 Scale-Based Mode Selectio
 
 @.moai/harness/run-extension.md
 
-*(이 파일은 `/moai project --harness`로 생성됩니다. 파일이 없으면 자동으로 skip됩니다.)*

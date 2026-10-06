@@ -133,7 +133,7 @@ When to skip:
 - User explicitly requests "skip design" or uses --prototype flag
 - Backend-only, infrastructure, or documentation SPECs
 
-Agent: per-spawn `Agent(general-purpose)` frontend specialist (frontend whitelist per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C row 8) — inject `At start, invoke Skill("moai-ref-react-patterns")` and `Skill("moai-domain-frontend")` (per `.moai/config/sections/delegation.yaml` domain_skills.frontend; skill-routing.md §1)
+Agent: per-spawn `Agent(general-purpose)` frontend specialist (frontend whitelist) — inject `At start, invoke Skill("moai-ref-react-patterns")` and `Skill("moai-domain-frontend")` (per `.moai/config/sections/delegation.yaml` domain_skills.frontend)
 
 Tasks:
 1. Check if `.moai/design/system.md` exists and has content

@@ -59,18 +59,12 @@ cannot be walked through by pointing a link outside the boundary. A path that
 cannot be canonicalized is rejected on the same terms.
 
 A registered linked worktree of a repository that keeps `.moai` untracked is also
-accepted; rules and caveats: `moai-mcp-tools-catalogue.md` § Linked worktrees.
+accepted.
 
 For `audit_multi` the root reaches every backend in the fan-out: Claude and GLM
 use it to collect the diff sent to their isolated reviewer, while codex receives
 it as the working directory it reviews in. Passing it keeps all independent
 opinions about the same tree.
-
-## Cross-reference
-
-`moai-mcp-tools-catalogue.md` — the lazy companion. Load it for § Tool catalogue
-(47 tools) · § Tool families (the family-to-consumer map) · § Session messaging
-broker (Claude ↔ Codex) · § Unwired-by-design (why `goal_arm` reaches no agent).
 
 ---
 

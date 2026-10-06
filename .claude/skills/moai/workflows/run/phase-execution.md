@@ -221,17 +221,6 @@ Steps:
    - package.json with "typescript" in devDependencies → `.claude/rules/moai/languages/typescript.md`
    - package.json without typescript → `.claude/rules/moai/languages/javascript.md`
    - pyproject.toml or requirements.txt → `.claude/rules/moai/languages/python.md`
-   - Cargo.toml → `.claude/rules/moai/languages/rust.md`
-   - pom.xml or build.gradle → `.claude/rules/moai/languages/java.md`
-   - build.gradle.kts → `.claude/rules/moai/languages/kotlin.md`
-   - *.csproj or *.sln → `.claude/rules/moai/languages/csharp.md`
-   - Gemfile → `.claude/rules/moai/languages/ruby.md`
-   - mix.exs → `.claude/rules/moai/languages/elixir.md`
-   - build.sbt → `.claude/rules/moai/languages/scala.md`
-   - Package.swift → `.claude/rules/moai/languages/swift.md`
-   - pubspec.yaml → `.claude/rules/moai/languages/flutter.md`
-   - DESCRIPTION (with R content) → `.claude/rules/moai/languages/r.md`
-   - CMakeLists.txt or *.cpp → `.claude/rules/moai/languages/cpp.md`
 2. Store the detected language rule path(s) as context for subsequent phases
 3. Language rules are auto-loaded via paths frontmatter when project files match; no explicit Skill() invocation required for language rules.
 4. If multiple languages detected (e.g., monorepo), all relevant language rules are auto-loaded
@@ -249,7 +238,7 @@ Mode Selection Rules:
 | Request Pattern | Detection Criteria | Execution Mode (catalog correspondence) | Agents |
 |----------------|-------------------|---------------|--------|
 | Bug fix / error fix | SPEC scope ≤ 3 files, single domain | **Fix Mode** (serial envelope) | manager-develop + orchestrator verification batch (lint + test + coverage) |
-| Single endpoint / function | SPEC scope ≤ 5 files, single domain | **Focused Mode** (serial envelope) | manager-develop (domain context injected per archived-agent-rejection.md §C) |
+| Single endpoint / function | SPEC scope ≤ 5 files, single domain | **Focused Mode** (serial envelope) | manager-develop (domain context injected) |
 | Feature across 1 domain | SPEC scope 5-10 files, single domain | **Standard Mode** (serial envelope) | manager-spec (planning) + manager-develop + sync-auditor |
 | Multi-domain feature | SPEC scope ≥ 10 files OR ≥ 3 domains | **Full Pipeline** (serial full envelope) | manager-spec → manager-develop (per-spawn `Agent(general-purpose)` domain specialists) → sync-auditor → manager-docs |
 | Large cross-cutting change | complexity score at/above the auto-select threshold (`orchestration-mode-selection.md` §B.1) | **Parallel research → Sub-agent implement** (fanout + serial) | 3-5 concurrent read-only `Agent()` for research; sequential manager-develop for implementation. (`agent-team` retired.) |
@@ -261,7 +250,7 @@ Detection Steps:
 2. Identify domains touched (backend, frontend, database, infra, docs)
 3. Assess complexity from SPEC priority and acceptance criteria count
 4. Select mode based on the table above
-4b. Map each domain touched (step 2) to its skill set from the delegation map (`.moai/config/sections/delegation.yaml` domain_skills), per skill-routing.md §1: backend → moai-ref-api-patterns; frontend → moai-ref-react-patterns; database → moai-domain-database; security → moai-ref-owasp-checklist; tests → moai-ref-testing-pyramid. At each manager-develop spawn, inject the cycle_type skill (moai-workflow-tdd | moai-workflow-ddd) plus 0-3 matched domain `moai-ref-*` skills as `At start, invoke Skill("<name>") for <reason>` lines.
+4b. Map each domain touched (step 2) to its skill set from the delegation map (`.moai/config/sections/delegation.yaml` domain_skills): backend → moai-ref-api-patterns; frontend → moai-ref-react-patterns; database → moai-domain-database; security → moai-ref-owasp-checklist; tests → moai-ref-testing-pyramid. At each manager-develop spawn, inject the cycle_type skill (moai-workflow-tdd | moai-workflow-ddd) plus 0-3 matched domain `moai-ref-*` skills as `At start, invoke Skill("<name>") for <reason>` lines.
 5. Write the `progress.md` § Phase 4 Mode Selection log entry per `orchestration-mode-selection.md` §D HARD logging contract BEFORE spawning the first run-phase `Agent()` call — the Input parameters block (tier, scope, domain count, file language mix, concurrency benefit), the mode evaluation table across all 4 catalog modes, a single-line Decision (e.g. "Scale-based mode: {mode} (files: {N}, domains: {N})"), a short Justification paragraph, and — when the selection resolves to sweep — the Implementation Kickoff Approval-passed + preferences-collected confirmation
 
 This phase auto-selects and does NOT require user approval. The user can override with the --solo flag (a forced --team selects the experimental Agent Teams layer per `orchestration-mode-selection.md` §C.1).
@@ -274,7 +263,7 @@ This phase auto-selects and does NOT require user approval. The user can overrid
 
 ## Phase 5: Analysis and Planning
 
-Agent: manager-spec subagent (planning IS strategy per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C row 1)
+Agent: manager-spec subagent (planning IS strategy)
 
 Input: SPEC document content from the provided SPEC-ID. If research.md exists in the SPEC directory (.moai/specs/SPEC-{ID}/research.md), include it as additional context for deeper understanding of the codebase architecture, reference implementations, and identified risks.
 
@@ -485,15 +474,3 @@ Before routing to Phase 11 or 2B, scan the loaded SPEC for `[DELTA]` section mar
 4. Process all `[REMOVE]` items — dependency analysis → safe deletion
 
 If no delta markers are present in the SPEC, delta processing is silently skipped and the standard implementation flow proceeds unchanged (backward compatible with greenfield SPECs).
-
-## Run-phase Autonomy invariants (moved from run.md, verbatim)
-
-### 3. Autonomy invariants (cite, do not restate — full doctrine in canonical rules)
-
-The following HARD invariants govern the `ac_converge` loop. Each is the canonical rule's render surface here; the rule is the SSOT.
-
-- **Transcript-measurability**: the `acceptance.md` reference NAMES where the AC list lives — it is NOT a path the evaluator opens. Because every predicate above is a model condition, the `stop-goal` evaluator judges only what the orchestrator SURFACES into the transcript (per-AC PASS line, `go test ./...` exit 0, `git status`).
-- **Semantic-failure escalation (HARD)**: on a data race / deadlock / panic / test assertion failure surfaced during the loop, clear the goal (`/moai goal clear`) and escalate via `AskUserQuestion` — NEVER auto-fix a semantic failure (per `ci-autofix-protocol.md` semantic-failure-handling).
-- **Non-substitution (HARD)**: the goal removes per-turn STOP prompts only. It does NOT authorize bypassing Implementation Kickoff Approval (already cleared), PR creation, or any destructive operation — those remain separately-surfaced explicit gates.
-- **Blocker reports, never user prompts**: a goal-loop turn or sweep Workflow agent lacking input returns a structured blocker report; the orchestrator runs `AskUserQuestion` and re-delegates (asymmetric boundary per `agent-common-protocol.md` § User Interaction Boundary).
-- **Graceful degradation**: the goal engine's evaluator IS a Stop hook (`moai hook stop-goal`), so `/moai goal` is unavailable when hooks are disabled (`disableAllHooks`, or `allowManagedHooksOnly` permitting only managed hooks). It carries no runtime-version floor of its own. When the engine is unavailable, run-phase autonomy degrades to the standard manual per-turn flow rather than failing.

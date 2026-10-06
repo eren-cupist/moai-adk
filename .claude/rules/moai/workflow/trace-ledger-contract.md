@@ -2,7 +2,6 @@
 description: "Executable workflow trace evidence and performance summary contract"
 paths:
   - ".claude/skills/moai/workflows/project*.md"
-  - ".claude/skills/moai/workflows/project/**"
   - ".claude/skills/moai/workflows/plan*.md"
   - ".claude/skills/moai/workflows/plan/**"
   - ".claude/skills/moai/workflows/run*.md"

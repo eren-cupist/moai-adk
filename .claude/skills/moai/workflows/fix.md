@@ -49,23 +49,13 @@ This subcommand is classified as **Agentless fixed-pipeline**.
 It executes a deterministic 3-phase contract: **localize → repair → validate**.
 
 - **Phase mapping**: localize ← Phase 1+2+2.5; repair ← Phase 4; validate ← Phase 4
-- **No LLM-driven control flow**: Agent() invocations exist for executor delegation within phases (e.g., a per-spawn `Agent(general-purpose)` backend specialist for auto-fix, per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C) but never select the next phase.
+- **No LLM-driven control flow**: Agent() invocations exist for executor delegation within phases (e.g., a per-spawn `Agent(general-purpose)` backend specialist for auto-fix) but never select the next phase.
 - **No-op exit**: When the localize phase finds zero targets, the pipeline exits with status `no-op` and exit code 0, skipping repair and validate.
 - **Fail-fast**: When repair encounters an unresolvable error, the pipeline terminates and reports the error. There is no multi-agent fallback.
 - **`--mode` flag handling**: Any `--mode` flag passed to this subcommand is ignored. The system logs `MODE_FLAG_IGNORED_FOR_UTILITY` at info level and proceeds with the fixed pipeline.
 - **Repeatability**: Even when the parent invocation supplies `--mode loop`, the pipeline runs once per command invocation. Re-entry requires explicit user re-invocation.
 
 See [Subcommand Classification matrix](../../rules/moai/workflow/spec-workflow.md#subcommand-classification) for the full pipeline-vs-multi-agent contract.
-
-## Loop Taxonomy Position — goal engine + presets
-
-The loop taxonomy is re-expressed as **goal engine + preset**: the quadrants are presets, not independent engines. `/moai fix` occupies the **turn-based** quadrant as the one-shot preset: one scan-fix-verify pass per invocation, no ceiling, no cadence (it does not arm the goal engine — that is the goal-based sweep preset's job).
-
-- **How it starts**: a single `/moai fix` (or `/moai fix --ci`) invocation.
-- **How it ends**: Phase 5 verification completes with claim/evidence rows — success, or residue persisted (§ Phase 8) plus a `/moai loop` recommendation.
-- **When it fits**: a one-off diagnostic sweep or a quick CI-triggered patch, not driving toward a completion condition across many iterations.
-
-Sibling presets (same **goal engine + preset** framing, different quadrant): **goal-based** iteration is `.claude/skills/moai/workflows/loop.md` (the project-wide sweep preset that arms the goal engine); **time-based** cadence recipes are `.claude/rules/moai/workflow/cadence-bridge.md`.
 
 ## Phase 1: Parallel Scan
 
@@ -182,10 +172,10 @@ See .claude/rules/moai/workflow/mx-tag-protocol.md for tag type definitions.
 
 [HARD] Agent delegation mandate (Level 2+): ALL Level 2 and above fix tasks MUST be delegated to specialized agents. NEVER execute Level 2+ fixes directly. Level 1 (import sorting, whitespace, formatting) is exempt: the orchestrator runs the language's deterministic formatter command directly (e.g., gofmt/goimports, ruff format, prettier, rustfmt) without an Agent() spawn — a formatter run needs no agent specialization.
 
-Executor selection by fix level (static lookup table — domain expertise injected per-spawn per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C):
+Executor selection by fix level (static lookup table — domain expertise injected per-spawn):
 - Level 1 (import, formatting): orchestrator-direct formatter command (no Agent() spawn)
 - Level 2 (rename, type): manager-develop (cycle_type=ddd) or per-spawn `Agent(general-purpose)` refactoring specialist — inject `At start, invoke Skill("moai-workflow-ddd") for the DDD refactor cycle.`
-- Level 3 (logic, API): manager-develop subagent (after user approval) — inject the cycle_type skill (`moai-workflow-ddd`|`moai-workflow-tdd`) plus 0-3 domain `moai-ref-*` skills per the mission domain (`.moai/config/sections/delegation.yaml` domain_skills; per skill-routing.md §1)
+- Level 3 (logic, API): manager-develop subagent (after user approval) — inject the cycle_type skill (`moai-workflow-ddd`|`moai-workflow-tdd`) plus 0-3 domain `moai-ref-*` skills per the mission domain (`.moai/config/sections/delegation.yaml` domain_skills)
 
 Execution order:
 - Level 1 fixes applied automatically via the orchestrator-direct formatter command
@@ -254,25 +244,6 @@ Generate MX_TAG_REPORT section in fix report:
 ```
 
 See .claude/rules/moai/workflow/mx-tag-protocol.md for complete tag rules.
-
-## Phase 7: Dead Code Cleanup (Optional)
-
-After fixes are applied and verified, scan for dead code exposed by the fixes:
-
-- Delegate to clean workflow (workflows/clean.md) for comprehensive dead code analysis
-- Targets: Files modified during fix phase that may now have unused imports, orphaned functions, or unreferenced variables
-- Skip condition: --errors flag was set (errors-only mode skips cleanup) or no dead code detected
-- Clean workflow applies safe removal with test verification
-
-## Phase 8: Residue Persistence and Escalation Recommendation
-
-<!-- @MX:NOTE - One-shot residue handoff to the /moai loop persistence schema (see loop.md § Remaining-Issue Persistence). Extends exit_kind with "one-shot-residue" for this one-shot pipeline's exit path — the base ceiling|manual-residue enum stays owned by that schema's source. -->
-
-**When** the fix workflow exits with residual issues — Level 4 manual items (Phase 4), unresolved errors, or a Phase 5 regression-guard failure (Step 3, an unreverted-and-reported regression) — the fix workflow persists the residue to `.moai/state/loop-verdict-<id>.json` using the schema `.claude/skills/moai/workflows/loop.md` § Remaining-Issue Persistence defines: `spec_or_scope`, `exit_kind`, `iterations_used`, `ceiling_applied` + its source, `conditions` final state, `remaining_issues[]`, `vci_report_ref`, `created_at`.
-
-For this one-shot pipeline exit path, set `exit_kind: "one-shot-residue"` (a third value alongside the base `ceiling | manual-residue` enum) and `iterations_used: 1`.
-
-When the fix report is generated with non-empty residue, the report recommends `/moai loop` entry for re-fixable residue (or manual action for Level 4 items) as a suggestion only — the fix workflow SHALL NOT auto-invoke `/moai loop` or any other subcommand. When the user does re-enter `/moai loop`, the persisted residue **enters the loop queue** as scanned queue items for the goal-preset sweep to drain (the loop's scan stage reads it as a queue supplier). The Pipeline Contract's Repeatability clause above governs re-entry; this recommendation is a suggestion surfaced in the report, not a mechanism that overrides it.
 
 ## Task Tracking
 

@@ -9,10 +9,8 @@ library to import.
 
 | Component | Role | Invocation |
 |-----------|------|------------|
-| `/moai gate` | Pre-commit quality gate (lint + format + type + test) | User / orchestrator |
 | `/moai review` | Security + design + @MX-tag review | User / orchestrator |
 | `/moai fix` | Auto-fix LSP/lint/type errors | User / orchestrator |
-| `/moai loop` | Iterative fix until resolved or max iterations | User / orchestrator |
 | `manager-develop` | Run-phase implementation (cycle_type) | Agent spawn |
 | `sync-auditor` | Independent 4-dimension quality scoring | Agent spawn (thorough) |
 
@@ -32,7 +30,7 @@ misjudges scope. See `.moai/config/sections/harness.yaml` and
 
 ## Language-Aware Toolchains
 
-`/moai gate` auto-detects the project language and runs the appropriate
+The quality gate auto-detects the project language and runs the appropriate
 toolchain. Tools that are not installed are skipped gracefully. Projects
 with no recognized language marker pass the gate silently. The 16 supported
 languages are treated equally — no language is "primary".
@@ -77,8 +75,7 @@ a quality responsibility:
 
 Archived agents that MUST NOT be spawned for quality work: `manager-quality`,
 `expert-security`, `expert-backend`, `expert-frontend`, `expert-performance`,
-`expert-refactoring`. When a paste-ready message references one, consult the
-archived-agent-rejection rule for the retained-agent replacement.
+`expert-refactoring`.
 
 ## sync-auditor Scoring Model
 

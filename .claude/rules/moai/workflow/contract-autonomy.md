@@ -142,7 +142,7 @@ condition `workflow.autonomy.mode: contract` and do not apply; every gate stays 
 ## Autonomous Kickoff
 
 FILLED — the activation conditions are met: the autonomous Kickoff transition
-of `.claude/rules/moai/workflow/auto-semantics.md` §9.1 is the plan→run gate's
+is the plan→run gate's
 DEFAULT form. Entry criteria: the independent plan-audit verdict is PASS (FAIL
 / INCONCLUSIVE stay hard blocks), the SPEC's plan phase records audit-ready
 status, the plan-artifact hashes are unchanged since that verdict, and no

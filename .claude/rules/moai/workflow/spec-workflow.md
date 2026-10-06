@@ -14,7 +14,7 @@ MoAI's three-phase development workflow with token budget management.
 | Run | /moai run | manager-develop (per quality.yaml constitution.development_mode; cycle_type=ddd / tdd / autofix) | 180K | DDD / TDD / autofix implementation |
 | Sync | /moai sync | manager-docs | 40K | Documentation sync |
 
-Per the canonical agent catalog policy, the MoAI agent catalog consists of exactly 11 retained agents (`manager-spec`, `manager-develop`, `manager-docs`, `manager-git`, `manager-design`, `e2e-tester`, `plan-auditor`, `sync-auditor`, `builder-harness`, `super-advisor`, plus the Anthropic built-in `Explore` — per CLAUDE.md §4). 12 phantom and domain-expert agents (`manager-strategy`, `manager-quality`, `manager-brain`, `manager-project`, `claude-code-guide`, `researcher`, and the 6 `expert-*` agents) were archived offline during the catalog consolidation. For migration guidance and the per-archived-agent replacement pattern, see `.claude/rules/moai/workflow/archived-agent-rejection.md`.
+Per the canonical agent catalog policy, the MoAI agent catalog consists of exactly 7 retained agents (`manager-spec`, `manager-develop`, `manager-docs`, `manager-git`, `plan-auditor`, `sync-auditor`, plus the Anthropic built-in `Explore` — per CLAUDE.md §4). 12 phantom and domain-expert agents (`manager-strategy`, `manager-quality`, `manager-brain`, `manager-project`, `claude-code-guide`, `researcher`, and the 6 `expert-*` agents) were archived offline during the catalog consolidation.
 
 ## SPEC Phase Discipline
 
@@ -66,12 +66,6 @@ The route governs the trigger vocabulary in § Phase Transitions below (commit/p
 
 Cross-reference: see `.claude/rules/moai/workflow/worktree-integration.md` § SPEC-to-Worktree Mapping for per-step L2 worktree applicability and decision tree.
 
-## Conditional Design Route (UI-surfaced SPECs)
-
-A SPEC that declares a UI surface routes `plan → design → run` instead of the standard `plan → run → sync`. The design phase — driven by the `manager-design` agent (`.claude/agents/moai/manager-design.md`) and the `.claude/skills/moai/workflows/design.md` D1-D5 pipeline — enters AFTER plan-audit PASS + Implementation Kickoff Approval and BEFORE run-phase M1 commit. The conditional route is **additive**: it does not change the `plan → run → sync` ordering for non-UI SPECs.
-
-UI-surface heuristic (either satisfies): explicit frontend-component / view / page deliverable in `acceptance.md`, OR `tier: L` + a frontend module (`module:` references a frontend package). Where neither holds, the route remains `plan → run → sync` — skip design entirely. Design is NOT a substitute for Implementation Kickoff Approval; it executes inside the already-approved run envelope, before the first implementation commit. See `.claude/skills/moai/workflows/design.md` for the D1-D5 pipeline and the H1-H9 handoff contract.
-
 ## Subcommand Classification (Pipeline vs Multi-Agent)
 
 *control-flow style* axis. The classification governs which agents are spawned,
@@ -80,18 +74,13 @@ how the `--mode` flag is interpreted, and which CI guards apply.
 | Subcommand   | Class          | 3-phase contract (localize → repair → validate)                | `--mode` honored? | Default mode | Valid `--mode` values | Sentinel on invalid mode | Reference                                                    |
 |--------------|----------------|-----------------------------------------------------------------|-------------------|--------------|-----------------------|--------------------------|--------------------------------------------------------------|
 | `/moai fix`      | Pipeline (Agentless) | Parallel Scan + Classify + MX context → Auto-Fix → Verify        | No (info log)     | n/a (pipeline-fixed) | n/a (any ignored)        | `MODE_FLAG_IGNORED_FOR_UTILITY` (info log only) | `.claude/skills/moai/workflows/fix.md`                       |
-| `/moai mx`       | Pipeline (Agentless) | Pass 1 + Pass 2 → Pass 3 → Post-edit scan                         | No (info log)     | n/a (pipeline-fixed) | n/a (any ignored)        | `MODE_FLAG_IGNORED_FOR_UTILITY` (info log only) | `.claude/skills/moai/workflows/mx.md`                        |
-| `/moai codemaps` | Pipeline (Agentless) | Explore → Analyze + Generate → Verify                             | No (info log)     | n/a (pipeline-fixed) | n/a (any ignored)        | `MODE_FLAG_IGNORED_FOR_UTILITY` (info log only) | `.claude/skills/moai/workflows/codemaps.md`                  |
-| `/moai clean`    | Pipeline (Agentless) | Static Analysis + Usage Graph → Safe Removal → Test Verification  | No (info log)     | n/a (pipeline-fixed) | n/a (any ignored)        | `MODE_FLAG_IGNORED_FOR_UTILITY` (info log only) | `.claude/skills/moai/workflows/clean.md`                     |
 | `/moai plan`     | Multi-Agent    | n/a — open-ended (mode-NA — mode not applicable)                      | Yes (rejects `pipeline`) | `autopilot` | (none — `--mode` ignored) | `MODE_PIPELINE_ONLY_UTILITY` (only on `pipeline`) | `.claude/skills/moai/workflows/plan.md`               |
 | `/moai run`      | Multi-Agent    | n/a — open-ended (`autopilot` / `loop` / `team` per the run-mode contract)        | Yes (rejects `pipeline`) | `autopilot` (harness `minimal`/`standard`); `team` (harness `thorough` + prereqs) | `autopilot`, `loop`, `team` | `MODE_UNKNOWN`, `MODE_TEAM_UNAVAILABLE`, `MODE_PIPELINE_ONLY_UTILITY` | `.claude/skills/moai/workflows/run.md`                |
 | `/moai sync`     | Multi-Agent    | n/a — open-ended (mode-NA — mode not applicable)                      | Yes (rejects `pipeline`) | `autopilot` | (none — `--mode` ignored) | `MODE_PIPELINE_ONLY_UTILITY` (only on `pipeline`) | `.claude/skills/moai/workflows/sync.md`               |
-| `/moai loop`     | Multi-Agent (alias for `/moai run --mode loop`) | n/a — delegates to `/moai run` mode dispatch | Yes (alias semantics) | (inherits from `run --mode loop`) | (alias only — `--mode` resolves via `run`) | (delegates to `run` sentinels) | `.claude/skills/moai/workflows/loop.md`               |
 
 ### Mode Dispatch Cross-Reference
 
 
-`/moai loop` is an alias for `/moai run --mode loop` per the mode-dispatch contract. The alias disposition is settled as **KEEP** (backward-compat): both routes resolve to the goal-preset sweep — `/moai run --mode loop` is a historical entry point and retiring it would be a breaking change, so keeping the alias preserves that entry point. Both routes invoke the same goal-preset sweep (the Ralph engine re-expressed as a goal preset) identically.
 
 Mode precedence (hard-coded):
 
@@ -117,7 +106,7 @@ Pipeline-classified subcommands MUST satisfy:
 
 ### Out of scope of this matrix
 
-`/moai feedback` and `/moai review` are *not* yet classified.
+`/moai review` is *not* yet classified.
 See `spec.md` §1.2 (Non-Goals) — they are deferred to a future SPEC.
 
 ### Cross-references
@@ -269,7 +258,7 @@ Communication path:
 - MoAI presents gap analysis to user via AskUserQuestion with options:
   - Continue with current approach (minor adjustments needed)
   - Revise SPEC (requirements need refinement)
-  - Try alternative approach (re-spawn manager-develop with revised cycle_type, or escalate to a per-spawn `Agent(general-purpose)` specialist with domain-specific instructions per `.claude/rules/moai/workflow/archived-agent-rejection.md` migration table)
+  - Try alternative approach (re-spawn manager-develop with revised cycle_type, or escalate to a per-spawn `Agent(general-purpose)` specialist with domain-specific instructions)
   - Pause for manual intervention (user takes over)
 
 Detection method:
@@ -313,7 +302,7 @@ Progressive Disclosure:
 Each transition below is stated per route (§ SPEC Phase Discipline): Route A triggers on commit/push events, Route B on PR merges; the phase *ordering* is identical on both routes.
 
 Plan to Run:
-- Trigger: (A) plan-phase artifacts committed + pushed to `main`, or (B) plan PR merged (squash) — each AND SPEC approval: under the default-autonomous Kickoff transition (`.claude/rules/moai/workflow/auto-semantics.md` §9.1), the audit-cross evidence path IS the default entry; the operator approval named here is the form keep-set cases keep (annotation cycle completed, user confirmed "Proceed").
+- Trigger: (A) plan-phase artifacts committed + pushed to `main`, or (B) plan PR merged (squash) — each AND SPEC approval: under the default-autonomous Kickoff transition, the audit-cross evidence path IS the default entry; the operator approval named here is the form keep-set cases keep (annotation cycle completed, user confirmed "Proceed").
 - Pre-condition: plan.md records `plan_complete_at` + `plan_status: audit-ready` in progress.md; on Route B the plan PR is additionally in MERGED state.
 - Action: Execute /clear, then `/moai run SPEC-XXX` — on `main` (Route A) or `feat/SPEC-XXX` (Route B default), or inside `moai cc -w SPEC-XXX` where the user opted into a worktree (§ SPEC Phase Discipline Step 2).
 - Gate: `/moai run` Phase 1 (Plan Audit Gate) executes automatically before any implementation (details below).
@@ -343,8 +332,7 @@ Plan to Run:
   artifacts stays skip-eligible.
   This skip is distinct from the plan→run Kickoff gate: skip-eligibility
   governs ONLY Phase 1 verdict re-execution — it never bypasses the gate.
-  Under the default-autonomous Kickoff transition
-  (`.claude/rules/moai/workflow/auto-semantics.md` §9.1), this skip contract's
+  Under the default-autonomous Kickoff transition, this skip contract's
   three conditions ARE the autonomous entry's evidence criteria — the
   audit-cross path reuses the skip contract's mechanics (verdict PASS +
   per-tier score + artifact-hash unchanged) as its entry evidence and writes
@@ -443,4 +431,4 @@ The default multi-agent surface remains:
 - Coding-heavy implementation → serial (sequential sub-agent) per Anthropic's coding-task parallelism caveat.
 - High-volume mechanical transformation → sweep (dynamic-workflow fan-out).
 
-Native Claude Code Agent Teams remain experimental under the enabled flag and the constraints above. The `~/.claude/teams/` registry is runtime-owned. Retired CG routing is not an active teammate mode; mixed-provider roles require the verified capability described in `.claude/rules/moai/core/glm-web-tooling.md` § CG Retirement and Migration.
+Native Claude Code Agent Teams remain experimental under the enabled flag and the constraints above. The `~/.claude/teams/` registry is runtime-owned. Retired CG routing is not an active teammate mode.

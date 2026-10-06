@@ -26,7 +26,6 @@ layer. Quality is enforced at each boundary.
   - **tdd** — failing test first, then implementation (RED-GREEN-REFACTOR).
   - **ddd** — behavior-preserving transformation (ANALYZE-PRESERVE-IMPROVE).
   - **autofix** — diagnostic-driven fixing.
-- Run `/moai gate` before committing to get a fast quality signal.
 
 ### Sync phase (manager-docs → sync-auditor)
 
@@ -43,9 +42,9 @@ Complexity Estimator based on SPEC scope.
 
 | Level | Gate | sync-auditor | Typical use |
 |-------|------|--------------|-------------|
-| minimal | `/moai gate` (lint + type + test) | No | Small SPECs, low risk, fast iteration |
-| standard | `/moai gate` + format | No (unless invoked) | Most SPECs |
-| thorough | `/moai gate` + `/moai review` | Yes — full 4-dimension scoring | Large SPECs, high risk, security-sensitive |
+| minimal | lint + type + test | No | Small SPECs, low risk, fast iteration |
+| standard | lint + type + test + format | No (unless invoked) | Most SPECs |
+| thorough | lint + type + test + format + `/moai review` | Yes — full 4-dimension scoring | Large SPECs, high risk, security-sensitive |
 
 ## CI/CD Integration Pattern
 
@@ -60,7 +59,7 @@ commands):
 4. **Test** — run the test suite; fail on any failure.
 5. **Coverage** — generate coverage; fail if below threshold.
 
-`/moai gate` runs steps 1-4 in parallel locally. In CI, replicate the same
+Run steps 1-4 locally. In CI, replicate the same
 checks. Do not invent a separate quality pipeline that duplicates the gate —
 use the same toolchain so local and CI signals agree.
 
@@ -81,14 +80,8 @@ for the gate alone to judge.
 When the gate or review surfaces a cluster of fixable issues:
 
 1. Run `/moai fix` to auto-fix LSP/lint/type errors.
-2. If issues remain, run `/moai loop` to iterate until resolved or the max
-   iteration count is reached.
-3. For issues that cannot be auto-fixed, either fix directly or defer with
+2. For issues that cannot be auto-fixed, either fix directly or defer with
    an @MX:TODO and a stated reason.
-
-`/moai loop` exits with a ceiling-exit verdict when max iterations are
-reached without full resolution — surface that verdict rather than
-silently stopping.
 
 ## Team Mode Quality (native Claude Code teammate runtime)
 
@@ -112,7 +105,7 @@ contract.
 
 - Do NOT invent a CI/CD integration library or a "Quality-as-a-Service"
   REST API. Use the project's existing CI + the gate commands.
-- Do NOT run a separate quality pipeline that disagrees with `/moai gate` —
+- Do NOT run a separate quality pipeline that disagrees with the gate —
   local and CI must use the same toolchain.
 - Do NOT skip sync-auditor at the thorough level — its independent scoring
   is the bias-prevention check.

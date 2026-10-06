@@ -1,5 +1,5 @@
 workflow:
-    # Optional default mode for /moai run and /moai design.
+    # Optional default mode for /moai run.
     # Values: autopilot | loop | team. Empty/absent = harness-based auto-selection.
     # Precedence: CLI --mode flag > this field > harness auto.
     # @MX:WARN - Default mode field is utility-skill-only consumer. @MX:REASON - Field is read by run skill dispatcher; changing semantics without updating dispatcher breaks behavior contract.
@@ -108,11 +108,9 @@ workflow:
     # ignored.
     agent_tiers:
         classes:
-            super-advisor: max
             manager-spec: max
             manager-develop: medium
             manager-docs: medium
-            e2e-tester: medium
             explore: low
             lane: medium
     # audit: cross-model audit backend model+effort pinning. Applies ONLY at

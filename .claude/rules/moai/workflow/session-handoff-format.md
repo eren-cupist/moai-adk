@@ -5,7 +5,7 @@ paths: "**/session-handoff*.md,**/.claude/output-styles/moai/*.md,**/.moai/state
 
 # Session Handoff — Format and Activation Mechanics
 
-> Owns: the cut-line marker specification, the locale tables, the activation matrix, the auto-injected-resume flow body, the emission-surface self-check, and the relocated cross-references. `session-handoff.md` is the SSOT and keeps every binding clause; sibling companion `session-handoff-examples.md` keeps the examples and appendices.
+> Owns: the cut-line marker specification, the locale tables, the activation matrix, the auto-injected-resume flow body, the emission-surface self-check, and the relocated cross-references.
 
 ## Why This Matters
 
@@ -22,7 +22,7 @@ Long workflows accumulate context that exceeds the window or benefits from fresh
 
 ### Localization Table
 
-The cut-line marker text AND the 6-block skeleton verbs/headers translate per `conversation_language`. This table carries the en / ko columns inline; the full 4-locale table (en / ko / ja / zh) lives in `session-handoff-examples.md` § Localization Table (Full 4-Locale). Cross-verified with `.claude/output-styles/moai/moai.md §8` (the canonical render surface).
+The cut-line marker text AND the 6-block skeleton verbs/headers translate per `conversation_language`. Cross-verified with `.claude/output-styles/moai/moai.md §8` (the canonical render surface).
 
 | Element | English | Korean |
 |---------|---------|--------|
@@ -37,13 +37,11 @@ The cut-line marker text AND the 6-block skeleton verbs/headers translate per `c
 
 Read `conversation_language` from `.moai/config/sections/language.yaml` at render time; substitute the localized text between the `✂────` decorators (keeping `✂` / `─` verbatim) and for each Block 1/3/5/6 placeholder and the memory heading (§ Auto-Memory Integration) when emitting the paste-ready message.
 
-**Fallback rule for locales not in the table.** For ja / zh consult the full 4-locale table in `session-handoff-examples.md`; for any other ISO-639 code, English is the canonical fallback skeleton with each label translated to that locale via the naturalization principle (idiomatic phrasing, never literal transliteration) — ISO-639 not in the table ⇒ English-skeleton fallback, not English-output.
+**Fallback rule for locales not in the table.** For any ISO-639 code not in the table, English is the canonical fallback skeleton with each label translated to that locale via the naturalization principle (idiomatic phrasing, never literal transliteration) — ISO-639 not in the table ⇒ English-skeleton fallback, not English-output.
 
 ## Paste-Time Activation Matrix
 
-Handoff directives by activation mechanism: (a) paste-time keywords (`ultrathink`, bare `ultracode`) and (b) the fan-out phrase fire from a pasted body; (c) orchestrator-interpreted text (`mode:` seed, Block 5 `/moai …` including the `/moai goal` directive) routes via orchestrator reading, so it needs no standalone user message; (d) user-only TUI commands (`/effort`, `/clear`) fire ONLY as a standalone user message.
-
-> **Full classification table**: `session-handoff-examples.md` § Paste-Time Activation Matrix.
+Handoff directives by activation mechanism: (a) paste-time keywords (`ultrathink`, bare `ultracode`) and (b) the fan-out phrase fire from a pasted body; (c) orchestrator-interpreted text (`mode:` seed, Block 5 `/moai …`) routes via orchestrator reading, so it needs no standalone user message; (d) user-only TUI commands (`/effort`, `/clear`) fire ONLY as a standalone user message.
 
 ### Pre-emit self-check (emission surface) — 3 items
 
@@ -53,13 +51,13 @@ Handoff directives by activation mechanism: (a) paste-time keywords (`ultrathink
 
 ## Anti-Patterns
 
-> General resume-hygiene anti-pattern bullet list moved to `session-handoff-examples.md` § Anti-Patterns. See also § Diet Constraints (AP-D-001..005) and § V0 Abort Gate Doctrine (AP-V-001..004).
+> See also § Diet Constraints (AP-D-001..005) and § V0 Abort Gate Doctrine (AP-V-001..004).
 
 ## Auto-Injected Resume Flow (mode=auto)
 
 [ZONE:Evolvable] Where the project config `.moai/config/sections/handoff.yaml` sets `handoff.mode: auto`, the saved pending record (§ Emission-Time Save Obligation) is consumed automatically at the next `/clear` session start, collapsing the resume to **ONE** user message. `session-handoff.md` is the SSOT for the flow; the render surface (`.claude/output-styles/moai/moai.md` §8) carries a compact emission clause + pointer only.
 
-> **One-message flow, /clear-only injection boundary, and resumed-turn precondition verification**: `session-handoff-examples.md` § Auto-Injected Resume Flow (mode=auto). In brief: at the next `/clear` (ONLY `clear` source) the handler claim-renames the pending record then injects the saved body verbatim; the user sends ONE message; injected preconditions are verified first.
+> In brief: at the next `/clear` (ONLY `clear` source) the handler claim-renames the pending record then injects the saved body verbatim; the user sends ONE message; injected preconditions are verified first.
 
 ## Cross-references
 

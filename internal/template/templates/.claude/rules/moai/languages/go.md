@@ -118,7 +118,6 @@ For comprehensive coverage including advanced concurrency patterns (thread pools
 
 ## Related Resources
 
-- `.claude/rules/moai/languages/rust.md` - Systems programming comparison
 - `moai-domain-backend` - Backend service architecture
 - `moai-workflow-testing` - DDD and testing strategies
 - `moai-foundation-quality` - TRUST 5 quality principles

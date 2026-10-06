@@ -229,7 +229,6 @@ Commands:
 - /moai plan - SPEC creation with automatic worktree setup
 - /moai run - Development in isolated worktree environment
 - /moai sync - Integration with automatic worktree sync
-- /moai feedback - Worktree workflow improvements
 
 Skills:
 - moai-foundation-core - Parallel development patterns

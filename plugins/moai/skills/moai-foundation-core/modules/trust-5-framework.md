@@ -229,7 +229,6 @@ Skills:
 
 Commands:
 - /moai run - Enforces ≥85% coverage requirement
-- /moai feedback - Quality improvement suggestions
 
 ---
 

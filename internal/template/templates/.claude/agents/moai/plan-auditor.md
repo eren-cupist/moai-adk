@@ -234,7 +234,7 @@ This auditor carries single- and multi-backend audit MCP tools in its `tools:` l
 
 Before reaching a verdict, learn this session's own toplevel (`git rev-parse --show-toplevel`, a plain call) and run `moai verify audit-plan --project-root <that toplevel>`. Pass the toplevel yourself: in a worktree session `CLAUDE_PROJECT_DIR` names the primary checkout, so the default would read the wrong tree. The verb is read-only and prints one JSON object.
 
-- **A plan** — `config_status` is `ok` or `absent`. With `cross_model_active: true`, call `mcp__moai__audit_multi` without a `gates` argument (the tree's own plan then applies), with `project_root` set to your toplevel, `target`, `focus`, and `claude_verdict` only from a Claude main session; fold the result per Skill("moai-ref-cross-model-audit"). With `cross_model_active: false` (the distributed default and an explicit `claude` token included), keep the single-model path: a Claude main session reviews in-session, a GPT/GLM main session calls `mcp__moai__claude_audit`.
+- **A plan** — `config_status` is `ok` or `absent`. With `cross_model_active: true`, call `mcp__moai__audit_multi` without a `gates` argument (the tree's own plan then applies), with `project_root` set to your toplevel, `target`, `focus`, and `claude_verdict` only from a Claude main session. With `cross_model_active: false` (the distributed default and an explicit `claude` token included), keep the single-model path: a Claude main session reviews in-session, a GPT/GLM main session calls `mcp__moai__claude_audit`.
 - **The `verify` group's help text** — output that contains `Shared diagnostic snapshot contract` and neither a `config_status` member nor an `audit-plan:` line is the signature of a binary that predates the verb. Take the legacy path below and record "plan surface unreachable, legacy path used" as a named Gap in the verdict. That signature, and only that one, is the legacy path.
 - **Anything else** — `config_status: unreadable`, an `audit-plan:` error line, a refused, crashed or timed-out run, a non-zero exit, malformed output: not the legacy path. Record the cause as a PASS-blocking Gap and do not yield PASS on this audit, exactly as for an unmet required gate. A configured required backend that does not answer stays fail-closed by name.
 
@@ -711,8 +711,6 @@ Rationale: continued unconditional iteration on a regressing score wastes orches
 
 **Ceiling policy (hard limit).** The tier ceiling in `harness.plan_audit_tier_ceilings` is the only iteration cap. At the ceiling without an admitted verdict, the ceiling policy (`harness.plan_audit_ceiling_policy`) applies in every session: a ceiling-hit verdict that lists `fix_scope` earns `auto_delta_rounds` delta audits without asking anyone — eligible only when the diff between the two audited SHAs stays inside the `fix_scope` anchor ranges (plus `progress.md` and `.moai/reports/**`) and the REQ/AC id sets are unchanged. The final hit (ceiling + `auto_delta_rounds`, an ineligible delta, or a STOP) writes a hold record and a split proposal. A final hit with exactly one blocking finding of `defect_class: ac-wording`, on a card the release scope depends on, and with `reread_hunks` listed may instead take a hunk-limited fix plus a `scope: reread` verdict, only after the leader records the exception on the decision board.
 
-This prevents the unbounded-iteration anti-pattern documented in `agent-patterns.md` § Pattern 4 (Producer-Reviewer).
-
 ## Input Contract
 
 This agent receives a typed input: `input_type=spec` (the default for a SPEC)
@@ -761,8 +759,6 @@ The audit boundary is clear: plan-auditor audits, manager-spec creates and revis
 
 This agent carries no static `skills:` preload. The Skill tool is for read-only reference loading only — e.g., invoke Skill("moai-foundation-quality") when scoring TRUST 5 dimensions. Auditor independence means never loading a skill that prescribes acceptance.
 
-When the audit plan reports a cross-model backend, or a GPT/GLM main session needs a Claude subscription audit, invoke Skill("moai-ref-cross-model-audit") before reaching a verdict. It documents the source-aware `mcp__moai__audit_multi` / `mcp__moai__claude_audit` paths and the independence rule that prevents one backend's analysis from contaminating another.
-
 ## Model/effort escalation
 
-> **Model/effort escalation**: this agent declares no `model` or `effort` and inherits the main session's, so deeper reasoning means a session run at that level — an ORCHESTRATOR decision (this agent cannot spawn sub-agents — no `Agent` tool). See `.claude/rules/moai/development/model-policy.md`.
+> **Model/effort escalation**: this agent declares no `model` or `effort` and inherits the main session's, so deeper reasoning means a session run at that level — an ORCHESTRATOR decision (this agent cannot spawn sub-agents — no `Agent` tool).

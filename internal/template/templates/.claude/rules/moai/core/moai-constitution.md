@@ -8,7 +8,6 @@ MoAI is the strategic orchestrator for Claude Code. Direct implementation by MoA
 
 Rules:
 - Delegate implementation tasks to specialized agents
-- A factory lane session is an orchestrator for its card: the delegation duty and the matching spawn authority bind it identically — it spawns the Status Transition Ownership Matrix's specialist for the stage at hand (depth-1 only) and never edits phase-owned artifacts directly (see `.claude/rules/moai/workflow/factory-dispatch.md` § Lane spawn authority)
 - [ZONE:Frozen] [HARD] AskUserQuestion is the sole user-facing question channel, used ONLY by the MoAI orchestrator (subagents must never prompt users); all preload (`ToolSearch(query: "select:AskUserQuestion")` before each call), Socratic-interview, and option-standard mechanics live in the canonical reference below
 - Canonical reference: `.claude/rules/moai/core/askuser-protocol.md` § Channel Monopoly / § ToolSearch Preload Procedure / § Socratic Interview Structure / § Option Description Standards
 
@@ -34,7 +33,7 @@ Rules:
 - For team mode: spawn teammates directly with the Agent tool's `name` parameter (the team forms implicitly on first spawn — one team per session, no setup step)
 - Team agents share TaskList for work coordination; sub-agents return results directly
 - Spawn multiple subagents in the same turn when fanning out across independent items or files; do not spawn a subagent for work completable directly in a single response
-- Three orchestration primitives exist — **sub-agents**, **Agent Teams**, and **dynamic workflows** — chosen by who holds the plan. For coding-heavy work prefer sequential sub-agents; reserve workflow-scale fan-out for genuinely parallel high-volume tasks. What each primitive does with intermediate results: `.claude/rules/moai/workflow/dynamic-workflows.md`.
+- Three orchestration primitives exist — **sub-agents**, **Agent Teams**, and **dynamic workflows** — chosen by who holds the plan. For coding-heavy work prefer sequential sub-agents; reserve workflow-scale fan-out for genuinely parallel high-volume tasks.
 
 ## Opus 5.5 Prompt Philosophy
 
@@ -113,7 +112,7 @@ Rules:
 - Use WebFetch to verify URLs from WebSearch results
 - Mark unverified information as uncertain
 - Include Sources section when WebSearch is used
-- Under a GLM backend (`moai glm` / `moai cg` GLM panes), URL verification uses `mcp__web_reader__webReader` and search uses `mcp__web_search_prime__webSearchPrime` instead of the built-in `WebFetch` / `WebSearch` (see `.claude/rules/moai/core/glm-web-tooling.md`)
+- Under a GLM backend (`moai glm` / `moai cg` GLM panes), URL verification uses `mcp__web_reader__webReader` and search uses `mcp__web_search_prime__webSearchPrime` instead of the built-in `WebFetch` / `WebSearch`
 
 ## Tool Selection Priority
 
@@ -225,7 +224,7 @@ Simplicity decision ladder (apply in order, before writing code — cheapest cap
 
 The ladder orders reuse before new code or a new dependency, and is language-neutral: "standard library" and "native platform feature" name whichever capability source the project's language provides.
 
-Never simplify away (safety carve-out): the ladder is a code-economy aid, NOT a license to cut safety. It MUST NOT be used to drop input validation at trust boundaries, error handling that prevents data loss, security measures, accessibility, or one runnable check behind non-trivial logic. These boundaries are governed by existing rules — the TRUST 5 Secured principle (validation, OWASP compliance) and the Bash risk-amplifier doctrine in `.claude/rules/moai/development/coding-standards.md` § Bash Risk-Amplifier Doctrine (destructive-primitive confirmation) — and the ladder is subordinate to them.
+Never simplify away (safety carve-out): the ladder is a code-economy aid, NOT a license to cut safety. It MUST NOT be used to drop input validation at trust boundaries, error handling that prevents data loss, security measures, accessibility, or one runnable check behind non-trivial logic. These boundaries are governed by existing rules — the TRUST 5 Secured principle (validation, OWASP compliance) — and the ladder is subordinate to them.
 
 Quantitative trigger: estimate the fewest lines this could be written in; if the implementation exceeds 3x that, stop and rewrite before proceeding.
 

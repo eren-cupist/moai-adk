@@ -212,8 +212,6 @@ quality_gate:
   image: <runtime-image>
   script:
     # Quality gate: run the project's real lint + test toolchain in CI.
-    # (The /moai gate command is a Claude Code session surface, not a CI
-    # executable — invoke the underlying tools directly here.)
     - <lint-command>        # e.g. golangci-lint run / ruff check / eslint .
     - <test-command>        # e.g. go test ./... / pytest / npm test
   dependencies:

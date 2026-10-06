@@ -3,7 +3,7 @@
 name = "manager-spec"
 description = '''
 SPEC creation specialist (spec.md / plan.md / acceptance.md authoring + emits initial status: draft in spec.md; the other artifacts are stateless). See §SPEC Artifact Ownership for artifact-level boundaries.
-Absorbs the planning role (the prior owner is archived per .claude/rules/moai/workflow/archived-agent-rejection.md §C row 1): design.md and research.md authoring (system design, architecture decisions, codebase research) are performed by this agent during Tier L SPEC plan-phase.
+Absorbs the planning role (the prior owner is archived): design.md and research.md authoring (system design, architecture decisions, codebase research) are performed by this agent during Tier L SPEC plan-phase.
 Use PROACTIVELY for GEARS-format (current) or EARS-format (legacy, 6-month backward-compatibility window) requirements, acceptance criteria, and user story documentation.
 Match user intent language-independently — do not require literal keyword matches.
 NOT for: run-phase code implementation (manager-develop), testing execution, deployment, code review, documentation sync (manager-docs)
@@ -40,7 +40,7 @@ Scope boundaries — what this agent does and does NOT own — are stated once i
 ## Delegation Protocol
 
 - Git branch/PR: Delegate to manager-git
-- Domain consultation (backend / frontend / devops): recommend a per-spawn `Agent(general-purpose)` specialist — Step 6 below carries the keyword triggers, and `archived-agent-rejection.md` §C rows 7-10 the migration mapping
+- Domain consultation (backend / frontend / devops): recommend a per-spawn `Agent(general-purpose)` specialist — Step 6 below carries the keyword triggers
 
 ## SPEC vs Report Classification
 
@@ -171,7 +171,7 @@ Each item confirms an earlier step's check was actually executed. The constraint
 
 ### Step 6: Domain-Specialist Consultation (Conditional)
 
-Detect domain keywords and recommend a per-spawn `Agent(general-purpose)` domain specialist (archived-agent-rejection.md §C rows 7-10):
+Detect domain keywords and recommend a per-spawn `Agent(general-purpose)` domain specialist:
 - Backend keywords (API, auth, database): recommend a per-spawn `Agent(general-purpose)` backend specialist
 - Frontend keywords (component, UI, state): recommend a per-spawn `Agent(general-purpose)` frontend specialist
 - DevOps keywords (deployment, Docker, CI/CD): recommend a per-spawn `Agent(general-purpose)` devops specialist
@@ -230,7 +230,6 @@ This agent carries SPEC-lifecycle MCP tools in its `tools:` list (prefer MCP ove
 
 Static `skills:` preload is kept to a minimum (token diet — progressive disclosure covers the rest); load the following skills on demand with the `Skill` tool:
 
-- When weighing architecture trade-offs, technology selection, or deep design decisions, invoke Skill("moai-foundation-thinking") to load it on demand.
 - When defining TRUST 5 quality criteria or gate thresholds in acceptance.md, invoke Skill("moai-foundation-quality") to load it on demand.
 - When the SPEC targets DDD-mode implementation (ANALYZE-PRESERVE-IMPROVE), invoke Skill("moai-workflow-ddd") to load it on demand.
 - When the SPEC targets TDD-mode implementation (RED-GREEN-REFACTOR), invoke Skill("moai-workflow-tdd") to load it on demand.
@@ -240,7 +239,7 @@ Static `skills:` preload is kept to a minimum (token diet — progressive disclo
 
 ## Model/effort escalation
 
-> **Model/effort escalation**: this agent declares no `model` or `effort` and inherits the main session's, so deeper reasoning means a session run at that level — an ORCHESTRATOR decision (this agent cannot spawn sub-agents — no `Agent` tool). See `.claude/rules/moai/development/model-policy.md`.
+> **Model/effort escalation**: this agent declares no `model` or `effort` and inherits the main session's, so deeper reasoning means a session run at that level — an ORCHESTRATOR decision (this agent cannot spawn sub-agents — no `Agent` tool).
 '''
 sandbox_mode = "workspace-write"
 [mcp_servers.moai]

@@ -136,15 +136,15 @@ Pre-execution commands: git status, git diff, git branch, git log, find .moai/sp
 - [ ] No HARD rule violations
 <!-- moai:evolvable-end -->
 
-Purpose: Run the gate workflow (workflows/gate.md) as a fast pre-check before the full deployment readiness verification. Catches lint/format/type errors early and auto-fixes them.
+Purpose: Run a fast lint/format/type/test pre-check before the full deployment readiness verification. Catches lint/format/type errors early and auto-fixes them.
 
 #### Step 0.0.1: Gate Execution
 
 - Snapshot consumption: query the shared diagnostic snapshot first (`moai verify check --key-current`). Where a fresh snapshot covers the full-test-suite check (recorded by the run-phase pre-review gate or a prior gate on the unchanged tree, within the TTL), consume it instead of re-running the full suite — the gate_report cites the snapshot path, key, original command, and recorded exit code as its full-suite evidence (per `.claude/rules/moai/core/verification-claim-integrity.md` §2). A stale snapshot is never cited as evidence: on key mismatch or TTL expiry, run the full suite as below and record the fresh result via `moai verify record`.
-- Execute gate workflow equivalent: lint + format + type-check + test in parallel
+- Execute lint + format + type-check + test in parallel
 - Auto-fix any fixable issues (lint auto-fix, format auto-fix)
 - If unfixable errors remain: Present summary and offer options via AskUserQuestion
-  - Fix errors (Recommended): Delegate to manager-develop subagent for targeted fixes (inject the cycle_type skill `moai-workflow-ddd`|`moai-workflow-tdd` + 0-3 domain `moai-ref-*` per skill-routing.md §1)
+  - Fix errors (Recommended): Delegate to manager-develop subagent for targeted fixes (inject the cycle_type skill `moai-workflow-ddd`|`moai-workflow-tdd` + 0-3 domain `moai-ref-*`)
   - Skip gate: Proceed to Phase 3 (errors will be caught later but at higher cost)
   - Abort: Exit sync workflow
 
@@ -159,7 +159,7 @@ Purpose: Verify the implementation is deployment-ready before quality verificati
 - Run full test suite for detected project language
 - Verify all tests pass (zero failures required)
 - If tests fail: Present failure summary and offer options via AskUserQuestion
-  - Fix and retry (Recommended): Delegate to manager-develop subagent (inject the cycle_type skill `moai-workflow-ddd`|`moai-workflow-tdd` + 0-3 domain `moai-ref-*` per skill-routing.md §1)
+  - Fix and retry (Recommended): Delegate to manager-develop subagent (inject the cycle_type skill `moai-workflow-ddd`|`moai-workflow-tdd` + 0-3 domain `moai-ref-*`)
   - Continue anyway: Proceed with warning
   - Abort: Exit sync workflow
 

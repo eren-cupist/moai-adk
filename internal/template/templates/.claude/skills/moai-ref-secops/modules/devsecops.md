@@ -34,7 +34,7 @@ compromised pipeline can reach and make tampering detectable.
 | Ephemeral, isolated runners | Run each job on a fresh, isolated runner so one job cannot read another job's secrets or persist a foothold |
 | Disable privileged mode on runners | A privileged runner can reach the host; default to unprivileged and grant capabilities narrowly |
 | Protected branches gate deploys | Require review + passing checks before a deploy stage runs; do not let an arbitrary branch trigger production deploy |
-| Sign produced artifacts | Emit signed provenance so a consumer can verify the artifact came from this pipeline (see `moai-ref-supply-chain` for the signing mechanism) |
+| Sign produced artifacts | Emit signed provenance so a consumer can verify the artifact came from this pipeline |
 | Audit-log every pipeline run | Record who triggered each run, what it deployed, and the artifact digest, for tamper detection and incident response |
 
 ### Pipeline secret hygiene
@@ -137,7 +137,7 @@ CI/CD surface:
 
 | ATT&CK technique | Technique name | Defensive control that counters it |
 |------------------|----------------|------------------------------------|
-| T1195 | Supply Chain Compromise | Pinned dependencies, signed provenance, SBOM (see `moai-ref-supply-chain`) |
+| T1195 | Supply Chain Compromise | Pinned dependencies, signed provenance, SBOM |
 | T1552 | Unsecured Credentials | Secret scanning, scoped short-lived tokens, log redaction |
 | T1078 | Valid Accounts | Least-privilege pipeline tokens, federated short-lived credentials, audit logging |
 

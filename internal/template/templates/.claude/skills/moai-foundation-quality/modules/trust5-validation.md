@@ -9,9 +9,9 @@ through agents, the harness, and gate commands.
 
 | Principle | Core question | Primary enforcement |
 |-----------|--------------|---------------------|
-| Tested | Does the change have tests, and are they green? | manager-develop (cycle_type), `/moai gate` |
+| Tested | Does the change have tests, and are they green? | manager-develop (cycle_type) |
 | Readable | Is the code clear to a new contributor? | Code review, `/moai review` |
-| Unified | Does it match existing file conventions? | Formatter + linter via `/moai gate` |
+| Unified | Does it match existing file conventions? | Formatter + linter |
 | Secured | Are inputs validated and credentials protected? | OWASP checklist, `/moai review` |
 | Trackable | Is the commit traceable to a requirement? | Conventional Commits, SPEC references |
 

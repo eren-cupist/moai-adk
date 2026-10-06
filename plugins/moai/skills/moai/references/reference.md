@@ -210,18 +210,12 @@ Propagation Method:
 
 Previous /moai:X-Y command format mapped to new /moai subcommand format:
 
-- /moai project maps to /moai project
 - /moai plan maps to /moai plan
 - /moai run maps to /moai run
 - /moai sync maps to /moai sync
-- /moai feedback maps to /moai feedback
 - /moai:fix maps to /moai fix
-- /moai:loop maps to /moai loop
 - /moai:moai maps to /moai (default autonomous workflow)
 - /moai:review maps to /moai review
-- /moai:clean maps to /moai clean
-- /moai:codemaps maps to /moai codemaps
-- /moai:mx maps to /moai mx
 
 ---
 

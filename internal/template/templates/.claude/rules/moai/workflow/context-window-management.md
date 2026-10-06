@@ -77,7 +77,7 @@ guide-gated advisory: `context-window-management-detail.md` § Detection Heurist
 
 ## Applies To
 
-All MoAI workflows: `/moai plan|run|sync`, multi-SPEC Epics, iterative loops (`/moai loop`, GAN loop).
+All MoAI workflows: `/moai plan|run|sync`, multi-SPEC Epics.
 
 ## Cross-references
 

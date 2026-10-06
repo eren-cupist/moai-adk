@@ -645,10 +645,8 @@ for result in results:
 
 Skills:
 - [moai-foundation-core](../SKILL.md) - Parent skill (see [progressive-disclosure.md](progressive-disclosure.md) and [token-optimization.md](token-optimization.md))
-- [moai-foundation-cc](../../moai-foundation-cc/SKILL.md) - Skill authoring with modular structure (Claude Code authoring kit)
 
 Agents:
-- builder-harness - Create skills / harness specialists with standard file structure
 - manager-docs - Generate documentation following modular pattern
 
 Commands:

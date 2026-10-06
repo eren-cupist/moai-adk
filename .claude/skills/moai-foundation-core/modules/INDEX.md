@@ -134,11 +134,9 @@ Use Cases:
 Command Catalog - Reference for MoAI-ADK's core `/moai` commands in the SPEC-First workflow.
 
 Quick Access:
-- /moai project (project init)
 - /moai plan (SPEC generation)
 - /moai run (implementation)
 - /moai sync (documentation)
-- /moai feedback (improvement)
 
 Use Cases:
 - Command workflow execution
@@ -280,10 +278,8 @@ Detailed Reference: [TRUST 5 Framework Module](modules/trust-5-framework.md)
 
 Skills:
 - moai-foundation-core (parent skill)
-- moai-foundation-cc (Claude Code authoring: skills, agents, plugins)
 
 Agents:
-- builder-harness (agent / skill / harness generation)
 - manager-docs (documentation)
 - sync-auditor (quality validation)
 

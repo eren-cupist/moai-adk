@@ -31,8 +31,6 @@ Auto memory (level 6 above) is a native Claude Code feature (requires v2.1.59 or
 | Subagents | Subagents can maintain their own auto memory (see the Claude Code sub-agents documentation) |
 | Inspect | `/memory` lists the loaded CLAUDE.md and rules files, toggles auto memory, and links to the auto-memory folder |
 
-Full reference: `.claude/skills/moai-foundation-cc/reference/claude-code-memory-official.md`.
-
 ## Two Memory Locations (do not conflate)
 
 MoAI deals with two distinct memory directories. Keep their rules separate:

@@ -32,7 +32,7 @@ progressive_disclosure:
 ## Target Agents
 
 - `manager-develop` - Applies checklist during backend API implementation (`cycle_type=tdd` or `cycle_type=ddd` context)
-- `/moai review` with a security focus - Primary security-audit invocation surface; equivalently available as a per-spawn `Agent(general-purpose)` security specialist per `archived-agent-rejection.md` §C
+- `/moai review` with a security focus - Primary security-audit invocation surface; equivalently available as a per-spawn `Agent(general-purpose)` security specialist
 
 ## OWASP API Security Top 10
 

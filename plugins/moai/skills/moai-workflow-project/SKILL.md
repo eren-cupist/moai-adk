@@ -23,7 +23,7 @@ metadata:
   modularized: "true"
   tags: "workflow, project, documentation, initialization, templates, boilerplate, scaffolding, jit-docs, docs-generation"
   aliases: "moai-workflow-project"
-  related-skills: "moai-workflow-spec, moai-workflow-docs-claim-check"
+  related-skills: "moai-workflow-spec"
 
 # MoAI Extension: Progressive Disclosure
 progressive_disclosure:
@@ -133,7 +133,6 @@ File sizes: documentation 50-200KB per project, optimization backups match origi
 ## Works Well With
 
 - moai-foundation-core: Core execution patterns and SPEC-driven workflows
-- moai-foundation-cc: Claude Code integration and configuration
 - moai-workflow-docs: Unified documentation management
 - moai-workflow-templates: Template optimization strategies
 - moai-library-nextra: Documentation architecture

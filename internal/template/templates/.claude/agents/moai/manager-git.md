@@ -183,9 +183,8 @@ Static `skills:` preload is kept to a minimum (token diet — progressive disclo
 - When branch/PR strategy questions arise (merge method, branch naming, PR templates, conventional commits edge cases), invoke Skill("moai-ref-git-workflow") to load it on demand.
 - When SPEC context is needed for commit scoping or Tier-based PR routing, invoke Skill("moai-workflow-spec") to load it on demand.
 - When verifying quality gate status before a commit or PR, invoke Skill("moai-foundation-quality") to load it on demand.
-- When weighing non-trivial workflow trade-offs (release strategy, history implications), invoke Skill("moai-foundation-thinking") to load it on demand.
 - When project documentation context is needed for PR descriptions, invoke Skill("moai-workflow-project") to load it on demand.
 
 ## Model/effort escalation
 
-> **Model/effort escalation**: this agent declares no `model` or `effort` and inherits the main session's, so deeper reasoning means a session run at that level — an ORCHESTRATOR decision (this agent cannot spawn sub-agents — no `Agent` tool). See `.claude/rules/moai/development/model-policy.md`.
+> **Model/effort escalation**: this agent declares no `model` or `effort` and inherits the main session's, so deeper reasoning means a session run at that level — an ORCHESTRATOR decision (this agent cannot spawn sub-agents — no `Agent` tool).

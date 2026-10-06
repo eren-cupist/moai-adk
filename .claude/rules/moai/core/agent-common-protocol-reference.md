@@ -61,7 +61,7 @@ The cited evidence path MUST remain reachable at audit time, including after `/t
 
 **Surviving `/tmp` is not the same as being reachable at audit time.** `.moai/state/verify/<session>/` is **machine-local scratch**: it outlives `/tmp` clearance, and it is gitignored, so it travels to no clone, no CI runner, and no other machine. A path under it resolves only on the machine that wrote it, and only until that machine's state is cleaned. Naming it as the audit-time citation target states an obligation its own storage cannot meet.
 
-The verdict file is the **local** record a claim cites — in this repository, `.moai/reports/<card-id>/verdict.md`, the same file `factory-dispatch.md` already fixes as a card's verdict. It reaches no clone and no other machine, so citing it states where the deciding evidence was written, not where a reader elsewhere can fetch it. The obligation is therefore unchanged and its reason is narrower: **carry the deciding evidence into the verdict** — before a claim is made, the command that decided it and the lines of output that decided it are written into the verdict file, and the claim cites that file. Scratch is where a command's raw output lands; the verdict file is what a document is allowed to point at.
+The verdict file is the **local** record a claim cites — in this repository, `.moai/reports/<card-id>/verdict.md`. It reaches no clone and no other machine, so citing it states where the deciding evidence was written, not where a reader elsewhere can fetch it. The obligation is therefore unchanged and its reason is narrower: **carry the deciding evidence into the verdict** — before a claim is made, the command that decided it and the lines of output that decided it are written into the verdict file, and the claim cites that file. Scratch is where a command's raw output lands; the verdict file is what a document is allowed to point at.
 
 **Export width — one file, and it is the verdict file.** A citation **names one file**, never the directory: `.moai/reports/<card-id>/verdict.md`, not `.moai/reports/<card-id>/`. The width is that one filename, and it is a property of the ignore rules rather than a style preference — writing a second artifact beside the verdict leaves an untracked file next to a tracked one, and a citation naming it resolves nowhere outside the tree that wrote it. Without this ceiling the obligation does not remove the scratch tree, it only relocates it into version control, which is the outcome it exists to prevent.
 
@@ -268,7 +268,7 @@ The persistence-layer analogue is `session-handoff.md` Block 3-4 preconditions; 
 
 > Relocated from `agent-common-protocol.md` § Background Agent Execution to keep the always-loaded file within its size budget. The [HARD] default alignment and the four spawning rules remain inline there.
 
-The retained safeguard is **concurrency, not backgrounding**, and the unit it is scoped to is the **working tree**, because that is the unit a file-write race happens in: one writer per tree, and orchestrator work performed concurrently with a write-capable agent in the same tree is **read-only**. Two write-capable agents therefore run at once only when each writes an independent worktree; writes to a shared path, and integration into a shared branch, are serialized through the integration window. Within a hierarchical team shape (e.g., `manager-lead` fan-out) this is what makes the worktree-isolated leaf workers safe to run in parallel — they do not share a tree — while leaf workers that would write the same tree are sequenced instead. The earlier blanket ban on background Write/Edit had its stated basis (background writes auto-denied) removed by v2.1.186 and no longer describes the runtime.
+The retained safeguard is **concurrency, not backgrounding**, and the unit it is scoped to is the **working tree**, because that is the unit a file-write race happens in: one writer per tree, and orchestrator work performed concurrently with a write-capable agent in the same tree is **read-only**. Two write-capable agents therefore run at once only when each writes an independent worktree; writes to a shared path, and integration into a shared branch, are serialized through the integration window. Within a hierarchical team shape this is what makes the worktree-isolated leaf workers safe to run in parallel — they do not share a tree — while leaf workers that would write the same tree are sequenced instead. The earlier blanket ban on background Write/Edit had its stated basis (background writes auto-denied) removed by v2.1.186 and no longer describes the runtime.
 
 ## Error Recovery retry-safety detail
 
@@ -288,21 +288,6 @@ The switch consults the shared diagnostic snapshot via `moai verify check --key-
 On all-three match (the default path), the batch records the snapshot key + cited §E evidence path as its baseline-attribution per VCI §2 and DOES NOT re-execute the corresponding command (test / lint / vet / cover). The verification dimension is marked PASS-attributed, not PASS-reexecuted — both satisfy VCI §1.1, but the attribution path is faster and the re-execution path is stronger.
 
 On ANY mismatch (`snapshot_key_drift` / `command_drift` / `missing_section_e` / `output_drift`), the batch SHALL fall back to re-execution of the affected verification dimension — any-mismatch → re-execute, never silent skip. The fallback is logged with the mismatch reason; the batch NEVER silently skips verification — the VCI §1.1 invariant holds on every path. Full pattern: `.claude/rules/moai/workflow/verification-batch-pattern.md` § Attributable diff-check pattern.
-
-## Super-Advisor Escalation — entry-condition detail
-
-When recovery via the 3-retry ceiling is insufficient OR a higher-reasoning consultation is warranted, the orchestrator escalates to the **super-advisor** agent. super-advisor returns **non-binding prescriptions**; the orchestrator remains the decision owner. DISTINCT from auditor verdicts — `plan-auditor` / `sync-auditor` own binding PASS/FAIL judgment; "should this PASS?" → an auditor, "what should I do here?" → super-advisor.
-
-Entry conditions (exhaustive):
-
-| Trigger | Condition | Example |
-|---------|-----------|---------|
-| **E1 — bug-deadlock** | 3+ consecutive same-diagnostic failures | same failing test retried 3 times with the same root-cause hypothesis |
-| **E2 — architecture/design decision point** | A spec-body or plan-body decision with ≥2 viable options, neither obviously correct | "write-through or write-behind?" at L-plan boundary |
-| **E3 — second-opinion request** | Orchestrator uncertainty: < 80% confidence in the next delegation step | ambiguous blocker-report; re-spawn vs user-escalation |
-| **E4 — loop-deadlock** | `/moai loop` or `/moai fix` ceiling-exit per the loop-verdict contract | auto-fix iterations exhausted without green CI |
-
-On trigger: spawn `Agent(general-purpose)` with the super-advisor role profile (it inherits the session's model and effort), receive the prescription, then re-seed the executor or escalate to the user via `AskUserQuestion`. Agent file: `.claude/agents/moai/super-advisor.md`.
 
 ## Hook Invocation Surface — per-row table
 
@@ -375,23 +360,6 @@ When a tool call fails:
 4. After 3 failures on the same operation, report the blocker
 
 **Retry safety is asymmetric with respect to side effects.** Idempotent / read-only calls may be retried up to the ceiling. **Side-effecting calls** (write/edit, commit, push, PR, deploy, external-API mutation) that fail *ambiguously* require observing the current state first and retrying only when the effect is confirmed absent — a blind retry risks a duplicate commit / PR / deploy. The absence of a success signal is not evidence the effect did not land. (Full worked detail: `agent-common-protocol-reference.md` § Error Recovery retry-safety detail.)
-
-### Super-Advisor Escalation (E1-E4)
-
-When the 3-retry ceiling is insufficient OR a higher-reasoning consultation is warranted, the
-orchestrator escalates to **super-advisor**, which returns **non-binding prescriptions** — the
-orchestrator remains the decision owner. DISTINCT from auditor verdicts: `plan-auditor` /
-`sync-auditor` own binding PASS/FAIL ("should this PASS?"); super-advisor answers "what should I do
-here?".
-
-Four entry conditions, exhaustive: **E1** bug-deadlock (3+ consecutive same-diagnostic failures),
-**E2** architecture/design decision point (≥2 viable options, neither obviously correct), **E3**
-second-opinion request (orchestrator confidence below 80% in the next delegation step), **E4**
-loop-deadlock (`/moai loop` or `/moai fix` ceiling-exit). On trigger: spawn
-`Agent(general-purpose)` with the super-advisor role profile, receive the prescription, then
-re-seed the executor or escalate to the user via `AskUserQuestion`. Worked examples and the
-model-tier profile: `agent-common-protocol-reference.md` § Super-Advisor Escalation. Agent file:
-`.claude/agents/moai/super-advisor.md`.
 
 ### Read-only verification batching
 

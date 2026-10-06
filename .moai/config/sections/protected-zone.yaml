@@ -37,7 +37,6 @@ categories:
   auditor:
     paths:
       - .claude/agents/moai/
-      - .claude/workflows/sync-audit-4dim.js
       - .claude/skills/moai-*
   regression_tests:
     paths: []

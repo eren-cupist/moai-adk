@@ -14,7 +14,7 @@ metadata:
 
 Agent: manager-develop subagent
 
-Skill injection: per skill-routing.md §1, the manager-develop spawn prompt MUST carry the cycle_type skill (`moai-workflow-ddd` here; `moai-workflow-tdd` in tdd mode) plus 0-3 domain `moai-ref-*` skills matched to the mission domain (backend → moai-ref-api-patterns, frontend → moai-ref-react-patterns, database → moai-domain-database, per `.moai/config/sections/delegation.yaml` domain_skills), each as an `At start, invoke Skill("<name>") for <reason>` line.
+Skill injection:, the manager-develop spawn prompt MUST carry the cycle_type skill (`moai-workflow-ddd` here; `moai-workflow-tdd` in tdd mode) plus 0-3 domain `moai-ref-*` skills matched to the mission domain (backend → moai-ref-api-patterns, frontend → moai-ref-react-patterns, database → moai-domain-database, per `.moai/config/sections/delegation.yaml` domain_skills), each as an `At start, invoke Skill("<name>") for <reason>` line.
 
 Input: Approved execution plan from Phase 5 plus task decomposition from Phase 6. Include `.moai/project/structure.md` and `.moai/project/tech.md` as onboarding context in the agent prompt so the implementation agent understands the project's architecture conventions before writing code.
 
@@ -103,17 +103,9 @@ After each TDD REFACTOR cycle completion, compare planned vs actual:
    - 20% < drift <= 30%: Warning in progress.md
    - drift > 30% (cumulative): Trigger Phase 14 re-planning gate
 
-## Parallel Quality-Evidence Fan-Out (capability-gated)
-
-**`FO-RUN-3`.** **Where** `.claude/workflows/sync-audit-4dim.js` exists on disk **AND** the runtime supports dynamic workflows, the orchestrator shall launch it once across the Phase 13 / 16 / 17 quality band to collect four-dimension evidence (Functionality / Security / Craft / Consistency) in one parallel pass rather than three serial audit passes. **Where** either condition is absent — the script was removed, or the runtime predates dynamic-workflow support — those phases run their existing serial path with no error, no warning, and no interruption. The existing maximum-3-iteration ceilings on Phase 16 and Phase 17 are preserved on both paths.
-
-The orchestrator launches the script itself; this is scaling, not subagent nesting, so the flat agent hierarchy is preserved. All four judges are read-only: a judge that cannot run a check records an `evidence_gaps` entry, and one missing required input returns a structured blocker report — neither prompts the user. The script's harmonic-mean aggregate is **evidence, not a verdict**: the binding PASS/FAIL remains owned by `sync-auditor`, which may cite the aggregate but is never replaced by it. Implementation Kickoff Approval is likewise unaffected — it is decided before any workflow launches.
-
-**Collapsed structure (one evidence pass, one verdict).** Phases 13, 16, and 17 otherwise re-read the same changeset three times in series — Phase 13 for TRUST 5, Phase 16 for the four dimensions, Phase 17 for static review. On the fan-out path the three share **one** parallel evidence pass: the read-only judges run once, and each phase then consumes that recorded evidence instead of re-running its own scan. **One verdict follows** — `sync-auditor` issues the single binding PASS/FAIL for the band; the aggregate score is quoted as evidence beneath it, never in place of it. Collapsing the evidence collection does NOT collapse the iteration limits: each phase below keeps its own stated limit verbatim, and a FAIL re-enters that phase's fix cycle with freshly gathered evidence rather than reusing the stale pass.
-
 ## Phase 13: Quality Validation
 
-Agent: sync-auditor subagent (independent quality scoring per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C row 2; OR orchestrator verification batch — lint + test + coverage)
+Agent: sync-auditor subagent (independent quality scoring; OR orchestrator verification batch — lint + test + coverage)
 
 Evidence source: on the fan-out path above, consume the shared parallel evidence pass for the checks it already covers rather than re-running them here; on the serial path, run them as described below. Either way the binding verdict stays with `sync-auditor`.
 
@@ -139,7 +131,6 @@ Code Complexity Analysis:
 
 Dead Code Detection:
 - Unused imports, functions, variables, and orphaned files
-- Auto-removal: When confirmed, delegate to clean workflow (workflows/clean.md)
 
 Side Effect Analysis:
 - Caller impact: For each modified function, identify all callers and assess impact
@@ -158,7 +149,7 @@ If status is CRITICAL:
 - Exit current execution flow
 
 If coverage is below target (quality.yaml test_coverage_target):
-- Route coverage-gap handling through `go test -cover` + `/moai gate` (the documented coverage replacement path)
+- Route coverage-gap handling through `go test -cover` (the documented coverage replacement path)
 - Re-run quality validation after coverage improvement
 
 If status is PASS or WARNING: Continue to Phase 16.
@@ -171,9 +162,9 @@ Check `.moai/specs/SPEC-{ID}/progress.md` for stagnation signals. If triggered, 
 
 ## Phase 15: Pre-Review Quality Gate
 
-Purpose: Run lightweight quality gate checks before the full review phase. This connects the gate workflow (workflows/gate.md) into the run pipeline.
+Purpose: Run lightweight quality gate checks before the full review phase.
 
-Execution: Always runs. Equivalent to `/moai gate --fix` on modified files.
+Execution: Always runs on modified files.
 
 Snapshot consumption: before the batch, query the shared diagnostic snapshot with `moai verify check --key-current`. Where a fresh snapshot (key equality AND within the TTL) covers a check category this phase would run, consume the recorded result instead of re-executing it — the gate_report cites the snapshot path, key, original command, and recorded exit code as that category's evidence (per `.claude/rules/moai/core/verification-claim-integrity.md` §2 — the snapshot is the observed evidence; the freshness rule keeps the attribution valid). A stale snapshot is never cited: on key mismatch or TTL expiry, execute the check as below.
 
@@ -224,7 +215,7 @@ Output: evaluation_report with per-dimension PASS/FAIL/UNVERIFIED verdicts and f
 
 Purpose: Multi-dimensional review iteration for high-quality output. This phase is ALWAYS executed to ensure consistent code quality.
 
-**Standard review** (always executed via the sync-auditor subagent — independent quality scoring per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C row 2):
+**Standard review** (always executed via the sync-auditor subagent — independent quality scoring):
 - Purpose alignment: Do changes match SPEC requirements?
 - Improvement safety: Are existing behaviors preserved?
 - Side effect verification: Any unintended impacts?

@@ -55,7 +55,7 @@ Relationships:
 
 [HARD] **Factory/team card worktree branches carry the `WT-` prefix followed by a descriptive slug.** `EnterWorktree(<name>)` auto-names its branch `worktree-<name>`; for card worktrees, rename immediately after creation with `git branch -m WT-<slug>` (renaming the checked-out branch inside a worktree is safe — the tree, its lock, and the session anchoring are unaffected — and `moai cc -w <name>` re-entry resolves by tree name, not branch name). `WT-` is the session-worktree branch convention (`SessionWorktreeBranchPrefix`, `internal/cli/session_worktree.go`).
 
-[HARD] **The slug describes the change; the card id stays out of the branch name.** At most 3 hyphen-separated tokens, at most 24 characters, lowercase `a-z0-9-` — `WT-branch-naming`, not `WT-t0`. The **worktree directory** still carries the card id (`.moai/worktrees/<card-id>` for new MoAI trees; `.claude/worktrees/<card-id>` for Claude-native trees), so the id is never lost. Traceability moves onto the dispatch `card:` field, the commit messages, and the evidence path; the full contract is `factory-dispatch.md` § Isolation is provisioned by MoAI, then entered through a launcher.
+[HARD] **The slug describes the change; the card id stays out of the branch name.** At most 3 hyphen-separated tokens, at most 24 characters, lowercase `a-z0-9-` — `WT-branch-naming`, not `WT-t0`. The **worktree directory** still carries the card id (`.moai/worktrees/<card-id>` for new MoAI trees; `.claude/worktrees/<card-id>` for Claude-native trees), so the id is never lost.
 
 Nothing reads a card id back out of a branch name: `internal/cli/session_worktree_prmerge.go` matches the `WT-` prefix only (`strings.HasPrefix`), never the remainder. The prefix is load-bearing; the suffix is for humans.
 
@@ -64,7 +64,7 @@ The rename is also a disposal-path switch, and that is deliberate:
 - Left as `worktree-<name>`, the tree is **invisible to the PR-merge auto-cleanup sweep** — that sweep enumerates `git worktree list` and considers only `WT-` branches — so disposal stays manual: the session-end keep/remove prompt, or `git worktree unlock` + `git worktree remove`.
 - Renamed to `WT-<slug>`, the tree becomes a **sweep candidate**: where `Workflow.Worktree.AutoCleanup` is enabled (distributed default: off), the sweep removes a `WT-` worktree once its branch reads merged (gh `MERGED` state, or the `git branch --merged origin/main` fallback — squash-merge blind) and the tree is clean, re-checking dirtiness immediately before removal, and never while a live session is anchored in the tree.
 
-Either way the unpushed-branch rule above still governs timing — the sweep's merged-branch condition is the same "after the remote merge" boundary. The lane-side procedure that consumes `WT-` branches lives in `factory-dispatch.md` § Integration into the release branch is self-served.
+Either way the unpushed-branch rule above still governs timing — the sweep's merged-branch condition is the same "after the remote merge" boundary.
 
 Manual disposal beyond the sweep (`--stale` report, guards, manual path): `worktree-integration-ops.md` § Disposing a Worktree the Automatic Sweep Does Not Reach.
 
@@ -163,7 +163,7 @@ The shell-`cd` form (`cd <path> && <launcher>`), the `git -C <path>` form, and t
 ### Decision Tree
 
 ```
-Is this a parallel write workers within a hierarchical team (e.g., manager-lead fan-out)?
+Is this a parallel write workers within a hierarchical team?
   YES → Use Agent(isolation: "worktree") for write agents
         Do NOT use isolation for read-only agents
   NO ↓
@@ -184,8 +184,8 @@ Is this a one-shot sub-agent task?
 
 ### HARD Rules
 
-- [ZONE:Evolvable] [HARD] Implementation leaf workers spawned in parallel by `manager-lead` (or any parallel-write fan-out shape) MUST use `isolation: "worktree"` when spawned via Agent()
-- [ZONE:Evolvable] [HARD] Read-only teammates (read-only research/review roles: researcher / analyst / reviewer) MUST NOT use `isolation: "worktree"` — read-only enforcement rests on tool restriction, and a teammate is read-only only when **no tool in its list can write**. Omitting `Write`/`Edit` is necessary but NOT sufficient: `Bash`, a write-capable MCP tool, and `Agent` each reach the working tree on their own, and the built-in `Explore` omits `Write`/`Edit` yet carries `Bash`. The spawn-time `mode` parameter is deprecated and ignored since Claude Code v2.1.213, so tool restriction is the only channel that carries the guarantee — audit the list against all three write paths before calling a teammate read-only. Per-path detail: `.claude/rules/moai/development/agent-authoring.md` § Tool Permissions
+- [ZONE:Evolvable] [HARD] Implementation leaf workers spawned in parallel by any parallel-write fan-out shape MUST use `isolation: "worktree"` when spawned via Agent()
+- [ZONE:Evolvable] [HARD] Read-only teammates (read-only research/review roles: researcher / analyst / reviewer) MUST NOT use `isolation: "worktree"` — read-only enforcement rests on tool restriction, and a teammate is read-only only when **no tool in its list can write**. Omitting `Write`/`Edit` is necessary but NOT sufficient: `Bash`, a write-capable MCP tool, and `Agent` each reach the working tree on their own, and the built-in `Explore` omits `Write`/`Edit` yet carries `Bash`. The spawn-time `mode` parameter is deprecated and ignored since Claude Code v2.1.213, so tool restriction is the only channel that carries the guarantee — audit the list against all three write paths before calling a teammate read-only.
 - [ZONE:Evolvable] [HARD] One-shot sub-agents that write files across 3 or more paths per invocation MUST use `isolation: "worktree"`. This includes write-heavy retained agents (manager-develop), per-spawn `Agent(general-purpose)` specialists with a write-heavy domain whitelist (e.g. backend / frontend / devops / refactoring), and team-mode role profiles (implementer, tester, designer).
 <!-- @MX:ANCHOR: WorktreeMUSTRule — invariant contract; all write-heavy agents MUST declare isolation:worktree; enforced by LR-05 lint rule -->
 <!-- @MX:REASON: MUST level required to eliminate silent file-write conflict failure mode in parallel Agent() execution. -->

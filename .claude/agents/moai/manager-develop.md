@@ -5,7 +5,7 @@ description: |
   Supports three cycle_type modes: `tdd` (RED-GREEN-REFACTOR, default for new feature work), `ddd` (ANALYZE-PRESERVE-IMPROVE, legacy refactoring with characterization tests), and `autofix` (localize → repair → validate, from the /moai fix pipeline via the `--mode` flag or pipeline class dispatch).
   Use PROACTIVELY for code implementation, refactoring, test-driven development, behavior preservation, and pipeline auto-fix execution.
   Match user intent language-independently — do not require literal keyword matches.
-  NOT for: SPEC body authoring (spec.md / plan.md / acceptance.md / design.md / research.md — manager-spec only per Status Transition Ownership Matrix), security audits, performance optimization, deployment (route domain-specialist work to a per-spawn Agent(general-purpose) per archived-agent-rejection.md §C)
+  NOT for: SPEC body authoring (spec.md / plan.md / acceptance.md / design.md / research.md — manager-spec only per Status Transition Ownership Matrix), security audits, performance optimization, deployment (route domain-specialist work to a per-spawn Agent(general-purpose))
 tools: Read, Write, Edit, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskList, TaskGet, Skill, mcp__moai__verify_snapshot, mcp__moai__verify_trend, mcp__moai__goal_status, mcp__moai__codex_task, mcp__moai__codex_job_status, mcp__moai__codex_job_result, mcp__moai__codex_job_cancel, mcp__moai__glm_task, mcp__moai__glm_job_status, mcp__moai__glm_job_result, mcp__moai__glm_job_cancel, mcp__moai__codex_review, mcp__moai__glm_review
 color: green
 permissionMode: bypassPermissions
@@ -72,7 +72,7 @@ Per the canonical CI auto-fix protocol, the `manager-develop` agent supports a t
 | Out-of-scope work | Route to |
 |---|---|
 | SPEC creation, or an unclear SPEC | manager-spec |
-| Security audits and security concerns | per-spawn `Agent(general-purpose)` security reviewer (`archived-agent-rejection.md` §C row 9), or the Stop hook dependency-manifest audit |
+| Security audits and security concerns | per-spawn `Agent(general-purpose)` security reviewer, or the Stop hook dependency-manifest audit |
 | Performance optimization | per-spawn `Agent(general-purpose)` performance specialist (§C row 11) |
 | Deployment | per-spawn `Agent(general-purpose)` devops specialist (§C row 10) |
 | Independent quality verdict | sync-auditor, or the orchestrator verification batch — lint + test + coverage (§C row 2) |
@@ -236,10 +236,9 @@ Static `skills:` preload is kept to a minimum (token diet — progressive disclo
 - When authoring tests or working on coverage, invoke Skill("moai-workflow-testing") to load it on demand.
 - When running TRUST 5 quality gate checks, invoke Skill("moai-foundation-quality") to load it on demand.
 - When reading or interpreting SPEC artifacts (spec.md / plan.md / acceptance.md), invoke Skill("moai-workflow-spec") to load it on demand.
-- When weighing architecture trade-offs or deep design decisions, invoke Skill("moai-foundation-thinking") to load it on demand.
 - When project documentation context (product.md / structure.md / tech.md) is needed, invoke Skill("moai-workflow-project") to load it on demand.
 - When operating inside an isolated git worktree (L1/L2 worktree flow), invoke Skill("moai-workflow-worktree") to load it on demand.
 
 ## Model/effort escalation
 
-> **Model/effort escalation**: this agent declares no `model` or `effort` and inherits the main session's, so deeper reasoning means a session run at that level — an ORCHESTRATOR decision (this agent cannot spawn sub-agents — no `Agent` tool). See `.claude/rules/moai/development/model-policy.md`.
+> **Model/effort escalation**: this agent declares no `model` or `effort` and inherits the main session's, so deeper reasoning means a session run at that level — an ORCHESTRATOR decision (this agent cannot spawn sub-agents — no `Agent` tool).

@@ -24,9 +24,9 @@ A change adds an authentication endpoint. Walk through all five dimensions.
 
 If any dimension is below bar, it is a gap to close — not a pass.
 
-## Example 2: Triage of a `/moai gate` Run
+## Example 2: Triage of a Quality Gate Run
 
-`/moai gate` returns lint + format + type + test results in parallel. Suppose it
+The quality gate returns lint + format + type + test results. Suppose it
 reports: 2 lint errors, 1 type error, tests green, format clean.
 
 Triage:

@@ -23,7 +23,6 @@ metadata:
   updated: "2026-07-10"
   modularized: "true"
   tags: "foundation, core, orchestration, agents, commands, trust-5, spec-first-ddd, token-budget, context-window, session-state"
-  related-skills: "moai-foundation-cc, moai-foundation-thinking"
 
 # MoAI Extension: Progressive Disclosure
 progressive_disclosure:
@@ -88,7 +87,7 @@ Readable Pillar: Use clear and descriptive naming conventions. Run the project's
 
 Unified Pillar: Apply consistent formatting and import patterns. Run the project's formatter (e.g. gofmt, black, prettier, rustfmt). Auto-format code or issue warning on failure. Consistency eliminates style debates and merge conflicts and improves readability.
 
-Secured Pillar: Comply with OWASP security standards. Surface security findings via the appropriate agent or reference skill (e.g. spawn a per-spawn general-purpose agent with security instructions, or load the moai-ref-owasp-checklist / moai-ref-llm-security reference). Block merge and require security review on failure. Security vulnerabilities create critical business and legal risks.
+Secured Pillar: Comply with OWASP security standards. Surface security findings via the appropriate agent or reference skill (e.g. spawn a per-spawn general-purpose agent with security instructions, or load the moai-ref-owasp-checklist reference). Block merge and require security review on failure. Security vulnerabilities create critical business and legal risks.
 
 Trackable Pillar: Write clear and structured commit messages. Match Git commit message regex patterns (Conventional Commits). Suggest proper commit message format on failure. Clear history enables debugging, auditing, and collaboration.
 
@@ -138,7 +137,7 @@ Parallel for independent work: Spawn multiple Agent(general-purpose) teammates i
 
 Conditional for analysis-based: Use the Explore subagent for read-only diagnosis, then route the result to the appropriate retained agent (manager-develop for fixes, sync-auditor for quality scoring) based on the findings.
 
-Agent Selection: Simple tasks with 1 file use 1-2 agents sequential. Medium tasks with 3-5 files use 2-3 agents sequential. Complex tasks with 10+ files use 5+ agents mixed. Domain-specific work (backend / frontend / security / performance / refactoring) is handled in run-phase by manager-develop, or by a per-spawn Agent(general-purpose) with a domain whitelist per `.claude/rules/moai/workflow/archived-agent-rejection.md`.
+Agent Selection: Simple tasks with 1 file use 1-2 agents sequential. Medium tasks with 3-5 files use 2-3 agents sequential. Complex tasks with 10+ files use 5+ agents mixed. Domain-specific work (backend / frontend / security / performance / refactoring) is handled in run-phase by manager-develop, or by a per-spawn Agent(general-purpose) with a domain whitelist.
 
 Detailed Reference: modules/delegation-patterns.md
 
@@ -228,15 +227,15 @@ Detailed Reference: references/examples.md for working code samples
 
 ## Works Well With
 
-Agents: builder-harness for generating agents/skills/harnesses with foundation principles, manager-spec for plan-phase authoring, manager-develop for run-phase implementation, manager-docs for sync-phase documentation, sync-auditor for independent TRUST 5 quality scoring, super-advisor for on-demand high-reasoning consultation.
+Agents: manager-spec for plan-phase authoring, manager-develop for run-phase implementation, manager-docs for sync-phase documentation, sync-auditor for independent TRUST 5 quality scoring.
 
-Skills: moai-foundation-cc for Claude Code authoring (skills, agents, plugins, hooks), moai-workflow-spec for GEARS format specification (current; EARS retained as legacy reference), moai-workflow-ddd for ANALYZE-PRESERVE-IMPROVE execution, moai-workflow-tdd for RED-GREEN-REFACTOR cycles, moai-foundation-quality for TRUST 5 validation orchestration, moai-foundation-thinking for strategic reasoning and Adaptive Thinking via the ultrathink keyword.
+Skills: moai-workflow-spec for GEARS format specification (current; EARS retained as legacy reference), moai-workflow-ddd for ANALYZE-PRESERVE-IMPROVE execution, moai-workflow-tdd for RED-GREEN-REFACTOR cycles, moai-foundation-quality for TRUST 5 validation orchestration.
 
 Tools: AskUserQuestion for direct user interaction and clarification needs.
 
-Commands: /moai plan for SPEC-First Phase 1, /moai run for DDD Phase 2, /moai sync for Documentation Phase 3, /moai feedback for continuous improvement, /clear for token management.
+Commands: /moai plan for SPEC-First Phase 1, /moai run for DDD Phase 2, /moai sync for Documentation Phase 3, /clear for token management.
 
-Foundation Modules (Extended Documentation): modules/agents-reference.md for the 11-agent retained catalog (10 MoAI-custom + 1 Anthropic built-in `Explore`), modules/commands-reference.md for 6 core commands workflow, modules/execution-rules.md for security, Git strategy, and compliance. For migration of references to the 12 archived agents (`manager-strategy`, `manager-quality`, `manager-brain`, `manager-project`, `claude-code-guide`, `researcher`, and the 6 `expert-*` agents), see `.claude/rules/moai/workflow/archived-agent-rejection.md`.
+Foundation Modules (Extended Documentation): modules/agents-reference.md for the 7-agent retained catalog (6 MoAI-custom + 1 Anthropic built-in `Explore`), modules/commands-reference.md for 4 core commands workflow, modules/execution-rules.md for security, Git strategy, and compliance.
 
 ---
 

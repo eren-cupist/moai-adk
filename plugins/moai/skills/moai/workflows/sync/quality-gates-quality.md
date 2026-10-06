@@ -40,7 +40,7 @@ Check indicator files in priority order (first match wins):
 
 Snapshot consumption: before launching, query the shared diagnostic snapshot with `moai verify check --key-current`. **Where** a fresh snapshot — key equality AND within the TTL — already covers one of the three categories below (recorded by the run-phase pre-review gate at run Phase 15, or by sync Phase 1 on the unchanged tree), consume the recorded result instead of re-executing that category; the quality report cites the snapshot path, key, original command, and recorded exit code as that category's evidence (per `.claude/rules/moai/core/verification-claim-integrity.md` §2 — the snapshot is the observed evidence, and the freshness rule is what keeps the attribution valid). A stale snapshot is never cited: on key mismatch or TTL expiry, execute the check as below and record the fresh result via `moai verify record`.
 
-**Shared-snapshot wiring.** The snapshot is keyed by HEAD SHA (HEAD + porcelain-v2 + diff hash); a new commit invalidates the prior snapshot. Two sync-phase consumers — the `sync-auditor` Evidence cells and the `.claude/workflows/sync-audit-4dim.js` 4-dimension judges — consume this single snapshot keyed by HEAD SHA rather than each independently re-executing `go test` / `golangci-lint` / `go vet` / `go test -cover`. The `.claude/hooks/moai/sync-phase-quality-gate.sh` Stop hook is not a consumer in that sense: it queries the snapshot with `moai verify check --key-current` and logs whether the query hit or missed, but the result does not change its verdict — it always runs its own fast per-language structural checks (compile or vet), never runs the test suite, coverage, or the heavy linter, and records nothing into the snapshot. Concurrent recording requests for the SAME HEAD SHA are serialized via the per-key claim/lock mechanism (in-process mutex + cross-process `O_EXCL` claim-stamp with staleness reclaim), so exactly one consumer's recording per dimension lands and the rest read — last-writer-wins never silently drops a dimension.
+**Shared-snapshot wiring.** The snapshot is keyed by HEAD SHA (HEAD + porcelain-v2 + diff hash); a new commit invalidates the prior snapshot. The sync-phase consumer — the `sync-auditor` Evidence cells — consumes this single snapshot keyed by HEAD SHA rather than each independently re-executing `go test` / `golangci-lint` / `go vet` / `go test -cover`. The `.claude/hooks/moai/sync-phase-quality-gate.sh` Stop hook is not a consumer in that sense: it queries the snapshot with `moai verify check --key-current` and logs whether the query hit or missed, but the result does not change its verdict — it always runs its own fast per-language structural checks (compile or vet), never runs the test suite, coverage, or the heavy linter, and records nothing into the snapshot. Concurrent recording requests for the SAME HEAD SHA are serialized via the per-key claim/lock mechanism (in-process mutex + cross-process `O_EXCL` claim-stamp with staleness reclaim), so exactly one consumer's recording per dimension lands and the rest read — last-writer-wins never silently drops a dimension.
 
 Launch three background tasks simultaneously:
 
@@ -72,10 +72,8 @@ Evaluation Dimensions:
 - Craft (20%): Test coverage >= 85%, error handling completeness, naming conventions, algorithmic complexity, concurrency safety
 - Consistency (15%): Codebase pattern adherence, code style consistency
 
-Web-output conditional: when the changed files emit pages a search engine or automated reader will fetch (markup templates, static-site content, server-rendered views), inject `At start, invoke Skill("moai-ref-seo") for the canonical-address, per-page metadata, and structured-data pre-ship baseline.` into the reviewing spawn (per `.moai/config/sections/delegation.yaml` domain_skills.frontend; skill-routing.md §1).
-
 Auto-Fix Behavior:
-- If critical issues found: Delegate auto-fix to manager-develop or a per-spawn `Agent(general-purpose)` domain specialist (per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C) — inject the cycle_type skill (`moai-workflow-ddd`|`moai-workflow-tdd`) plus 0-3 domain `moai-ref-*` skills per the mission domain (`.moai/config/sections/delegation.yaml`; per skill-routing.md §1)
+- If critical issues found: Delegate auto-fix to manager-develop or a per-spawn `Agent(general-purpose)` domain specialist — inject the cycle_type skill (`moai-workflow-ddd`|`moai-workflow-tdd`) plus 0-3 domain `moai-ref-*` skills per the mission domain (`.moai/config/sections/delegation.yaml`)
 - Re-run review after fix to verify resolution
 - Maximum 3 auto-fix iterations for critical issues before escalating to user
 - Warnings and suggestions are logged in report but do not block pipeline
@@ -130,7 +128,7 @@ Then call the **revision-match predicate** with the results directory recorded f
 
 #### Step 0.55.1: Security Analysis
 
-Agent: per-spawn `Agent(general-purpose)` security reviewer (security whitelist per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C row 9).
+Agent: per-spawn `Agent(general-purpose)` security reviewer (security whitelist).
 
 Delegate to a per-spawn `Agent(general-purpose)` security reviewer loading the retained `moai-ref-owasp-checklist` / `moai-ref-secops` skills (the documented security replacement path) in inline mode. Apply a single severity contract: Critical and High findings block; Medium and Low findings are advisory and are recorded in the sync report.
 
@@ -138,7 +136,7 @@ Delegate to a per-spawn `Agent(general-purpose)` security reviewer loading the r
 
 The Stop hook (`.claude/hooks/moai/sync-phase-quality-gate.sh`) runs `git diff` over the dependency manifests it lists for the detected language, restricted to the HEAD commit, and records `deps_modified=1` when that diff is non-empty. The value appears only in the hook's output message and in `.moai/logs/sync-quality-gate.log`. It is informational: it never drives the block decision, it looks only at manifests the HEAD commit changed, and it is not a vulnerability scan.
 
-A dependency or supply-chain review is a separate, agent-invoked step, not a stand-in for anything the hook does. When the change set warrants one, a per-spawn `Agent(general-purpose)` security reviewer MAY perform it — inject `At start, invoke Skill("moai-ref-supply-chain") for the dependency / transitive-vulnerability baseline.` (per skill-routing.md §1).
+A dependency or supply-chain review is a separate, agent-invoked step, not a stand-in for anything the hook does. When the change set warrants one, a per-spawn `Agent(general-purpose)` security reviewer MAY perform it.
 
 #### Step 0.55.2: Security Gate Decision
 

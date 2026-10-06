@@ -19,8 +19,7 @@
 > Window Targets — consult it before applying any figure below. The
 > `sonnet-4.5` / `haiku-4.5` `model_selection` config shown later in this
 > file is RETIRED in favor of **effort-routing** (`effortLevel`:
-> low/medium/high/xhigh/max for the session; subagents inherit it — see
-> `.claude/rules/moai/development/model-policy.md`); the cost-lever is now
+> low/medium/high/xhigh/max for the session; subagents inherit it); the cost-lever is now
 > effort, not a hardcoded sonnet/haiku model swap.
 
 Purpose: Efficient token-budget management through strategic context loading, phase separation, and effort-routing for cost-effective AI development.
@@ -52,7 +51,7 @@ Effort Routing (replaces the retired sonnet/haiku model_selection):
 - xhigh / max: Quality-critical (SPEC authoring, security review, Opus-tier reasoning)
 - high: Default for run-phase implementation
 - medium / low: Speed/cost (simple edits, tests, mechanical sweeps)
-- Subagents inherit the session's effort; MoAI sets no per-agent default (model-policy.md)
+- Subagents inherit the session's effort; MoAI sets no per-agent default
 
 Context Optimization:
 - Target: 20-30K tokens per agent
@@ -714,7 +713,6 @@ for rec in report['recommendations']:
 
 Skills:
 - [moai-foundation-core](../SKILL.md) - Context management (see [delegation-patterns.md](delegation-patterns.md) and [progressive-disclosure.md](progressive-disclosure.md))
-- [moai-foundation-cc](../../moai-foundation-cc/SKILL.md) - Memory and session-handoff authoring (context persistence)
 
 Commands:
 - /clear - Context reset (mandatory after /moai plan)

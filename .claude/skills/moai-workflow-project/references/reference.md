@@ -196,9 +196,7 @@ The report surfaces: initialization state, language configuration, documentation
 ### Related Skills
 
 - moai-foundation-core - Core execution patterns and SPEC workflow
-- moai-foundation-cc - Claude Code integration patterns
 - moai-workflow-spec - SPEC workflow orchestration (plan / run / sync)
-- moai-workflow-docs-claim-check - README / public-docs claim validation
 
 ### Template Resources
 

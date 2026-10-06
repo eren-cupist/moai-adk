@@ -10,9 +10,8 @@ description: >
   defensive patterns for pipelines, containers, and running APIs.
   NOT for: offensive techniques (exploit execution, container-escape attack steps,
   privilege-escalation procedures, attack tooling), dev-time web-app OWASP Top 10
-  (see moai-ref-owasp-checklist), LLM/AI security (see moai-ref-llm-security),
-  supply-chain provenance and signing (see moai-ref-supply-chain), or general API
-  design (see moai-ref-api-patterns).
+  (see moai-ref-owasp-checklist), or general API design (see
+  moai-ref-api-patterns).
 
 when_to_use: >
   Use when hardening a CI/CD pipeline, scanning infrastructure-as-code for
@@ -98,11 +97,6 @@ operational and does not duplicate them.
 - `moai-ref-owasp-checklist` — dev-time web-app OWASP Top 10, authentication
   patterns, input validation, HTTP security headers (the development-time surface;
   this skill is the operational surface).
-- `moai-ref-supply-chain` — SBOM, SLSA provenance, Sigstore signing, dependency
-  hygiene (the supply-chain surface that image scanning and pipeline signing here
-  draw on for artifact provenance).
-- `moai-ref-llm-security` — AI/LLM defensive security (the LLM-specific operational
-  surface, distinct from the general API/container/pipeline surface here).
 - `moai-ref-api-patterns` — REST/GraphQL API design and error handling (the
   API-design surface, distinct from the API-operational-defense surface here).
 

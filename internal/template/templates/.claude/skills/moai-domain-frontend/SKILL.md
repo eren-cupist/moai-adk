@@ -112,8 +112,6 @@ Import cva and VariantProps from class-variance-authority. Define buttonVariants
 ## Works Well With
 
 - moai-domain-backend - Full-stack development
-- moai-ref-ui-polish - Component library integration
-- moai-ref-ui-polish - UI/UX design principles
 - `.claude/rules/moai/languages/typescript.md` - TypeScript patterns (auto-loaded via paths frontmatter)
 - moai-workflow-testing - Frontend testing
 

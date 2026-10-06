@@ -630,10 +630,8 @@ Available Modules:
 
 Skills:
 - [moai-foundation-core](../SKILL.md) - Parent skill (see [modular-system.md](modular-system.md) and [token-optimization.md](token-optimization.md))
-- [moai-foundation-cc](../../moai-foundation-cc/SKILL.md) - Skill authoring with progressive structure (Claude Code authoring kit)
 
 Agents:
-- builder-harness - Generate project-specific harness specialists
 - manager-docs - Generate documentation with layered structure
 
 Commands:

@@ -511,4 +511,3 @@ Changes: Added test scenarios (3.7.0) + Related Skills section (3.8.0) + removed
 
 @.moai/harness/sync-extension.md
 
-*(이 파일은 `/moai project --harness`로 생성됩니다. 파일이 없으면 자동으로 skip됩니다.)*

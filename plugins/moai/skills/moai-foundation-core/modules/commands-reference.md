@@ -1,6 +1,6 @@
 # Commands Reference - MoAI-ADK Core Commands
 
-Purpose: Complete reference for MoAI-ADK's 6 core commands used in SPEC-First DDD workflow.
+Purpose: Complete reference for MoAI-ADK's 4 core commands used in SPEC-First DDD workflow.
 
 Version: 2.0.0
 
@@ -8,24 +8,20 @@ Version: 2.0.0
 
 ## Quick Reference (30 seconds)
 
-MoAI-ADK provides 6 core commands for SPEC-First DDD execution:
+MoAI-ADK provides 4 core commands for SPEC-First DDD execution:
 
 | Command            | Purpose                | Phase         |
 | ------------------ | ---------------------- | ------------- |
-| `/moai project`  | Project initialization | Setup         |
 | `/moai plan`     | SPEC generation        | Planning      |
 | `/moai run`      | DDD implementation     | Development   |
 | `/moai sync`     | Documentation sync     | Documentation |
-| `/moai feedback` | Feedback collection    | Improvement   |
 
 Required Workflow:
 ```
-1. /moai project # Initialize
-2. /moai plan "description" # Generate SPEC
-3. /clear # Clear context (REQUIRED)
-4. /moai run SPEC-001 # Implement
-5. /moai sync SPEC-001 # Document
-6. /moai feedback # Improve
+1. /moai plan "description" # Generate SPEC
+2. /clear # Clear context (REQUIRED)
+3. /moai run SPEC-001 # Implement
+4. /moai sync SPEC-001 # Document
 ```
 
 Critical Rule: Execute `/clear` after `/moai plan` (saves 45-50K tokens)
@@ -33,43 +29,6 @@ Critical Rule: Execute `/clear` after `/moai plan` (saves 45-50K tokens)
 ---
 
 ## Implementation Guide (5 minutes)
-
-### `/moai project` - Project Initialization
-
-Purpose: Initialize project structure and generate configuration
-
-Agent Delegation: `manager-docs` (project-doc scaffolding)
-
-Usage:
-```bash
-/moai project
-/moai project --with-git
-```
-
-What It Does:
-1. Creates `.moai/` directory structure
-2. Generates `.moai/config/sections/` config files with default settings
-3. Initializes Git repository (if `--with-git` flag provided)
-4. Sets up MoAI-ADK workflows
-
-Output:
-- `.moai/` directory
-- `.moai/config/sections/` (per-section YAML config SSOT)
-- `.moai/state/` (empty, ready for session state)
-- `.moai/logs/` (empty, ready for logging)
-
-Next Step: Ready for SPEC generation via `/moai plan`
-
-Example:
-```
-User: /moai project
-MoAI: Project initialized successfully.
- - .moai/config/sections/ config files created
- - Git workflow set to 'manual' mode
- Ready for SPEC generation.
-```
-
----
 
 ### `/moai plan` - SPEC Generation
 
@@ -223,42 +182,6 @@ MoAI: Documentation synchronized for SPEC-001.
 
 ---
 
-### `/moai feedback` - Improvement Feedback Collection
-
-Purpose: Error analysis and improvement suggestions
-
-Agent Delegation: orchestrator (creates a GitHub issue)
-
-Usage:
-```bash
-/moai feedback
-/moai feedback --analyze SPEC-001
-```
-
-What It Does:
-1. Analyzes errors encountered during workflow
-2. Collects improvement suggestions
-3. Reports to MoAI-ADK development team
-4. Proposes error recovery strategies
-
-Use Cases:
-- Errors: When errors occur during any workflow phase
-- Improvements: When MoAI-ADK enhancements are identified
-- Analysis: Post-implementation review
-
-Example:
-```
-User: /moai feedback
-MoAI: Collecting feedback for recent session.
-
- Errors: 2 permission issues detected
- Improvements: 1 token optimization suggestion
-
- Feedback submitted to MoAI-ADK development team.
-```
-
----
-
 ## Advanced Implementation (10+ minutes)
 
 <!-- Release section removed (dev-only §21 leak): release is the maintainer-only
@@ -302,11 +225,9 @@ Each command delegates to a specific agent:
 
 | Command            | Agent              | Phase scope                 |
 | ------------------ | ------------------ | --------------------------- |
-| `/moai project`  | `manager-docs`     | Project-doc scaffolding     |
 | `/moai plan`     | `manager-spec`     | Plan-phase                  |
 | `/moai run`      | `manager-develop`  | Run-phase (ddd/tdd/autofix) |
 | `/moai sync`     | `manager-docs`     | Sync-phase                  |
-| `/moai feedback` | orchestrator       | Creates a GitHub issue      |
 
 Delegation Flow:
 ```
@@ -345,7 +266,6 @@ Common Errors:
 
 | Error                     | Command                | Solution                                    |
 | ------------------------- | ---------------------- | ------------------------------------------- |
-| "Project not initialized" | `/moai plan`         | Run `/moai project` first                 |
 | "SPEC not found"          | `/moai run SPEC-999` | Verify SPEC ID exists                       |
 | "Token limit exceeded"    | Any                    | Execute `/clear` immediately                |
 | "Test coverage < 85%"     | `/moai run`          | `manager-develop` adds the missing tests    |
@@ -363,12 +283,12 @@ Recovery Pattern:
 
 Standard Workflow (Full SPEC):
 ```
-/moai project → /moai plan → /clear → /moai run → /moai sync
+/moai plan → /clear → /moai run → /moai sync
 ```
 
 Quick Workflow (No SPEC for simple tasks):
 ```
-/moai project → Direct implementation (for 1-2 file changes)
+Direct implementation (for 1-2 file changes)
 ```
 
 Iterative Workflow (Multiple SPECs):
@@ -414,7 +334,7 @@ Other Modules:
 Agents:
 - [manager-spec](agents-reference.md) - `/moai plan`
 - [manager-develop](agents-reference.md) - `/moai run`
-- [manager-docs](agents-reference.md) - `/moai sync`, `/moai project`
+- [manager-docs](agents-reference.md) - `/moai sync`
 
 ---
 

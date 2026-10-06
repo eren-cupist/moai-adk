@@ -30,12 +30,6 @@ Purpose: Multi-perspective code review analyzing security, performance, quality,
 
 Flow: Identify Changes -> Analyze Perspectives -> Consolidate -> Report
 
-## Relationship to /moai loop (read-only lens, layered under loop)
-
-`/moai review` is a **read-only, report-only lens**: it produces findings and modifies nothing. Its behavior is unchanged by the loop-sweep redefinition. The relationship to `/moai loop` is layered, not competing — `/moai review` is **layered under loop** as a queue supplier: `/moai loop`'s scan stage may INVOKE the review lenses (the security lens and the `@MX` lens) so their findings are **consumed by** the loop as fixable queue items. Standalone `/moai review` still only REPORTS those findings; the loop is what enqueues and fixes them.
-
-Non-overlap: run a `/moai review` to SEE findings without changing anything; run a `/moai loop` to FIX the finite set of issues the scan (including review lenses) found. The loop-side view of this layering is documented in `.claude/skills/moai/workflows/loop.md` (§ Scan Stage / § Relationship to /moai review and /moai fix).
-
 ## Supported Flags
 
 - --staged: Review only staged (git add) changes
@@ -68,9 +62,9 @@ Collect:
 
 If --lean flag: SHORT-CIRCUIT this phase entirely. Skip the comprehensive 4-perspective analysis (Perspectives 1-4 below) and jump directly to the "--lean Mode — Over-Engineering-Only Lean Audit" section. The narrowness IS the feature: correctness, security, and performance findings stay in the default (non-`--lean`) comprehensive review.
 
-[HARD] The 4 perspectives execute as a Mode-4 parallel read-only fan-out: up to 4 concurrent read-only judges — one per perspective (Security / Performance / Quality / UX) — spawned in a single turn, within the 3-5 concurrent `Agent()` ceiling (`orchestration-mode-selection.md` §C.2). The sync-auditor subagent remains the binding synthesis and verdict owner (independent skeptical quality scoring per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C row 2): the parallel judges' findings feed the sync-auditor synthesis, which renders the consolidated assessment. The fan-out changes execution shape only — never verdict ownership. (The former team-mode review workflow file stays retired with the Agent Teams static layer; the `--team` flag itself is experimental and re-allowed per `orchestration-mode-selection.md` §C.1. These 4 judges are fanout subagent fan-out, not a team.)
+[HARD] The 4 perspectives execute as a Mode-4 parallel read-only fan-out: up to 4 concurrent read-only judges — one per perspective (Security / Performance / Quality / UX) — spawned in a single turn, within the 3-5 concurrent `Agent()` ceiling (`orchestration-mode-selection.md` §C.2). The sync-auditor subagent remains the binding synthesis and verdict owner (independent skeptical quality scoring): the parallel judges' findings feed the sync-auditor synthesis, which renders the consolidated assessment. The fan-out changes execution shape only — never verdict ownership. (The former team-mode review workflow file stays retired with the Agent Teams static layer; the `--team` flag itself is experimental and re-allowed per `orchestration-mode-selection.md` §C.1. These 4 judges are fanout subagent fan-out, not a team.)
 
-Per-perspective skill injection (skill-routing.md §1): each read-only judge is a `Agent(general-purpose)` spawned with the perspective's skill injected — Security → `At start, invoke Skill("moai-ref-owasp-checklist")`; Quality → `Skill("moai-foundation-quality")`; UX → `Skill("moai-ref-react-patterns")` (per `.moai/config/sections/delegation.yaml`).
+Per-perspective skill injection: each read-only judge is a `Agent(general-purpose)` spawned with the perspective's skill injected — Security → `At start, invoke Skill("moai-ref-owasp-checklist")`; Quality → `Skill("moai-foundation-quality")`; UX → `Skill("moai-ref-react-patterns")` (per `.moai/config/sections/delegation.yaml`).
 
 At the finding stage, report every issue you find, including ones you are uncertain about or consider low-severity, each with a confidence level and an estimated severity. Do not filter for importance or confidence while finding — the verdict stage (must-pass thresholds + harmonic scoring) does the filtering downstream. The goal at this stage is coverage: surfacing a finding that later gets filtered out is preferable to silently dropping a real bug.
 
@@ -87,7 +81,7 @@ At the finding stage, report every issue you find, including ones you are uncert
 Enumerate project manifest files and run a vulnerability scan for each detected file:
 `go.mod`, `package.json`, `requirements.txt`, `Cargo.toml`, `pyproject.toml`, `Gemfile`, `composer.json`, `mix.exs`, `Package.swift`, `pubspec.yaml`.
 
-Auto-detect language from project markers; run the dependency vulnerability scan via a per-spawn `Agent(general-purpose)` security reviewer (security whitelist + OWASP instructions per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C row 9) with the detected manifest.
+Auto-detect language from project markers; run the dependency vulnerability scan via a per-spawn `Agent(general-purpose)` security reviewer (security whitelist + OWASP instructions) with the detected manifest.
 Full OWASP checklist: load the retained `moai-ref-owasp-checklist` skill (OWASP Top 10 + dependency-scan + secrets patterns), which supplements the inline dependency and secrets scans above.
 
 #### Secrets Scan (Incremental with Checkpoint)
@@ -193,7 +187,7 @@ Where native `/code-review` is auto-invocable, the orchestrator MAY invoke it vi
 
 Conditional-PROGRAMMATIC caveat: before relying on `Skill("code-review")`, verify auto-invocability at runtime — a bundled skill with `disable-model-invocation: true`, a session with `disableBundledSkills`, or a denied `Skill` tool all remove auto-invocability.
 
-Compose fallback: where native `/code-review` is not auto-invocable, Phase 2 runs entirely via the sync-auditor as today. See `native-invocation-model.md` Axis A.
+Compose fallback: where native `/code-review` is not auto-invocable, Phase 2 runs entirely via the sync-auditor as today.
 
 ## Phase 3: MX Tag Compliance Check
 
@@ -210,7 +204,7 @@ Report missing or outdated @MX tags as findings.
 
 Gating: this phase runs ONLY when the project's `audit_model` selects cross-backend convergence. The convergence call is the `mcp__moai__audit_multi` MCP tool — the codex and GLM backends review in parallel, and their verdicts fuse with the in-session Claude verdict. The mode table and the full call contract are owned by the cross-model audit usage SSOT — this section cross-references that skill and does not restate its tables. Under `audit_model` single-model or none, the phase is skipped entirely and the existing single-model path is unchanged.
 
-Owner: the Phase 2-3 reviewer (sync-auditor subagent) performs the convergence call — verdict ownership stays with the reviewer (mirrors the Phase 2 HARD rule: fan-out changes execution shape only, never verdict ownership). The orchestrator injects into the reviewer spawn (skill-routing.md §1 pattern), gated on the same audit_model condition: `At start, invoke Skill("moai-ref-cross-model-audit") for the audit_multi call contract and the independence rule.`
+Owner: the Phase 2-3 reviewer (sync-auditor subagent) performs the convergence call — verdict ownership stays with the reviewer (mirrors the Phase 2 HARD rule: fan-out changes execution shape only, never verdict ownership).
 
 Call contract (compact form; the skill is the SSOT):
 
@@ -349,7 +343,7 @@ Close the audit with exactly one of these forms:
 
 ### Read-only, advisory, no verdict
 
-The --lean mode is read-only and advisory. It applies NO fixes, modifies NO files, and renders NO PASS/FAIL verdict — it is distinct from `/moai clean` (which removes code) and from the sync-auditor gate (which scores a verdict). It produces only a "what can be cut" list plus the net-reduction estimate. Remediation routes through the existing Phase 6 Next Steps (run `/moai fix`, create fix tasks, export the report, or dismiss) — the same as the rest of this skill.
+The --lean mode is read-only and advisory. It applies NO fixes, modifies NO files, and renders NO PASS/FAIL verdict — it is distinct from the sync-auditor gate (which scores a verdict). It produces only a "what can be cut" list plus the net-reduction estimate. Remediation routes through the existing Phase 6 Next Steps (run `/moai fix`, create fix tasks, export the report, or dismiss) — the same as the rest of this skill.
 
 ### Doctrine cross-references (reuse, do not duplicate)
 
@@ -396,7 +390,7 @@ The deep scan executes six phases in order. Phases 1-4 are strictly READ-ONLY ag
 
 1. **Architecture map** — a single read-only recon agent (or `Explore`) maps modules, entry points, and trust boundaries. READ-ONLY (Read / Grep / Glob only).
 2. **Threat model** — a single agent consumes the phase-1 map and enumerates the attack surface. READ-ONLY. Loads `Skill("moai-ref-owasp-checklist")` for the baseline vocabulary.
-3. **Vulnerability hunt** — a parallel fan-out of hunt agents (per area / per manifest) surfaces candidate findings. READ-ONLY. Each hunt agent loads the relevant security reference skill(s) on demand via `Skill()` injection (NOT via static frontmatter preload): `Skill("moai-ref-owasp-checklist")` for web-app classes, `Skill("moai-ref-llm-security")` for LLM/agentic classes, `Skill("moai-ref-secops")` for CI/CD, container, and API-operational classes, and `Skill("moai-ref-supply-chain")` for dependency and provenance classes.
+3. **Vulnerability hunt** — a parallel fan-out of hunt agents (per area / per manifest) surfaces candidate findings. READ-ONLY. Each hunt agent loads the relevant security reference skill(s) on demand via `Skill()` injection (NOT via static frontmatter preload): `Skill("moai-ref-owasp-checklist")` for web-app classes, `Skill("moai-ref-secops")` for CI/CD, container, and API-operational classes.
 4. **Adversarial verification** — each candidate finding is cross-examined by an independent 3-voter panel (detail below). READ-ONLY.
 5. **Report** — the orchestrator (or a synthesizer agent) writes the results directory (schema below). Writes ONLY under the results directory.
 6. **Patch** — gated by `--patch`; drafts one reviewer-vouched patch per confirmed finding in an isolated scratch clone (detail below). Writes ONLY inside the scratch clone; never the live tree.
@@ -497,7 +491,7 @@ When to run: --design or --critique flag is present, OR changed files include UI
 
 ### --design: Extract Design Patterns
 
-Agent: per-spawn `Agent(general-purpose)` frontend specialist (frontend whitelist per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C row 8) — inject `At start, invoke Skill("moai-ref-react-patterns")` and `Skill("moai-domain-frontend")` (per `.moai/config/sections/delegation.yaml` domain_skills.frontend; skill-routing.md §1)
+Agent: per-spawn `Agent(general-purpose)` frontend specialist (frontend whitelist) — inject `At start, invoke Skill("moai-ref-react-patterns")` and `Skill("moai-domain-frontend")` (per `.moai/config/sections/delegation.yaml` domain_skills.frontend)
 
 Tasks:
 1. Scan UI files for repeated patterns: spacing values, radius values, color tokens, button/card patterns, depth strategy (borders vs shadows)
@@ -510,7 +504,7 @@ Output: Design pattern report with deviation list (file:line references)
 
 ### --critique: Post-Build Craft Review
 
-Agent: per-spawn `Agent(general-purpose)` frontend specialist (frontend whitelist per `.claude/rules/moai/workflow/archived-agent-rejection.md` §C row 8) — inject `At start, invoke Skill("moai-ref-react-patterns")` and `Skill("moai-domain-frontend")` (per `.moai/config/sections/delegation.yaml` domain_skills.frontend; skill-routing.md §1). When the reviewed build emits pages a search engine or automated reader will fetch, also inject `Skill("moai-ref-seo")` for the canonical-address, per-page metadata, structured-data, and document-semantics pre-ship baseline.
+Agent: per-spawn `Agent(general-purpose)` frontend specialist (frontend whitelist) — inject `At start, invoke Skill("moai-ref-react-patterns")` and `Skill("moai-domain-frontend")` (per `.moai/config/sections/delegation.yaml` domain_skills.frontend).
 
 Tasks:
 1. Read `.moai/design/system.md` for design direction context

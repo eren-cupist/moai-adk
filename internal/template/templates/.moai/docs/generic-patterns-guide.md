@@ -267,10 +267,6 @@ git stash drop stash@{0}
   canonical Layer 1 rule for race mitigation
 - `.claude/rules/moai/workflow/session-handoff.md` § Worktree-Anchored Resume
   Pattern — L2/L3 worktree as race-elimination alternative
-- `.claude/rules/moai/development/agent-authoring.md` § Agent Directory
-  Convention — namespace separation contract
-- `.claude/rules/moai/development/coding-standards.md` § Language Policy —
-  16-language neutrality contract
 
 ---
 
