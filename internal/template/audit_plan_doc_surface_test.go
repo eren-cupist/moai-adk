@@ -1,8 +1,7 @@
 // audit_plan_doc_surface_test.go: doc-surface guard for the audit-plan
 // activation text.
 //
-// The plan-auditor and sync-auditor agents, the cross-model audit skill and the
-// sync workflow instruct the audit path by prose. These checks pin the literals
+// The sync-auditor agent and the sync workflow instruct the audit path by prose. These checks pin the literals
 // that prose must carry, in BOTH the source tree and the template mirror, so an
 // edit to one copy cannot silently drop the instruction from the other.
 //
@@ -22,12 +21,11 @@ import (
 )
 
 const (
-	auditPlanPlanAuditor = ".claude/agents/moai/plan-auditor.md"
 	auditPlanSyncAuditor = ".claude/agents/moai/sync-auditor.md"
 	auditPlanSyncWf      = ".claude/skills/moai/workflows/sync.md"
 )
 
-// auditPlanCommonLiterals is the set every one of the three documents carries:
+// auditPlanCommonLiterals is the set every one of the documents carries:
 // the verb, the flags it is run with, the plan member the auditors branch on,
 // the legacy-path signature and its Gap wording, and the blocking rule.
 var auditPlanCommonLiterals = []string{
@@ -47,13 +45,6 @@ var auditPlanCommonLiterals = []string{
 // auditPlanSpecificLiterals adds, per document, the literals only that
 // document owns.
 var auditPlanSpecificLiterals = map[string][]string{
-	// plan-auditor writes the digest file itself, fresh, and passes only the path.
-	auditPlanPlanAuditor: {
-		".moai/state/audit-plan-result.json",
-		"overwrite",
-		"only the path",
-		"convergence_check",
-	},
 	// sync-auditor is read-only: it returns the members and says its verdict is
 	// not final until the orchestrator's check passes.
 	auditPlanSyncAuditor: {
@@ -94,7 +85,7 @@ func TestAuditPlanDocSurface(t *testing.T) {
 		"template": filepath.Join(projectRoot, "internal", "template", "templates"),
 	}
 
-	for _, rel := range []string{auditPlanPlanAuditor, auditPlanSyncAuditor, auditPlanSyncWf} {
+	for _, rel := range []string{auditPlanSyncAuditor, auditPlanSyncWf} {
 		for tree, base := range trees {
 			rel, tree, base := rel, tree, base
 			t.Run(filepath.Base(rel)+"/"+tree, func(t *testing.T) {
