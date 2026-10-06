@@ -23,7 +23,7 @@ A change too small to be worth a SPEC — a typo, a one-line fix with an obvious
 
 ## Flags
 
-`--branch` and `--issue` pass to plan; `--pr` puts the SPEC on the PR route (`.claude/rules/moai/workflow/spec-workflow.md`, section "SPEC Phase Discipline"); `--resume SPEC-<ID>` continues an existing SPEC from its first unfinished phase; `--team` (experimental Agent Teams) and `--solo` pass to run.
+`--branch` and `--issue` pass to plan; `--pr` puts the SPEC on the PR route and is the request to push and open its PRs (`.claude/rules/moai/workflow/spec-workflow.md`, section "SPEC Phase Discipline"); `--resume SPEC-<ID>` continues an existing SPEC from its first unfinished phase.
 
 ## Pipeline
 

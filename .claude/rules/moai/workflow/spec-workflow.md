@@ -14,7 +14,7 @@ Non-trivial work moves through three phases — plan, run, sync — around one S
 | Run | `/moai run SPEC-<ID>` | manager-develop (cycle_type from `constitution.development_mode` in quality.yaml: `ddd` or `tdd`) | code and tests, `progress.md` §E.2 and §E.3 |
 | Sync | `/moai sync SPEC-<ID>` | manager-docs, sync-auditor, manager-git | updated docs, `status: completed`, `progress.md` §E.4, a PR on the PR route |
 
-Per the retained catalog, the MoAI agent catalog consists of exactly 7 retained agents (`manager-spec`, `manager-develop`, `manager-docs`, `manager-git`, `plan-auditor`, `sync-auditor`, plus the built-in `Explore`).
+Agents: the MoAI agent catalog consists of exactly 7 retained agents (`manager-spec`, `manager-develop`, `manager-docs`, `manager-git`, `plan-auditor`, `sync-auditor`, plus the built-in `Explore`).
 
 ## SPEC Phase Discipline
 
@@ -24,18 +24,10 @@ Steps 2 (run) and 3 (sync) run in the same place: the same branch, or the same w
 
 How a phase ends depends on the route, chosen by tier and the `--pr` flag:
 
-- **Route A — trunk (default for Tier S and M):** each phase ends with its commits on the working branch; there is no per-phase PR. Pushing follows the git-strategy config and needs the user's approval.
-- **Route B — PR route (Tier L, or `--pr`):** manager-git opens a PR per phase, and the phase ends when that PR merges. The merge method is `git_strategy.<mode>.merge_method` (`squash` | `merge` | `rebase`, default `squash`).
+- **Route A — trunk (default for Tier S and M):** each phase ends with its commits on the working branch; there is no per-phase PR. Nothing is pushed unless the user approves it or `git_strategy.<mode>.automation.auto_push` is true, and a protected or shared branch never takes a direct commit — work on a feature branch there.
+- **Route B — PR route (Tier L, or `--pr`):** each phase is delivered through a PR that manager-git opens, and the phase ends when that PR merges. `--pr` (and `--auto-merge` for the merge) is the user's request to push and open it; on Tier L without the flag, ask before the push and the PR. The merge method is `git_strategy.<mode>.merge_method` (`squash` | `merge` | `rebase`, default `squash`).
 
-Step 4 (cleanup) applies to **Route B only**. It MUST happen ONLY after BOTH run AND sync PRs are merged, and only when a worktree was created: `moai worktree done SPEC-<ID>`, run from the host checkout. An unmerged worktree branch is the only copy of the work, so disposing of it early loses the work.
-
-## Subcommand Classification
-
-`/moai fix` is a pipeline — localize, repair, validate, with no model choosing the next step — and ignores `--mode` (`MODE_FLAG_IGNORED_FOR_UTILITY`). `/moai plan`, `/moai run`, and `/moai sync` are multi-agent workflows; they reject `--mode pipeline` with `MODE_PIPELINE_ONLY_UTILITY`. `/moai review` is not classified.
-
-### Mode Dispatch
-
-For `/moai run`, the mode comes from the `--mode` flag first, then `workflow.default_mode` in `.moai/config/sections/workflow.yaml`, then the default `autopilot`. Valid values are `autopilot`, `loop`, and `team`; any other value fails with `MODE_UNKNOWN`. `team` is experimental and used only on explicit request — see Agent Teams Variant.
+Step 4 (cleanup) applies to **Route B only**. It happens only after both the run and the sync PRs are merged, and only when a worktree was created: `moai worktree done SPEC-<ID>`, run from the host checkout. An unmerged worktree branch is the only copy of the work, so disposing of it early loses the work.
 
 ## SPEC Complexity Tier (S/M/L)
 
@@ -71,7 +63,7 @@ Sync updates documentation to match the implementation, records the close in `pr
 ## Phase Transitions
 
 Plan to Run:
-- Pre-condition: `progress.md` §E.1 records `plan_complete_at` and `plan_status: audit-ready`, the latest plan-auditor verdict is PASS, and the user gave the Implementation Kickoff Approval. On Route B the plan PR is merged.
+- Pre-condition: `progress.md` §E.1 records `plan_complete_at` and `plan_status: audit-ready`, the latest plan-auditor verdict is PASS, and the user gave the Implementation Kickoff Approval. On Route B, a plan PR, when one was opened, is merged.
 - `/moai run` starts with Phase 1, the Plan Audit Gate.
 - Plan Audit Gate skip policy: run may reuse the existing plan-audit verdict instead of re-auditing when all three hold — (1) the verdict is `PASS`; (2) its overall score meets the SPEC's tier threshold (S 0.75, M 0.80, L 0.85; `internal/runtime.SkipEligibleByScore`); (3) the plan-artifact hash is unchanged since that verdict. Otherwise Phase 1 audits again. Reusing the verdict never skips the Kickoff Approval.
 
@@ -106,7 +98,3 @@ Both report streams are local, gitignored artifacts.
 ### Grace Window
 
 For 7 days after the time recorded in `.moai/state/audit-gate-merge-at.txt` (ISO-8601), a FAIL verdict only warns (`FAIL_WARNED`); after that it blocks.
-
-## Agent Teams Variant
-
-Agent Teams is experimental. It is used only on an explicit `--team` or `--mode team` request and needs `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`; nothing selects it automatically. The default is one manager-develop agent working serially, with read-only research fanned out to parallel subagents where the tracks are genuinely independent.

@@ -54,9 +54,9 @@ Fill the run-phase sections of `.moai/specs/SPEC-{ID}/progress.md` that plan sca
 Follow `.moai/config/sections/git-strategy.yaml` for the active mode.
 
 - **Tier S/M without `--pr`:** commit on the current branch. If that branch is a shared or protected one the project integrates through review (`develop`, `release/*`, or `main` in a PR-based project), create a feature branch with the configured prefix first, or ask.
-- **Tier L, or `--pr`:** manager-git creates the feature branch and opens the PR with the configured `merge_method`.
+- **Tier L, or `--pr`:** manager-git creates the feature branch and delivers through a PR with the configured `merge_method`. `--pr` is the user's request to push and open it; on Tier L without the flag, ask before pushing or opening the PR.
 
-Use Conventional Commits in the `git_commit_messages` language, and add `Fixes #<n>` when `spec.md` has an `issue_number`. Stage specific paths, never unrelated files. Never use `--no-verify`, `--amend` on pushed commits, or force-push. Push only when `automation.auto_push` is true for the mode or the user approves it.
+Use Conventional Commits in the `git_commit_messages` language, and add `Fixes #<n>` when `spec.md` has an `issue_number`. Stage specific paths, never unrelated files. Never use `--no-verify`, `--amend` on pushed commits, or force-push. Push only when the user passed `--pr`, approved the push, or `git_strategy.<mode>.automation.auto_push` is true.
 
 # Completion
 

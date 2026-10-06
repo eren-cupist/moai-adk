@@ -184,7 +184,7 @@ moai constitution list --format json
   zone_class: frozen-canonical
   file: .claude/rules/moai/workflow/spec-workflow.md
   anchor: "#spec-phase-discipline"
-  clause: "Step 4 (cleanup) applies to **Route B only**. It MUST happen ONLY after BOTH run AND sync PRs are merged"
+  clause: "Step 4 (cleanup) applies to **Route B only**. It happens only after both the run and the sync PRs are merged"
   canary_gate: true
 
 # --- branch-origin-protocol.md (1 entry: V3R5-035) ---

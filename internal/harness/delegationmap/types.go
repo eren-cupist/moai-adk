@@ -124,11 +124,11 @@ type ConditionalExclusion struct {
 var ConditionalExclusions = []ConditionalExclusion{
 	{
 		Agent:        "sync-auditor",
-		RuleCitation: "CLAUDE.md §6 + .claude/rules/moai/workflow/spec-workflow.md § Mode Dispatch — runs at harness level `thorough` only",
+		RuleCitation: ".claude/skills/moai/workflows/sync.md, section \"The independent audit (Phase 7)\" — runs only at harness levels whose `evaluator` is true",
 	},
 	{
 		Agent:        "plan-auditor",
-		RuleCitation: ".claude/rules/moai/workflow/spec-workflow.md § Plan Audit Gate skip policy — skipped when the cached verdict is PASS at or above the tier threshold with an unchanged artifact hash",
+		RuleCitation: ".claude/rules/moai/workflow/spec-workflow.md, section \"Phase Transitions\" (Plan Audit Gate skip policy) — skipped when the cached verdict is PASS at or above the tier threshold with an unchanged artifact hash",
 	},
 }
 

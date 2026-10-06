@@ -54,7 +54,7 @@ Subagents cannot ask the user anything. When one returns a blocker report naming
 
 ## Approach and approval
 
-Before a large or ambiguous change, explain the approach and the files it touches, and get the user's approval. Skip the ceremony for obvious changes such as a typo, a one-line fix or a change whose diff fits in one sentence. The plan-to-run kickoff approval in `/moai run` is always asked.
+Before a large or ambiguous change, explain the approach and the files it touches, and get the user's approval. Skip the ceremony for obvious changes such as a typo, a one-line fix or a change whose diff fits in one sentence. The plan-to-run kickoff approval is never skipped: `/moai plan` ends by asking it through AskUserQuestion whatever the audit score, and `/moai run` asks it before writing code unless the user already gave it in this conversation.
 
 <!-- moai:contract-mode-start id="contract-signing-pipeline" -->
 Where `workflow.autonomy.mode: contract` — the plan-to-run kickoff approval is the signed SPEC contract: `moai contract kickoff-check <SPEC-ID> --card <card>` must exit 0, and no kickoff AskUserQuestion is asked. See `.claude/rules/moai/workflow/contract-autonomy.md`, section "The signing gate".
@@ -74,7 +74,7 @@ The quality gate detects the project language from its markers and runs that lan
 
 These hold in every workflow, with or without a SPEC:
 
-- Get the user's approval before irreversible or outward-facing actions: pushing, opening or merging a PR, force operations, deleting files outside the task, and changes to external systems.
+- Get the user's approval before irreversible or outward-facing actions: force operations, deleting files outside the task, and changes to external systems. Nothing is pushed and no PR is opened, merged or commented on unless the user passed `--pr` or `--auto-merge`, approved it in this conversation, or the project sets `git_strategy.<mode>.automation.auto_push`.
 - Never commit directly to a protected or shared branch; the git rules for the shared checkout are in `AGENTS.md`.
 - Never write secrets, credentials or tokens into files or commits.
 - One writer per working tree: run write-capable agents in parallel only when each writes a different worktree, and keep your own work read-only while a write-capable agent is working in the same tree.

@@ -47,7 +47,7 @@ On failure, ask: fix now (recommended — `manager-develop`, then re-run the mir
 ### github-flow
 
 - Feature branch or worktree branch: `git push -u origin <branch>`. If `gh pr list --head <branch> --json number` finds a PR, comment on it with the sync summary; otherwise `gh pr create --base <main_branch>` with a title from the SPEC and a body holding the summary, quality and audit results, and the deployment notes from Phases 2-6 (migrations, environment changes, breaking changes). When the SPEC frontmatter has a non-zero `issue_number`, end the body with `Fixes #<issue_number>`. Show the PR URL.
-- The main branch: push directly only when it is not protected and the user approved; otherwise stop and ask.
+- The main branch: push directly only when the user approved it and the branch is neither protected nor shared with other contributors; otherwise stop and ask.
 - Any other state (for example a detached HEAD): stop, report the state and the routes above, and push nothing.
 
 ### git-flow

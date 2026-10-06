@@ -43,13 +43,14 @@ Pick one workflow for the input above, read its file, and follow it. Everything 
 
 - plan: manager-spec writes the SPEC, plan-auditor audits it, Explore for wide codebase investigation, manager-git for an optional branch or issue.
 - run: manager-develop implements; manager-git for commits and branches.
-- sync: manager-docs updates documentation, sync-auditor audits the result, manager-git handles the commit and PR.
-- fix and review: see their workflow files.
+- sync: manager-docs updates documentation, sync-auditor audits the result, manager-git handles pushes and PRs when they are requested or approved.
+- fix: the orchestrator repairs directly, or briefs manager-develop for a larger repair.
+- review: the orchestrator reviews in this session; only a large diff that splits into independent areas gets one read-only subagent per area.
 
 Inject the domain skills listed in `.moai/config/sections/delegation.yaml` into a subagent's prompt when the work matches them (`At start, invoke Skill("<name>")`).
 
 <!-- moai:contract-mode-start id="contract-signing-router" -->
-Where `workflow.autonomy.mode: contract` — the Kickoff approval named here is the contract signature checked by `moai contract kickoff-check`; the progression mode is chosen when a goal is armed after that check passes. See `.claude/rules/moai/workflow/contract-autonomy.md`, section "The signing gate".
+Where `workflow.autonomy.mode: contract` — the Kickoff approval named here is the contract signature checked by `moai contract kickoff-check`. See `.claude/rules/moai/workflow/contract-autonomy.md`, section "The signing gate".
 
 <!-- moai:contract-mode-end -->
 
@@ -60,16 +61,15 @@ Where `workflow.autonomy.mode: contract` — the Kickoff approval named here is 
 | `--resume SPEC-<ID>` | plan, run, default | continue an existing SPEC from its first unfinished step |
 | `--branch` | plan, default | create a branch for the SPEC at plan time |
 | `--issue` | plan, default | create a GitHub issue for the SPEC |
-| `--pr` | default | use the PR route |
-| `--team` / `--solo` | run, fix, review, default | experimental Agent Teams / force a single serial agent |
-| `--mode <value>` | run | `autopilot`, `loop`, or `team`; plan and sync reject `pipeline` |
+| `--pr` | run, sync, default | use the PR route; with sync it is also the request to push and open the PR |
+| `--auto-merge` | sync | merge the PR once its checks pass |
 
-Workflow-specific flags are listed in each workflow file.
+Workflow-specific flags are listed in each workflow file — review, for example, takes `--staged`, `--branch <base>`, `--commit <SHA>`, `--file <path>`, `--security`, `--lean`, `--deep` and `--patch`.
 
-`--branch` with `run` or `sync` is an error: those phases use the branch plan created, and making a new one mid-lifecycle splits the SPEC's history. Say so in the user's language, show the right usage (`/moai plan "<description>" --branch`, then `/moai run SPEC-<ID>`), and stop.
+`--branch` (without a base, as the plan flag) with `run` or `sync` is an error: those phases use the branch plan created, and making a new one mid-lifecycle splits the SPEC's history. Say so in the user's language, show the right usage (`/moai plan "<description>" --branch`, then `/moai run SPEC-<ID>`), and stop.
 
-`--worktree` is retired: plan no longer creates a workspace. Tell the user to enter one first — `moai cc -w <name>`, or `moai cc -w <name> --spawn` to open it in a new session window — and run the command there.
+`--worktree` is not supported: plan does not create a workspace. Tell the user to enter one first — `moai cc -w <name>`, or `moai cc -w <name> --spawn` to open it in a new session window — and run the command there.
 
 ## Running a workflow
 
-Read the workflow file, load the `.moai/config/sections/*.yaml` files it names, and follow it. Track multi-step work with TaskCreate and TaskUpdate. Ask the user only where the workflow says to, or when a decision is genuinely theirs; when you do, use AskUserQuestion with the recommended option first and a short description of what each option implies (while `interview.recommendation_mode` is `pull`, give no option a recommended label). The plan→run Implementation Kickoff Approval is always asked before implementation starts. Answer the user in their conversation language.
+Read the workflow file, load the `.moai/config/sections/*.yaml` files it names, and follow it. Track multi-step work with TaskCreate and TaskUpdate. Ask the user only where the workflow says to, or when a decision is genuinely theirs; when you do, use AskUserQuestion with the recommended option first and a short description of what each option implies (while `interview.recommendation_mode` is `pull`, give no option a recommended label). Implementation starts only after the user's Implementation Kickoff Approval: plan ends by asking it, and run asks it unless the user already approved in this conversation. Only contract mode replaces the question, with the signed contract. Answer the user in their conversation language.
