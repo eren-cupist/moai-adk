@@ -1,60 +1,7 @@
 // Package template provides tests for output style audit and parity checks.
 //
-// This file implements audit tests for the .claude/output-styles/moai/ directory.
-// Source: SPEC-V3R2-WF-006
-//
-// # Persona cross-references are not audited here, and that is a finding, not a gap
-//
-// These tests assert frontmatter schema, the exact style count, template/live
-// parity, and encoding. Nothing here asserts that a persona names its siblings or
-// documents how to switch away from itself — and the three personas do differ on
-// that axis: moai-easy.md and moai-learn.md each point the reader at MoAI, while
-// moai.md names neither sibling.
-//
-// That asymmetry was investigated and judged structural rather than defective:
-//
-//   - Nothing was lost. moai.md has never named a sibling in its whole history;
-//     `git log -S 'MoAI-Easy' --follow` over it returns no commit, while the same
-//     probe over moai-easy.md returns several. The absence is original, not a
-//     regression.
-//   - Each sibling's pointer is a consequence of its own declared limit. The
-//     moai-learn pointer sits inside that file's Cannot-Do section ("no code
-//     writing — switch to MoAI"), and moai-easy frames itself as the beginner
-//     on-ramp. Every entry in moai.md's own Cannot-Do section is internal
-//     discipline (delegate, refuse over-engineering); none of them names a
-//     capability a sibling would supply. The shape is a hub two spokes point at,
-//     not a hub missing an edge.
-//   - Discovery does not depend on the prose. The runtime's `/output-style`
-//     command lists every available style with its frontmatter description, and it
-//     lists styles kept in a subdirectory such as this one — measured with a flat
-//     and a nested probe style in an isolated directory. A reader in the MoAI
-//     persona reaches the siblings through the command regardless of what the file
-//     says.
-//
-// So a future assertion requiring persona cross-references would encode a
-// preference, not repair a defect. If one is ever added, it should say which of
-// the three properties above it believes has changed.
-//
-// # Integration record
-//
-// The finding above lives here rather than in a report because this card's
-// verdict path is gitignored. The same applies to its integration, recorded so
-// the merge is not an unattributed claim:
-//
-//   - Absorbed local develop 66fd83c4a (origin/develop...develop counted 0 on the
-//     left, so the absorbed branch was not behind the remote). Absorb commit
-//     f2f15a036, which brought in 61 files across internal/{cli,spec,core/project,
-//     harness,merge,hook,template}.
-//   - Remeasured in the merged tree, not before it, and scoped by what the
-//     absorption brought in rather than by this card's own one-file diff: the
-//     seven package roots above all passed with -count=1 under a scrubbed
-//     environment. internal/cli ran with -timeout 30m.
-//   - Both emit axes and the catalog-hash axis were checked because the
-//     absorption carried .claude/agents/ and .claude/skills/ edits from other
-//     cards: agents-emit-check and commands-emit-check exited 0, and
-//     gen-catalog-hashes --all left git status empty.
-//   - This card's own diff touches one file — this one. The agent and skill
-//     edits in the merged tree belong to the absorbed cards, not to it.
+// This file implements audit tests for the .claude/output-styles/moai/ directory:
+// frontmatter schema, the exact style set, template/live parity, and encoding.
 package template
 
 import (
@@ -72,12 +19,10 @@ import (
 
 // Output style name and file name constants — single source of truth (CLAUDE.local.md §14).
 const (
-	styleNameMoAI      = "MoAI"
-	styleNameMoAILearn = "MoAI-Learn"
-	styleNameMoAIEasy  = "MoAI-Easy"
-	styleFileMoAI      = "moai.md"
-	styleFileMoAILearn = "moai-learn.md"
-	styleFileMoAIEasy  = "moai-easy.md"
+	styleNameMoAI     = "MoAI"
+	styleNameMoAIEasy = "MoAI-Easy"
+	styleFileMoAI     = "moai.md"
+	styleFileMoAIEasy = "moai-easy.md"
 
 	// Frontmatter key names.
 	keyName                   = "name"
@@ -93,7 +38,7 @@ const (
 	outputStylesDir = ".claude/output-styles/moai"
 
 	// Expected number of output styles (REQ-WF006-002).
-	expectedStyleCount = 3
+	expectedStyleCount = 2
 )
 
 // outputStyleFrontmatter holds parsed frontmatter fields for an output style file.
@@ -212,7 +157,7 @@ func findProjectRoot() (string, bool) {
 // embedded template has the required frontmatter keys with correct types and values.
 //
 // REQ-WF006-001: name, description, keep-coding-instructions required.
-// REQ-WF006-005: MoAI=true, MoAI-Learn=false.
+// REQ-WF006-005: every style keeps the coding instructions (true).
 // REQ-WF006-007, REQ-WF006-013: violations emit OUTPUT_STYLE_SCHEMA_ERROR.
 func TestOutputStylesFrontmatterSchema(t *testing.T) {
 	t.Parallel()
@@ -229,7 +174,6 @@ func TestOutputStylesFrontmatterSchema(t *testing.T) {
 		wantKeepCodingInstr string
 	}{
 		{styleFileMoAI, styleNameMoAI, "true"},
-		{styleFileMoAILearn, styleNameMoAILearn, "false"},
 		{styleFileMoAIEasy, styleNameMoAIEasy, "true"},
 	}
 
@@ -342,12 +286,12 @@ func TestOutputStylesFrontmatterSchema(t *testing.T) {
 	})
 }
 
-// TestOutputStylesExactlyThree verifies that the embedded template contains exactly
-// three output style files with the expected names.
+// TestOutputStylesExactSet verifies that the embedded template contains exactly
+// the expected output style files.
 //
-// REQ-WF006-002: exactly three styles (MoAI, MoAI-Learn, MoAI-Easy).
-// REQ-WF006-014: a fourth style without schema validation emits OUTPUT_STYLE_UNVERIFIED.
-func TestOutputStylesExactlyThree(t *testing.T) {
+// REQ-WF006-002: exactly two styles (MoAI, MoAI-Easy).
+// REQ-WF006-014: an extra style without schema validation emits OUTPUT_STYLE_UNVERIFIED.
+func TestOutputStylesExactSet(t *testing.T) {
 	t.Parallel()
 
 	fsys, err := EmbeddedTemplates()
@@ -374,14 +318,13 @@ func TestOutputStylesExactlyThree(t *testing.T) {
 	}
 
 	expectedNames := map[string]bool{
-		styleFileMoAI:      true,
-		styleFileMoAILearn: true,
-		styleFileMoAIEasy:  true,
+		styleFileMoAI:     true,
+		styleFileMoAIEasy: true,
 	}
 	for _, name := range mdFiles {
 		if !expectedNames[name] {
-			t.Errorf("%s: unexpected style file %q (not in allowed set {%s, %s, %s})",
-				errPrefixUnverified, name, styleFileMoAI, styleFileMoAILearn, styleFileMoAIEasy)
+			t.Errorf("%s: unexpected style file %q (not in allowed set {%s, %s})",
+				errPrefixUnverified, name, styleFileMoAI, styleFileMoAIEasy)
 		}
 	}
 	for expected := range expectedNames {
@@ -392,12 +335,12 @@ func TestOutputStylesExactlyThree(t *testing.T) {
 		}
 	}
 
-	// Synthetic: simulate adding a fourth style.
-	t.Run("Synthetic/FourthStyleWouldFail", func(t *testing.T) {
+	// Synthetic: simulate adding an extra style.
+	t.Run("Synthetic/ExtraStyleWouldFail", func(t *testing.T) {
 		t.Parallel()
 		extraFiles := append(mdFiles, "foo.md")
 		if len(extraFiles) == expectedStyleCount {
-			t.Error("synthetic fourth style was not added correctly to the test")
+			t.Error("synthetic extra style was not added correctly to the test")
 		}
 		// Verify the count check logic produces the expected error string.
 		if len(extraFiles) != expectedStyleCount {
@@ -507,7 +450,7 @@ func TestOutputStylesEncoding(t *testing.T) {
 		t.Fatalf("EmbeddedTemplates() error: %v", err)
 	}
 
-	styleFiles := []string{styleFileMoAI, styleFileMoAILearn, styleFileMoAIEasy}
+	styleFiles := []string{styleFileMoAI, styleFileMoAIEasy}
 	for _, name := range styleFiles {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
