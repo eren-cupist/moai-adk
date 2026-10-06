@@ -160,7 +160,9 @@ func TestAgentDescriptionBudget(t *testing.T) {
 		if !ok {
 			t.Fatalf("%s missing", victim)
 		}
-		pad := strings.Repeat("padding ", agentDescPerAgentCap/8+1)
+		// Pad past the total budget on its own, so the falsifier does not
+		// depend on how close the real descriptions sit to the budget.
+		pad := strings.Repeat("padding ", max(agentDescPerAgentCap, agentDescTotalBudget)/8+1)
 		mutated[victim] = strings.Replace(text, "\ntools:", "\n  "+pad+"\ntools:", 1)
 		got := dietCheckAgentDescriptions(mutated, agentDescTotalBudget, agentDescPerAgentCap)
 		if !slices.ContainsFunc(got, func(l string) bool {

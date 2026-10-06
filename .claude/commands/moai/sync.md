@@ -1,6 +1,6 @@
 ---
-description: Synchronize documentation, codemaps, and create pull request
-argument-hint: "[SPEC-XXX] [--auto-merge] [--skip-mx]"
+description: Synchronize docs and SPEC status with what was implemented, and create a pull request
+argument-hint: "[SPEC-XXX] [auto|force|status|project] [--pr] [--auto-merge] [--skip-mx]"
 allowed-tools: Skill
 ---
 
