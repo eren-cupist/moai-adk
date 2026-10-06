@@ -561,6 +561,71 @@ var pedagogicalAllowlist = []pedagogicalAllowlistEntry{
 		SpecID:    "REQ-002",
 		Rationale: "Generic placeholder requirement code in an illustrative task-decomposition table example (format demonstration, not a tracked internal REQ)",
 	},
+	// moai-workflow-spec/references/examples.md is a worked SPEC example in the
+	// exact line formats `moai spec lint` reads; its IDs are format placeholders.
+	{
+		File:      ".claude/skills/moai-workflow-spec/references/examples.md",
+		LineStart: 0,
+		LineEnd:   0,
+		SpecID:    "SPEC-AUTH-001",
+		Rationale: "Placeholder ID in the worked SPEC format example (lint-readable shape demonstration, not a tracked internal token)",
+	},
+	{
+		File:      ".claude/skills/moai-workflow-spec/references/examples.md",
+		LineStart: 0,
+		LineEnd:   0,
+		SpecID:    "REQ-AUTH-001",
+		Rationale: "Placeholder ID in the worked SPEC format example (lint-readable shape demonstration, not a tracked internal token)",
+	},
+	{
+		File:      ".claude/skills/moai-workflow-spec/references/examples.md",
+		LineStart: 0,
+		LineEnd:   0,
+		SpecID:    "REQ-AUTH-002",
+		Rationale: "Placeholder ID in the worked SPEC format example (lint-readable shape demonstration, not a tracked internal token)",
+	},
+	{
+		File:      ".claude/skills/moai-workflow-spec/references/examples.md",
+		LineStart: 0,
+		LineEnd:   0,
+		SpecID:    "REQ-AUTH-003",
+		Rationale: "Placeholder ID in the worked SPEC format example (lint-readable shape demonstration, not a tracked internal token)",
+	},
+	{
+		File:      ".claude/skills/moai-workflow-spec/references/examples.md",
+		LineStart: 0,
+		LineEnd:   0,
+		SpecID:    "REQ-AUTH-004",
+		Rationale: "Placeholder ID in the worked SPEC format example (lint-readable shape demonstration, not a tracked internal token)",
+	},
+	{
+		File:      ".claude/skills/moai-workflow-spec/references/examples.md",
+		LineStart: 0,
+		LineEnd:   0,
+		SpecID:    "AC-AUTH-001",
+		Rationale: "Placeholder ID in the worked SPEC format example (lint-readable shape demonstration, not a tracked internal token)",
+	},
+	{
+		File:      ".claude/skills/moai-workflow-spec/references/examples.md",
+		LineStart: 0,
+		LineEnd:   0,
+		SpecID:    "AC-AUTH-002",
+		Rationale: "Placeholder ID in the worked SPEC format example (lint-readable shape demonstration, not a tracked internal token)",
+	},
+	{
+		File:      ".claude/skills/moai-workflow-spec/references/examples.md",
+		LineStart: 0,
+		LineEnd:   0,
+		SpecID:    "AC-AUTH-003",
+		Rationale: "Placeholder ID in the worked SPEC format example (lint-readable shape demonstration, not a tracked internal token)",
+	},
+	{
+		File:      ".claude/skills/moai-workflow-spec/references/examples.md",
+		LineStart: 0,
+		LineEnd:   0,
+		SpecID:    "AC-AUTH-004",
+		Rationale: "Placeholder ID in the worked SPEC format example (lint-readable shape demonstration, not a tracked internal token)",
+	},
 
 	// --- Card t262: C1 general-form widening — adjudicated residues ----------
 	//

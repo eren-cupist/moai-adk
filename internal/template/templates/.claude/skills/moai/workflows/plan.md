@@ -1,186 +1,83 @@
 ---
 description: >
-  Creates comprehensive SPEC documents using GEARS notation (EARS retained
-  as legacy reference, 6-month backward-compat window) as the first step
-  of the Plan-Run-Sync workflow. Handles project exploration, SPEC file
-  generation, validation, and optional Git environment setup with worktree
-  or branch creation. Use when planning features or creating specifications.
+  /moai plan — turn a feature or change request into an approved SPEC
+  directory (spec.md, plan.md, acceptance.md and the tier's other artifacts)
+  that /moai run can execute, with an independent plan-auditor review and the
+  Implementation Kickoff Approval.
 user-invocable: false
 metadata:
-  version: "2.8.0"
+  version: "3.0.0"
   category: "workflow"
   status: "active"
-  updated: "2026-05-25"
-  tags: "plan, spec, gears, ears, requirements, specification, design"
-
-# MoAI Extension: Progressive Disclosure
-progressive_disclosure:
-  enabled: true
-  level1_tokens: 100
-  level2_tokens: 5000
-
-# MoAI Extension: Triggers
-triggers:
-  keywords: ["plan", "spec", "design", "architect", "requirements", "feature request"]
-  agents: ["manager-spec", "Explore", "manager-git"]
-  phases: ["plan"]
+  tags: "plan, spec, gears, requirements, acceptance-criteria"
 ---
 
-<!-- TRACE PROBE: workflow-split baseline trace mechanism -->
-<!-- Activated by MOAI_TRACE_PHASES=1 environment variable -->
-<!-- Emits one line per Phase entry/exit to stderr in format: [trace] /moai plan Phase <N> <enter|exit> -->
+# /moai plan
 
-# Plan Workflow Orchestration
+## Outcome
 
-## Phase Owners (per the canonical agent catalog policy)
+A SPEC directory at `.moai/specs/SPEC-<ID>/` that the user can read and approve and that `/moai run SPEC-<ID>` can execute: GEARS requirements, acceptance criteria covering every requirement, the artifact set for the SPEC's tier, a passing plan-auditor report, the audit-ready signal in `progress.md` §E.1, and the user's Implementation Kickoff Approval. Planning writes no implementation code.
 
-Phase Owners: `manager-spec` (SPEC artifact authoring — spec.md/plan.md/acceptance.md/design.md/research.md/progress.md §E.1, lettered per `.claude/rules/moai/development/spec-frontmatter-schema.md` § progress.md Section Map) + `Explore` (read-only codebase investigation; Anthropic built-in agent) + `manager-git` (worktree/branch creation when Phase 3 worktree env opt-in).
+Deliver what was asked, at the intended scope. Make routine judgment calls yourself and check in only when different readings would lead to materially different work. If the ask looks mistaken, say so in a sentence and continue as asked. Finish the whole task; if something genuinely can't be completed, do the rest and state plainly what is missing and why.
 
-Cross-reference: per-SPEC Phase 1 SKIP rationale recorded at `.moai/specs/SPEC-{ID}/progress.md` § Phase 1 SKIP Rationale; Phase 4 Mode Selection autopilot logging at `progress.md` § Phase 4 Mode Selection.
+## Arguments
 
-## Purpose
+`/moai plan "<description>" [--branch] [--issue] [--resume SPEC-<ID>]`
 
-Create comprehensive SPEC documents using **GEARS notation** (Generalized EARS — the canonical SPEC authoring form as of v3.0.0) as the first step of the Plan-Run-Sync workflow. EARS notation is retained as the explicit 6-month backward-compatibility legacy reference for pre-v3 SPECs (see the canonical GEARS migration policy for the backward-compatibility window). Handles project exploration, SPEC file generation, validation, and optional Git environment setup with worktree or branch creation.
+- `--resume SPEC-<ID>` continues an existing draft: read its directory and pick up at the first missing or failing piece.
+- `--branch` creates a branch for the SPEC (see Optional steps). `--issue` creates a GitHub issue. Without these flags plan creates neither.
+- No description and no `--resume`: ask the user what to plan.
+- `--mode pipeline` is rejected with `MODE_PIPELINE_ONLY_UTILITY`; plan is a multi-agent workflow.
 
-Canonical GEARS authoring guide: `.claude/skills/moai-workflow-spec/SKILL.md` § GEARS Format.
+## Reference
 
-For phase overview and token budgets, see: `.claude/rules/moai/workflow/spec-workflow.md`
+- SPEC format (GEARS, requirement and criterion lines, spec.md and plan.md contents): the `moai-workflow-spec` skill.
+- Tiers and their artifact sets, the plan audit gate, report paths: `.claude/rules/moai/workflow/spec-workflow.md`.
+- Frontmatter and `progress.md` sections: `.claude/rules/moai/development/spec-frontmatter-schema.md`.
+- Artifact checklist, audit mechanics, and the optional branch and issue steps: `workflows/plan/spec-assembly.md`.
 
----
+## How to get there
 
-## [NEEDS CLARIFICATION] Marker Usage
+**Understand the request and the code it touches.** Explore as much as the request needs. For a change confined to a few files, read them yourself. For wide work — several modules, unfamiliar territory, or a question about how things fit together — launch one or two Explore subagents in one message so they run in parallel, each with a distinct question; don't send a subagent to read what you could read in a few calls. Check `.moai/specs/` for an existing SPEC covering the same ground (extend or supersede it rather than duplicating it) and for SPECs this one depends on. Read `.moai/project/product.md`, `structure.md`, and `tech.md` when they exist.
 
-**[NEEDS CLARIFICATION: <topic>]** markers identify unresolved questions that MUST be settled before Implementation Kickoff Approval (plan→run HUMAN GATE).
+Subagents multiply cost and time: each re-establishes context, re-explores and reports back. Do small work (a few reads, a handful of edits, simple verification) directly. Delegate large, genuinely independent tracks, and run independent agents in one message so they run in parallel. Brief a subagent fully the first time, and don't redo its work once it reports. Verification belongs in the main loop, not in an extra subagent.
 
-**Where to use**: 
-- **plan.md** — for SPEC planning open questions (missing technical decisions, unclear scope)
-- **research.md** — for investigation gaps (dependencies, external API behavior, performance constraints)
-- **NEVER in spec.md or acceptance.md** — these are resolved artifacts
+**Ask only what changes the SPEC.** When different readings of the request would produce materially different SPECs — what is in or out of scope, which behavior is wanted, a constraint only the user knows — ask, all in one AskUserQuestion round (up to 4 questions, recommended option first, each option with a short description of what it implies). Everything else is a routine call: decide it and have manager-spec record it under Assumptions in plan.md. A question that cannot be settled now becomes a `[NEEDS CLARIFICATION: <topic>]` marker in plan.md (or research.md) — never in spec.md or acceptance.md — and must be answered before the Kickoff Approval.
 
-**Example usage**:
-```markdown
-## Approach
-[NEEDS CLARIFICATION: Database choice]
-Should we use PostgreSQL or MySQL for the user session store?
-Constraints: 10k concurrent users, 100ms read latency target
-```
+**Pick the tier and the ID.** Choose S, M, or L from the scope you found, using the table in `spec-workflow.md`; a user-stated tier wins. Ask only when the evidence genuinely sits between two tiers and the difference matters. Choose a SPEC ID `SPEC-<DOMAIN>-<NNN>` that does not exist yet.
 
-**Processing workflow**:
-1. manager-spec adds markers when unclear requirements emerge
-2. plan-auditor detects unclarified markers during audit
-3. If markers remain, plan-auditer flags "clarification gate" finding
-4. Orchestrator runs AskUserQuestion rounds to resolve each marked topic
-5. Implementation Kickoff Approval proceeds only after all clarifications are resolved
+**Have manager-spec write the SPEC.** Brief it with the request in the user's words, what exploration found (files, patterns, constraints), the user's answers, the assumptions you made, the tier, and the ID. It writes the tier's artifact set plus `progress.md`, runs `moai spec lint`, and reports back. Where `interview.decision_gate` is `on`, it also writes `decision-index.md`.
+
+**Get an independent audit.** Invoke plan-auditor with only the SPEC directory, the user's original request verbatim, and the round number — not your reasoning or the conversation, so the review is independent. It writes `.moai/reports/plan-audit/<SPEC-ID>-review-<N>.md` and returns the verdict. Fix every blocking finding (send manager-spec the report path and the findings to fix; a one-line mechanical fix you may make yourself). Apply optional findings that are clearly right, and mention the rest to the user. Re-audit only when the fixes were substantive — requirements, criteria, or scope changed — and stay within the round ceiling for the tier in `harness.plan_audit_tier_ceilings` (`.moai/config/sections/harness.yaml`). If the SPEC still does not pass at the ceiling, or the auditor reports the score dropping between rounds, stop iterating and ask the user whether to revise the request, accept the SPEC with the listed defects, or stop.
+
+**Resolve open questions.** If any `[NEEDS CLARIFICATION` marker remains, ask the user (one round), have manager-spec fold the answers in, and re-audit if the answers changed requirements or criteria.
 
 <!-- moai:contract-mode-start id="contract-clarification" -->
-Where `workflow.autonomy.mode: contract` — markers still block the run: the contract is signed only after they are resolved, and `moai contract decide` treats any marker left in plan.md or research.md as a failed precondition that routes the Kickoff to a human signature. See `.claude/rules/moai/workflow/contract-autonomy.md` § The signing gate.
+Where `workflow.autonomy.mode: contract` — markers still block the run: the contract is signed only after they are resolved, and `moai contract decide` treats any marker left in plan.md or research.md as a failed precondition that routes the Kickoff to a human signature. See `.claude/rules/moai/workflow/contract-autonomy.md`, section "The signing gate".
 
 <!-- moai:contract-mode-end -->
-**3-layer distinction**:
-- `[NEEDS CLARIFICATION: <topic>]` — SPEC artifact blocker (user Q required before run)
-- `TODO` — code-level implementation debt (no user Q needed, inline comment sufficient)
-- `@MX:TODO` — code-level annotation for untested/incomplete code (MX tag system)
 
----
-
-## Phase Routing Table
-
-| Phase / Section | Sub-skill | Description |
-|---|---|---|
-| Phase 2: Project Exploration | `plan/context-discovery.md` | Explore subagent codebase analysis |
-| Phase 3: Clarity Evaluation | `plan/context-discovery.md` | Clarity scoring (1-10) and skip conditions |
-| Phase 4: Deep Interview Loop | `plan/clarity-interview.md` | 1-5 round topic-focused interview |
-| Phase 5: UltraThink Auto-Activation | `plan/clarity-interview.md` | Complexity-based extended reasoning activation |
-| Phase 6: Deep Research | `plan/clarity-interview.md` | Explore subagent research.md artifact |
-| Phase 7: Design Direction | `plan/clarity-interview.md` | UI/UX intent-first design direction |
-| Phase 8: SPEC Planning | `plan/clarity-interview.md` | manager-spec GEARS structure (EARS legacy retained) + candidate proposal |
-| Decision Point 1 + Annotation Cycle | `plan/clarity-interview.md` | Plan review HUMAN GATE + 1-6 iteration cycle |
-| Phase 9: Pre-Creation Validation | `plan/spec-assembly.md` | Document type classification + SPEC ID validation |
-| Phase 10: SPEC Document Creation | `plan/spec-assembly.md` | spec.md + plan.md + acceptance.md + spec-compact.md |
-| Phase 11: Independent SPEC Review | `plan/spec-assembly.md` | plan-auditor adversarial audit + retry loop |
-| Phase 12: GitHub Issue Creation | `plan/spec-assembly.md` | gh issue create + bidirectional reference |
-| Phase 13: Git Environment Setup | `plan/spec-assembly.md` | BODP Gate + Worktree/Branch/Current path |
-| Phase 14: MX Tag Planning | `plan/spec-assembly.md` | ANCHOR/WARN/NOTE target identification |
-| Phase 15: SPEC Quality Gate | `plan/spec-assembly.md` | GEARS ↔ AC coverage (EARS legacy form accepted for pre-v3 SPECs) + security scope check |
-| Decision Point 2/3/3.5 | `plan/spec-assembly.md` | Dev environment + next action + execution mode |
-| Completion Criteria | `plan/spec-assembly.md` | All checklist items + audit-ready signal |
-| Test Scenarios | `plan/spec-assembly.md` | Normal/Existing Assets/Error flow examples |
-
-## Fan-Out Index
-
-Every plan-phase fan-out site, listed here rather than only at the site itself. Sub-skills are `Read` on demand, so without this index the orchestrator cannot know a fan-out exists until it has already entered the phase serially.
-
-| Fan-Out ID | Trigger condition | Target file | What is parallelised |
-|---|---|---|---|
-| `FO-PLAN-2` | harness level is `standard` or `thorough` | `workflows/plan/spec-assembly.md` | Phase 11 review evidence — one read-only lens per review dimension |
-
----
-
-## Invocation Flow
+**Record the audit-ready signal.** Once the audit passes and no marker remains, write under `## §E.1 Plan-phase Audit-Ready Signal` in `progress.md`:
 
 ```
-/moai plan [description] [--branch] [--no-issue]
-  └─ context-discovery.md
-       ├─ Phase 2: Explore (optional)
-       └─ Phase 3: Clarity evaluation (1-10 score)
-            └─ clarity-interview.md
-                 ├─ Phase 4: Deep interview (1-5 rounds, if score 4-10)
-                 ├─ Phase 5: UltraThink auto-activation (if complexity >= 7)
-                 ├─ Phase 6: Deep research → research.md (recommended)
-                 ├─ Phase 7: Design direction (if UI/UX keywords)
-                 ├─ Phase 8: manager-spec SPEC planning
-                 └─ Decision Point 1: HUMAN GATE (Proceed / Annotate / Draft / Cancel)
-                      └─ spec-assembly.md
-                           ├─ Phase 9: Pre-creation validation gate
-                           ├─ Phase 10: SPEC document creation
-                           │    └─ [HARD] Pre-write frontmatter checklist (12 fields)
-                           ├─ Phase 11: plan-auditor review (≤3 iterations)
-                           ├─ Phase 12: GitHub Issue creation (conditional)
-                           ├─ Phase 13: Git environment (BODP Gate → worktree/branch/current)
-                           ├─ Phase 14: MX tag planning
-                           ├─ Phase 15: SPEC quality gate
-                           └─ Decision Point 2/3/3.5: Execution mode selection
-```
-
----
-
-## Cross-References
-
-- SPEC workflow overview: `.claude/rules/moai/workflow/spec-workflow.md`
-- AskUserQuestion protocol: `.claude/rules/moai/core/askuser-protocol.md`
-- BODP gate algorithm: `.claude/rules/moai/development/branch-origin-protocol.md`
-- Worktree isolation: `.claude/rules/moai/workflow/worktree-integration.md`
-- MX tag protocol: `.claude/rules/moai/workflow/mx-tag-protocol.md`
-- Session handoff (Block 0): `.claude/rules/moai/workflow/session-handoff.md`
-
-## Audit-Ready Signal
-
-On successful plan completion (all SPEC files created, user approved), append to `.moai/specs/SPEC-{ID}/progress.md`:
-
-```
-- plan_complete_at: {ISO-8601 timestamp}
+- plan_complete_at: <ISO-8601 timestamp>
 - plan_status: audit-ready
 ```
 
-This signal marks the plan artifacts as finalized and enables the Plan Audit Gate at `/moai run` Phase 1.
+`/moai run` reads this signal before its Phase 1 Plan Audit Gate (`progress.md §E.1`; run and sync own §E.2–§E.4).
 
+**Ask for the Implementation Kickoff Approval.** Summarize the SPEC for the user — scope, the requirements in a sentence each, the assumptions made, the audit verdict and anything you chose not to fix — with the paths to the SPEC directory and the audit report. Then ask with AskUserQuestion: start `/moai run SPEC-<ID>` now (recommended), revise the SPEC first, or stop here. This approval is required whatever the audit score; nothing in plan starts implementation without it. Details are in `spec-assembly.md`.
 
----
+## Optional steps
 
-Version: 2.8.0
-Changes: Added test scenarios, Phase 3 JIT Language Detection.
+These happen only when the user asks or the project config turns them on; the facts the code needs are in `spec-assembly.md`.
 
----
+- **Branch** — on `--branch`, or when `git_strategy.<mode>.branch_creation.auto_enabled` is `true` in `.moai/config/sections/git-strategy.yaml`: pick the base with the Branch Origin Decision Protocol (`.claude/rules/moai/development/branch-origin-protocol.md`) and have manager-git create it.
+- **GitHub issue** — only on `--issue`, through manager-git, then record `issue_number` in spec.md.
+- **Commit** — plan does not commit or push on its own. When the user asks, commit the SPEC directory with the subject `feat(SPEC-<ID>): plan-phase artifacts (<tier>, <N> artifacts)` and an `Authored-By-Agent: manager-spec` trailer; never commit straight to a protected or shared branch.
 
-## Custom Harness Extension (Optional)
+## Done
 
-@.moai/harness/plan-extension.md
+The SPEC directory holds the tier's artifacts and `progress.md`; `moai spec lint SPEC-<ID>` shows no errors; the latest plan-audit report says `Verdict: PASS`; no `[NEEDS CLARIFICATION` marker remains; `progress.md` §E.1 carries `plan_complete_at` and `plan_status: audit-ready`; and the user answered the Implementation Kickoff Approval.
 
-
-## Sentinel Error Keys
-
-A CI audit verifies the literal `MODE_PIPELINE_ONLY_UTILITY` sentinel remains present in this skill body (shared with `design.md`). Passing `--mode pipeline` to `/moai plan` is rejected because plan is a Multi-Agent subcommand; pipeline mode is reserved for utility subcommands.
-
-## Routing Ledger Recording
-
-At plan dispatch, the orchestrator records the routing decision to the routing-ledger via `moai harness ledger record` (per the SKILL.md router recording obligation). At the plan-audit gate, it appends the plan-auditor verdict as machine evidence via `moai harness ledger evidence --kind audit_score --value <score> --ref <plan-audit report path>`. Outcome is derived from machine evidence only — never supplied as an input. The recording is opt-in and fail-open; it never blocks the plan phase.
+Your text between tool calls is what the user reads. Before the first tool call say in a sentence what you're about to do; give brief updates when you find something load-bearing or change direction. Lead the final report with the outcome, in complete sentences, then the detail a reader needs to act. Keep reports to the length the work needs.

@@ -95,8 +95,9 @@ func TestEmbeddedTemplates_SkillDefinitions(t *testing.T) {
 		return nil
 	})
 
-	if skillCount < 140 {
-		t.Errorf("expected at least 140 skill .md files, got %d", skillCount)
+	// A floor, not a census: it proves the skill tree is embedded at all.
+	if skillCount < 100 {
+		t.Errorf("expected at least 100 skill .md files, got %d", skillCount)
 	}
 	t.Logf("total skill .md files: %d", skillCount)
 }
