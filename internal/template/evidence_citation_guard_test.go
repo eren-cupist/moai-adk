@@ -41,17 +41,19 @@ type citationTree struct {
 	ClaudeDir string
 	// MinFiles is derived from the measured population, NOT from the number of
 	// violations: the two are different populations, and after the repair the
-	// violation count is zero and would anchor nothing. Measured on this tree:
-	// repo root 242 files, template mirror 199. The floor of 180 stops a
-	// collapse to any single subtree (the largest, `skills`, is 156 < 180) and
-	// still clears with `agents` dropped (template mirror 193 >= 180).
+	// violation count is zero and would anchor nothing. Each floor sits above
+	// the tree's largest single subtree, so a collapse to that subtree fails,
+	// and below the tree's count without `agents`, so the subtree mutant still
+	// clears it. Measured: repo root 228 files (largest `skills` 142, 212
+	// without `agents`) -> 180; template mirror 185 files (largest `skills`
+	// 131, 179 without `agents`) -> 135.
 	MinFiles int
 }
 
 func evidenceCitationTrees() []citationTree {
 	return []citationTree{
 		{Name: "repo-root", ClaudeDir: filepath.Join("..", "..", ".claude"), MinFiles: 180},
-		{Name: "template-mirror", ClaudeDir: filepath.Join("templates", ".claude"), MinFiles: 180},
+		{Name: "template-mirror", ClaudeDir: filepath.Join("templates", ".claude"), MinFiles: 135},
 	}
 }
 

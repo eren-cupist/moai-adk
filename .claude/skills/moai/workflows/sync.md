@@ -45,7 +45,7 @@ Read `.moai/config/sections/git-strategy.yaml`, `language.yaml`, `quality.yaml`,
 
 - The orchestrator (this session) runs the checks, asks the user at the approval points, and keeps the single-writer rule: only one write-capable agent works at a time.
 - `sync-auditor` — the independent audit (Phase 7). Read-only.
-- `manager-docs` — the only writer of documentation, the SPEC frontmatter status, and the Sync-phase Audit-Ready Signal section of `progress.md`; makes the sync commit. Inject `At start, invoke Skill("moai-workflow-project") for the sync-phase documentation cycle.` into its prompt. It never edits SPEC body content; a needed body change comes back as a blocker and goes to `manager-spec`.
+- `manager-docs` — the only writer of documentation, the SPEC frontmatter status, and the `progress.md §E.4` Sync-phase Audit-Ready Signal section (a heading the SPEC era classifier parses); makes the sync commit. Inject `At start, invoke Skill("moai-workflow-project") for the sync-phase documentation cycle.` into its prompt. It never edits SPEC body content; a needed body change comes back as a blocker and goes to `manager-spec`.
 - `manager-git` — branches, pushes, PRs, merges (Phase 13).
 - `manager-develop` — fixes, when a check fails and the user chooses to fix.
 
