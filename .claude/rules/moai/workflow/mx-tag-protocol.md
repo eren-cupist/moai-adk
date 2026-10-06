@@ -2,59 +2,28 @@
 paths: "**/*.go,**/*.py,**/*.ts,**/*.js,**/*.java,**/*.rs,**/*.c,**/*.cpp,**/*.rb,**/*.php,**/*.kt,**/*.swift,**/*.dart,**/*.ex,**/*.scala,**/*.hs,**/*.zig"
 ---
 
-# @MX TAG Protocol
+# @MX Tag Protocol
 
-Purpose: Define rules for @MX code-level annotations that enable AI agents to communicate context, invariants, and danger zones between development sessions.
+`@MX` tags are code comments that carry context between sessions: why code is shaped the way it is, what must not break, and where the danger is. Read the tags in a file before changing it; add or update them for code you write. Full reference: `.claude/skills/moai/references/mx-tag.md`.
 
-## Scope
-
-This rule applies to all agents working with source code in the supported programming languages. For full @MX protocol details, see .claude/skills/moai/references/mx-tag.md.
-
-## @MX Tag Syntax
+## Syntax
 
 ```
-// @MX:TAG_TYPE: [description]
-// @MX:SUB_KEY: [sub-value]
+// @MX:TYPE: [AUTO] description
+// @MX:SUB_KEY: value
 ```
 
-**Tag Types:**
-- `@MX:NOTE` -- Context and intent delivery
-- `@MX:WARN` -- Danger zone (requires @MX:REASON)
-- `@MX:ANCHOR` -- Invariant contract (requires @MX:REASON)
-- `@MX:TODO` -- Incomplete work
-- `@MX:DEBT` -- Deliberate, working simplification with a named ceiling and upgrade trigger
+Use the file's comment prefix (`//` for Go, TS/JS, Java, Rust, C/C++, Swift, Kotlin, Dart, Zig, Scala; `#` for Python, Ruby, Elixir; `--` for Haskell). Tags an agent adds carry the `[AUTO]` prefix. Write descriptions in the `code_comments` language from `.moai/config/sections/language.yaml` (English when unset).
 
-**Sub-lines:** @MX:SPEC, @MX:LEGACY, @MX:REASON, @MX:TEST, @MX:PRIORITY, @MX:CEILING, @MX:UPGRADE
+| Type | Meaning | Add when |
+|---|---|---|
+| `@MX:ANCHOR` | invariant contract other code depends on | fan-in reaches `thresholds.fan_in_anchor` (3), a public API boundary, an external integration point |
+| `@MX:WARN` | danger zone | goroutines/async work without cancellation, cyclomatic complexity ≥ 15, if-branches ≥ 8, global state mutation |
+| `@MX:NOTE` | context or intent | a magic constant, an unexplained business rule, a long exported function without docs |
+| `@MX:TODO` | incomplete work | a public function without tests, an unimplemented SPEC requirement, an unhandled returned error |
+| `@MX:DEBT` | a deliberate, working simplification | the code is correct within a known limit and has a known revisit trigger |
 
-## When to Add Tags
-
-**@MX:NOTE** -- Add when:
-- Magic constant encountered
-- Exported function lacks godoc and exceeds 100 lines
-- Business rule is unexplained
-
-**@MX:WARN** -- Add when:
-- Goroutine/channel without context.Context
-- Cyclomatic complexity >= 15
-- Global state mutation detected
-- If-branches >= 8
-
-**@MX:ANCHOR** -- Add when:
-- Function has fan_in >= 3 callers
-- Public API boundary identified
-- External system integration point detected
-
-**@MX:TODO** -- Add when:
-- Public function has no test file
-- SPEC requirement is not implemented
-- Error returned without handling
-
-**@MX:DEBT** -- Add when:
-- A deliberate, working simplification is chosen over a fuller implementation
-- The simplification is correct within a known limit (record the limit as `@MX:CEILING`)
-- The simplification has a known revisit trigger (record it as `@MX:UPGRADE`)
-
-A `@MX:DEBT` marker carries two sub-lines: `@MX:CEILING` (the named limit the simplification is valid up to) and `@MX:UPGRADE` (the trigger condition for revisiting it). The marker is an inline source comment, NOT a separate JSON ledger — it is harvested by grep or `moai mx query --kind DEBT`. Example:
+Sub-lines: `@MX:REASON` (required on every ANCHOR and WARN), `@MX:SPEC` (only when a SPEC exists), `@MX:LEGACY`, `@MX:TEST`, `@MX:PRIORITY`, and for DEBT `@MX:CEILING` (the limit it is valid up to) and `@MX:UPGRADE` (the trigger to revisit it).
 
 ```
 // @MX:DEBT: in-memory map cache, no eviction
@@ -62,146 +31,18 @@ A `@MX:DEBT` marker carries two sub-lines: `@MX:CEILING` (the named limit the si
 // @MX:UPGRADE: switch to LRU when entry count exceeds 10k
 ```
 
-A `@MX:DEBT` marker that lacks an `@MX:UPGRADE` sub-line has no exit condition and silently rots; `moai mx query --kind DEBT --json` flags it with `"rotRisk": "no-trigger"`. The `@MX:UPGRADE` absence is the rot signal; an absent `@MX:CEILING` is a quality note, not the rot gate.
+## Lifecycle
 
-## When to Update Tags
+- **TODO** is added in RED/ANALYZE and removed when the test passes or the work is done; one left unresolved for more than three iterations becomes a WARN.
+- **ANCHOR** is updated when callers or the SPEC change, and demoted to NOTE (with a note in the report) when fan-in drops below the threshold — never deleted automatically.
+- **WARN** is removed when the dangerous structure is gone; structural ones (a goroutine's lifecycle) persist.
+- **NOTE** is re-checked when the signature changes and removed with its code.
+- **DEBT** persists, by design, until its `@MX:UPGRADE` trigger fires and the simplification is replaced; it does not escalate to WARN. A DEBT without `@MX:UPGRADE` has no exit condition — `moai mx query --kind debt` marks it `"rotRisk": "no-trigger"`.
 
-- **ANCHOR**: Update when fan_in count changes or SPEC is updated
-- **NOTE**: Re-review when function signature changes
-- **WARN**: Remove when dangerous structure is improved
-- **TODO**: Remove when completed (GREEN/IMPROVE phase)
-- **DEBT**: Update when the ceiling or upgrade trigger changes; never auto-escalate
+## Limits and exclusions
 
-## When to Remove Tags
+Per-file limits come from `.moai/config/sections/mx.yaml` `limits` (defaults: 3 ANCHOR, 5 WARN, 10 NOTE, 5 TODO). Over the limit, demote the ANCHOR with the lowest fan-in and keep the highest-priority WARNs. Files matching the per-language `exclude` patterns there (generated code, vendor, mocks) are not tagged.
 
-- **TODO**: Remove when resolved (test passes or implementation complete)
-- **WARN**: Remove when danger is eliminated
-- **NOTE**: Remove when code is deleted
-- **ANCHOR**: NEVER auto-delete; demote to NOTE via report
-- **DEBT**: Remove when the `@MX:UPGRADE` trigger fires and the simplification is replaced — NOT when other work completes
+## Report
 
-## Tag Lifecycle Rules
-
-**TODO:**
-- Created in RED/ANALYZE phase
-- Resolved in GREEN/IMPROVE phase (removed)
-- Escalates to WARN after > 3 iterations unresolved
-
-**ANCHOR:**
-- Created when fan_in >= 3
-- Updated when caller count or SPEC changes
-- Demoted to NOTE when fan_in drops below 3 (requires report)
-- NEVER auto-deleted
-
-**WARN:**
-- Created when danger detected
-- Persistent when structural (e.g., goroutine lifecycle)
-- Removable when resolved
-
-**NOTE:**
-- Created when context needed
-- Updated after signature changes
-- Obsolete when code deleted
-
-**DEBT:**
-- Created when a deliberate, working simplification is made (the code IS done and correct within its `@MX:CEILING`)
-- Persists across many GREEN phases until its `@MX:UPGRADE` trigger fires — this is by design
-- Resolved when the `@MX:UPGRADE` trigger fires, NOT when "work completes" (the work was never incomplete)
-- Does NOT auto-escalate to `@MX:WARN`: the `@MX:TODO` → `@MX:WARN` ">3 unresolved iterations" escalation rule does NOT apply to DEBT, because a long-lived DEBT is working as intended, not a stalled task. Auto-escalating it would generate false danger signals.
-
-`@MX:DEBT` is distinct from `@MX:TODO`: a TODO marks incomplete work resolved in the GREEN phase (the code is not yet done); a DEBT marks a complete, working simplification with a named ceiling and an upgrade trigger that may legitimately persist across many GREEN phases (the code IS done, but knowingly bounded).
-
-## File Exclusion Rules
-
-Files matching patterns in `.moai/config/sections/mx.yaml` exclude list are not tagged:
-
-Default exclude patterns:
-- `**/*_generated.go`
-- `**/vendor/**`
-- `**/mock_*.go`
-
-## Hard Limits
-
-Per-file limits from `.moai/config/sections/mx.yaml` (defaults):
-- `anchor_per_file`: 3
-- `warn_per_file`: 5
-- `note_per_file`: 10
-- `todo_per_file`: 5
-
-When limits exceeded:
-- ANCHOR: Demote excess by lowest fan_in
-- WARN: Keep P1-P5 highest priority only
-
-## Team Environment
-
-In Agent Teams mode, @MX tag operations follow file ownership rules:
-- Each teammate only modifies tags within owned file patterns
-- Cross-file tag validation respects ownership boundaries
-- Report summarizes tag changes across all teammates
-
-## Mandatory Fields
-
-- **@MX:REASON**: MANDATORY for WARN and ANCHOR tags
-- **@MX:SPEC**: OPTIONAL -- only include when SPEC exists
-- **[AUTO] prefix**: MANDATORY for agent-generated tags
-
-## Comment Syntax by Language
-
-| Language | Prefix | Example |
-|----------|--------|---------|
-| Go, Java, TS, Rust, C/C++, Swift, Kotlin, Dart, Zig, Scala | `//` | `// @MX:NOTE:` |
-| Python, Ruby, Elixir | `#` | `# @MX:WARN:` |
-| Haskell | `--` | `-- @MX:ANCHOR:` |
-
-## Configuration
-
-Project-level settings in `.moai/config/sections/mx.yaml`:
-- thresholds: fan_in_anchor, complexity_warn, branch_warn
-- limits: anchor_per_file, warn_per_file, note_per_file, todo_per_file
-- exclude: file patterns to skip
-- auto_tag: enable/disable autonomous tagging
-- require_reason_for: tag types requiring @MX:REASON
-
-## Language Settings
-
-**IMPORTANT**: @MX tag descriptions MUST respect the `code_comments` setting from `.moai/config/sections/language.yaml`.
-
-The `code_comments` setting controls the language used for:
-- @MX tag descriptions (NOTE, WARN, ANCHOR, TODO)
-- @MX:REASON sub-lines
-- Code comments and godoc
-
-Available languages:
-- `en` - English (default)
-- `ko` - Korean
-- `ja` - Japanese
-- `zh` - Chinese
-
-**How to read the setting:**
-Before adding @MX tags, agents MUST read `.moai/config/sections/language.yaml` and use the `code_comments` value to determine the tag language.
-
-**Example:**
-```yaml
-# .moai/config/sections/language.yaml
-language:
-  code_comments: ko  # Tags will be in Korean
-```
-
-If `code_comments` is not set, default to English (`en`).
-
-## Agent Reporting
-
-After any phase with tag changes, generate report:
-
-```markdown
-## @MX Tag Report -- [Phase] -- [Timestamp]
-
-### Tags Added (N)
-### Tags Removed (N)
-### Tags Updated (N)
-### Attention Required
-```
-
----
-
-Version: 1.0.0
+After a phase that changed tags, list tags added, removed and updated, and any new WARN that needs a reviewer's attention.

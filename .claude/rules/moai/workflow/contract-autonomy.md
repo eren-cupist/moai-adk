@@ -58,8 +58,8 @@ signature recorded with `signer_kind: human` and `method: interactive-tty`, for 
 with the contract in front of them.
 
 This equivalence covers the human signature only. A signature produced from a kickoff receipt
-is not equivalent by this clause; it can stand in for the gate only through the activation
-conditions of § Autonomous Kickoff.
+is not equivalent by this clause; it can stand in for the gate only under the conditions in
+"Autonomous Kickoff" below.
 
 ## Gate disposition
 
@@ -90,7 +90,6 @@ An assumption or a new ambiguity that contradicts the contract's `acceptance`, `
 - The sync-auditor must-pass criteria.
 - Any action on `main` or a release branch — a contract cannot permit it.
 - Card selection, which stays the operator's act.
-- The goal turn ceiling.
 - Confirmation before a destructive command.
 - The Report-Before-Ask gate for every question that is still asked.
 
@@ -141,18 +140,13 @@ condition `workflow.autonomy.mode: contract` and do not apply; every gate stays 
 
 ## Autonomous Kickoff
 
-FILLED — the activation conditions are met: the autonomous Kickoff transition
-is the plan→run gate's
-DEFAULT form. Entry criteria: the independent plan-audit verdict is PASS (FAIL
-/ INCONCLUSIVE stay hard blocks), the SPEC's plan phase records audit-ready
-status, the plan-artifact hashes are unchanged since that verdict, and no
-blocker is open — and the transition writes a decision record the sync audit
-re-reads. Keep-set cases — environment-impossible work, operator-held work,
-irreversible operations touching external shared systems — keep the human
-answer. The human signing path above is PRESERVED as an equivalent voluntary
-form: a `signer_kind: human` signature still passes `kickoff-check`, and an
-operator may sign voluntarily on any card even where the autonomous default
-would suffice.
+In contract mode a kickoff receipt can stand in for the human signature when all of these
+hold: the independent plan-audit verdict is PASS (FAIL and INCONCLUSIVE block), the SPEC's plan
+phase records audit-ready status, the plan-artifact hashes are unchanged since that verdict, and
+no blocker is open. The transition writes a decision record that the sync audit re-reads.
+Environment-impossible work, operator-held work, and irreversible operations on external shared
+systems still need a human signature. A `signer_kind: human` signature always passes
+`kickoff-check`, and an operator may sign any card even where a receipt would suffice.
 
 ## Revocation
 
