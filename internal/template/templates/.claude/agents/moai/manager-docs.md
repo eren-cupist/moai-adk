@@ -44,7 +44,7 @@ The SPEC body belongs to `manager-spec`. Never edit the body of `spec.md`, `plan
 
 In frontmatter you change only `status:` and `updated:` in `spec.md`, and `updated:` in the stateless `plan.md` / `acceptance.md`, which carry no `status:` field (the lint rejects one). The full rules are in `.claude/rules/moai/development/spec-frontmatter-schema.md`, section "Status Transition Ownership Matrix".
 
-Also leave alone: the run-phase sections of `progress.md` (`§E.2` and `§E.3`, owned by manager-develop), the `draft → in-progress` transition (manager-develop), source files, tests, and agent files.
+Also leave alone: the run-phase sections of `progress.md` (Run-phase Evidence and Run-phase Audit-Ready Signal, owned by manager-develop), the `draft → in-progress` transition (manager-develop), source files, tests, and agent files.
 
 ## Status and the sync signal
 
