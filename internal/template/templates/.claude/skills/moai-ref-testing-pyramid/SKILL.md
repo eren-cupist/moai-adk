@@ -1,186 +1,44 @@
 ---
 name: moai-ref-testing-pyramid
 description: >
-  Test pyramid strategy, coverage targets, test patterns, and quality metrics
-  reference. Agent-extending skill that amplifies manager-develop test-creation and
-  quality-validation work with production-grade testing patterns.
-  NOT for: production code implementation, architecture design, DevOps, security audits.
+  Rubric for judging whether a change's tests sit at the right level (unit, integration,
+  end-to-end) and test the right things; used when writing tests and when sync-auditor
+  assesses test adequacy. Not for coverage thresholds or how tests are run
+  (moai-workflow-testing).
 
 when_to_use: >
-  Use for test-pyramid strategy reference: coverage targets,
-  unit/integration/e2e test patterns, and quality metrics. Amplifies
-  manager-develop test-creation and quality-validation work with
-  production-grade testing patterns.
+  Load when deciding what kind of test a change needs, or when reviewing a change's test mix.
 
 user-invocable: false
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
   category: "domain"
   status: "active"
   updated: "2026-03-30"
-  tags: "testing, pyramid, coverage, tdd, patterns, reference"
+  tags: "testing, pyramid, test-levels, review, reference"
 
 # MoAI Extension: Progressive Disclosure
 progressive_disclosure:
   enabled: true
   level1_tokens: 100
-  level2_tokens: 3000
+  level2_tokens: 800
 ---
 
-# Testing Pyramid Reference
+# Test Level Rubric
 
-## Target Agents
+Coverage targets and test commands live in moai-workflow-testing and quality.yaml; this page is only about which level a test belongs at and what it should assert.
 
-- `manager-develop` - applies patterns during test creation, coverage analysis, and RED-GREEN-REFACTOR cycles
+Choosing the level:
 
-## Test Pyramid Ratios
+- Pure logic, transformations, validation, and error mapping: unit tests, fast and with no network, database or filesystem beyond a temp dir.
+- Behavior that only exists across a boundary (SQL against a real schema, an HTTP handler with its middleware, a queue consumer): integration tests against the real dependency, for example a test container or the framework's test server. Mock only what you do not own and cannot run.
+- A user-visible flow that must keep working end to end (sign-in, checkout, the main path through a feature): a small number of end-to-end tests, not one per edge case.
 
-```
-       /  E2E  \        10% — Critical user journeys only
-      /----------\
-     / Integration \    20% — API endpoints, DB queries, service boundaries
-    /----------------\
-   /    Unit Tests    \  70% — Functions, hooks, utilities, pure logic
-  /--------------------\
-```
+When reviewing, flag each of these as a finding with severity and confidence:
 
-| Level | Speed | Reliability | Maintenance | Coverage Target |
-|-------|-------|-------------|-------------|-----------------|
-| Unit | Fast (<100ms) | High | Low | 70% of tests |
-| Integration | Medium (1-5s) | Medium | Medium | 20% of tests |
-| E2E | Slow (10-60s) | Lower | High | 10% of tests |
-
-## Coverage Targets by Context
-
-| Context | Target | Rationale |
-|---------|--------|-----------|
-| Critical business logic | 95%+ | Revenue/security impact |
-| API endpoints | 90%+ | Contract compliance |
-| Utility functions | 85%+ | Reuse reliability |
-| UI components | 80%+ | Rendering correctness |
-| Configuration/glue code | 60%+ | Low complexity |
-| Generated code | 0% | Don't test generated code |
-
-## Test Pattern: AAA (Arrange-Act-Assert)
-
-```
-// Arrange: Set up test data and preconditions
-input := CreateTestUser("test@example.com")
-
-// Act: Execute the function under test
-result, err := service.CreateUser(ctx, input)
-
-// Assert: Verify the outcome
-assert.NoError(t, err)
-assert.Equal(t, "test@example.com", result.Email)
-```
-
-## Unit Test Patterns
-
-| Pattern | When | Example |
-|---------|------|---------|
-| Table-Driven | Multiple input/output combinations | Go: `tests := []struct{...}` |
-| Mock/Stub | External dependencies (DB, API) | Interface injection, mock frameworks |
-| Snapshot | Complex output comparison | Jest snapshots, golden files |
-| Property-Based | Mathematical properties | quickcheck, hypothesis |
-| Boundary Value | Edge cases | 0, -1, MAX_INT, empty string, nil |
-
-## Integration Test Patterns
-
-| Pattern | When | Example |
-|---------|------|---------|
-| Testcontainers | Real DB needed | Docker-based PostgreSQL for tests |
-| HTTP Test Server | API endpoint testing | httptest.NewServer (Go), supertest (Node) |
-| In-Memory DB | Fast DB tests | SQLite for development |
-| Fixture Loading | Consistent test data | Factory functions, seed files |
-
-## What to Test vs What NOT to Test
-
-### ALWAYS Test
-- Business logic and calculations
-- Input validation and error handling
-- Authentication and authorization flows
-- Data transformations and mappings
-- Edge cases and boundary conditions
-- Race conditions (with -race flag in Go)
-
-### NEVER Test
-- Framework internals (React rendering, Express routing)
-- Third-party library behavior
-- Simple getters/setters with no logic
-- Private methods directly (test via public API)
-- Generated code (protobuf, swagger)
-- CSS styling and layout (use visual regression tools instead)
-
-## Test Quality Metrics
-
-| Metric | Target | Tool |
-|--------|--------|------|
-| Line Coverage | 85%+ | go test -cover, istanbul, coverage.py |
-| Branch Coverage | 75%+ | go test -covermode=count |
-| Mutation Score | 70%+ | go-mutesting, Stryker |
-| Test Execution Time | <2 min (unit), <10 min (all) | CI timer |
-| Flaky Test Rate | <1% | CI history analysis |
-
-## Test File Conventions
-
-| Language | Test File | Location |
-|----------|-----------|----------|
-| Go | `*_test.go` | Same package |
-| TypeScript | `*.test.ts` / `*.spec.ts` | `__tests__/` or co-located |
-| Python | `test_*.py` | `tests/` directory |
-| Java | `*Test.java` | `src/test/` mirror |
-| Rust | `#[cfg(test)] mod tests` | Same file or `tests/` |
-
-## TDD RED-GREEN-REFACTOR Quick Reference
-
-```
-RED:     Write a failing test that defines expected behavior
-GREEN:   Write minimal code to make the test pass
-REFACTOR: Clean up while keeping tests green
-```
-
-Rules:
-- Never write production code without a failing test
-- Write the smallest test that fails
-- Write the simplest code that passes
-- Refactor only when all tests are green
-- One assertion per test (when practical)
-
-<!-- moai:evolvable-start id="rationalizations" -->
-## Common Rationalizations
-
-| Rationalization | Reality |
-|---|---|
-| "E2E tests cover everything, unit tests are redundant" | E2E tests are slow and flaky. Unit tests provide fast, precise feedback. The pyramid exists because each level serves a different purpose. |
-| "Integration tests are more realistic than unit tests" | Realism comes at the cost of speed and isolation. A balanced pyramid gives both fast feedback and realistic validation. |
-| "100% code coverage means the code is well tested" | Coverage measures execution, not correctness. A test that executes code without meaningful assertions provides zero value. |
-| "Mocking is bad, I prefer real dependencies" | Real dependencies make tests slow and non-deterministic. Mock at boundaries, test business logic in isolation. |
-| "This test is flaky, but it catches real bugs sometimes" | Flaky tests erode trust in the entire suite. Fix the flakiness or quarantine the test with a tracking issue. |
-
-**DAMP over DRY**: Test code should be descriptive and self-contained. A reader should understand the test without reading shared fixtures or helper methods.
-
-<!-- moai:evolvable-end -->
-
-<!-- moai:evolvable-start id="red-flags" -->
-## Red Flags
-
-- Test pyramid inverted: more E2E tests than unit tests
-- Unit tests depend on external services (databases, APIs, file systems)
-- Test assertions check implementation details instead of behavior
-- No integration tests between unit and E2E layers
-- Flaky test present without a quarantine label or tracking issue
-
-<!-- moai:evolvable-end -->
-
-<!-- moai:evolvable-start id="verification" -->
-## Verification
-
-- [ ] Test distribution follows the pyramid: unit > integration > E2E (show test counts per category)
-- [ ] Unit tests run in under 30 seconds total
-- [ ] Integration tests mock external dependencies at the boundary
-- [ ] No flaky tests in the active suite (run 3x to verify stability)
-- [ ] Test names describe behavior, not implementation (review naming convention)
-- [ ] Coverage report shows meaningful assertions, not just line execution
-
-<!-- moai:evolvable-end -->
+- Most of the change's tests are end-to-end while the logic underneath has no unit tests.
+- A unit test reaches a real external service, or depends on test order or wall-clock time.
+- An integration boundary the change introduced or altered (schema, API contract, serialization) has no integration test.
+- Assertions check internal calls or private state rather than observable behavior.
+- Tests cover framework or third-party behavior, or generated code, instead of the project's own logic.
+- A test is flaky, skipped without a reason, or passes without asserting anything meaningful.
