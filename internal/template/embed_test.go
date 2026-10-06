@@ -95,8 +95,10 @@ func TestEmbeddedTemplates_SkillDefinitions(t *testing.T) {
 		return nil
 	})
 
-	if skillCount < 140 {
-		t.Errorf("expected at least 140 skill .md files, got %d", skillCount)
+	// Floor re-measured after the Opus 5.5 rewrite trimmed skill modules
+	// (128 skill .md files in the template tree at that point).
+	if skillCount < 100 {
+		t.Errorf("expected at least 100 skill .md files, got %d", skillCount)
 	}
 	t.Logf("total skill .md files: %d", skillCount)
 }
