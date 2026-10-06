@@ -1,162 +1,66 @@
 ---
 name: moai-ref-owasp-checklist
 description: >
-  OWASP Top 10 security checklist, authentication patterns, input validation,
-  and HTTP security headers reference. Agent-extending skill that amplifies
-  backend-implementation and security-audit workflows with production-grade security patterns.
-  NOT for: frontend UI, DevOps deployment, performance optimization, testing strategy.
+  Security review rubric for application code: the checks a /moai review security pass,
+  a sync quality gate, or an implementer applies to authentication, authorization, input
+  handling, secrets and HTTP surface, with the severity scale MoAI gates on. Not for
+  pipeline, container or runtime API operations (moai-ref-secops).
 
 when_to_use: >
-  Use for security reference: OWASP Top 10 vulnerabilities (injection,
-  XSS, CSRF), authentication patterns, input validation, and HTTP security
-  headers. Amplifies backend-implementation and security-audit workflows with
-  production-grade security patterns.
+  Load when implementing or reviewing code that handles user input, identity, sessions,
+  secrets or external requests.
 
 user-invocable: false
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
   category: "domain"
   status: "active"
   updated: "2026-03-30"
-  tags: "owasp, security, checklist, authentication, validation, reference"
+  tags: "owasp, security, checklist, review, reference"
 
 # MoAI Extension: Progressive Disclosure
 progressive_disclosure:
   enabled: true
   level1_tokens: 100
-  level2_tokens: 3000
+  level2_tokens: 1200
 ---
 
-# OWASP Security Checklist Reference
+# Application Security Rubric
 
-## Target Agents
+## Severity
 
-- `manager-develop` - Applies checklist during backend API implementation (`cycle_type=tdd` or `cycle_type=ddd` context)
-- `/moai review` with a security focus - Primary security-audit invocation surface; equivalently available as a per-spawn `Agent(general-purpose)` security specialist
+Report every finding with a severity and a confidence; filtering happens afterwards. The sync quality gate blocks on Critical and High and records Medium and Low as advisory.
 
-## OWASP API Security Top 10
+| Severity | Meaning | Example |
+|----------|---------|---------|
+| Critical | Exploitable now, data or account compromise | injection, authentication bypass, secret committed to the repo |
+| High | Exploitable with modest effort or insider position | missing object-ownership check, token readable by page scripts |
+| Medium | Weakens defenses | no rate limit on login, verbose error details |
+| Low | Hardening gap | missing security header on a non-sensitive route |
 
-| Rank | Vulnerability | Check | Defense |
-|------|-------------|-------|---------|
-| A1 | **BOLA** (Broken Object Level Authorization) | Can user A access user B's resources? | Verify object ownership at every endpoint |
-| A2 | **Broken Authentication** | Weak passwords, unlimited login attempts? | bcrypt (cost 12+), rate limit, MFA |
-| A3 | **Broken Object Property Level Authorization** | Are hidden fields exposed in responses? | Response DTOs, field-level filtering |
-| A4 | **Unrestricted Resource Consumption** | Can mass requests crash the server? | Rate limiting, enforce pagination limits |
-| A5 | **Broken Function Level Authorization** | Can regular users call admin APIs? | RBAC middleware, permission checks |
-| A6 | **Unrestricted Access to Sensitive Business Flows** | Can a sensitive flow be automated or abused in bulk? | Flow-level rate limits, anomaly detection, challenge on abuse signals |
-| A7 | **SSRF** (Server-Side Request Forgery) | Can URL input reach internal or metadata endpoints? | Egress allowlist, block internal/metadata ranges, validate fetch targets |
-| A8 | **Security Misconfiguration** | Debug mode, verbose errors, or default accounts exposed? | Production-hardened config, security headers, inspect deployed config |
-| A9 | **Improper Inventory Management** | Undocumented, shadow, or old-version endpoints reachable? | Maintain an API inventory; deprecate and decommission old versions |
-| A10 | **Unsafe Consumption of APIs** | Are external/third-party API responses trusted blindly? | Validate external responses against a schema, set timeouts, treat upstream data as untrusted |
+## Checks
 
-## Authentication Checklist
+Authorization and identity
+- Every endpoint or server action that reads or mutates a resource checks that the caller owns or may access that specific object, not only that the caller is signed in.
+- Admin and privileged functions check the role server-side.
+- Identity is re-verified against the server-side source of truth (session store, token verification, identity provider) before authorization. A cached or client-decoded session value is not proof of identity.
+- Checks in edge middleware, a proxy or an API gateway are a convenience. The handler that performs the mutation checks again.
 
-### Password Policy
-- Minimum 8 characters, show strength meter (not strict rules)
-- bcrypt (cost factor 12+) or Argon2id
-- Temporary lock after 5 failed attempts (15 min) or CAPTCHA
-- Prevent reuse of last 5 passwords
+Input and output
+- Input is validated against a schema at the trust boundary (Zod, pydantic, a Go validator) with length and range limits.
+- Database access uses parameterized queries; dynamic identifiers such as sort columns come from an allowlist.
+- User-supplied content is rendered through the framework's escaping. Raw HTML insertion (`dangerouslySetInnerHTML`, `innerHTML`, template `safe` filters) only after sanitization.
+- File paths built from input are normalized and confined to an allowed root. Uploads are checked by size and content type, not only by extension.
+- Server-side fetches of user-supplied URLs go through an allowlist and cannot reach internal or cloud-metadata addresses.
 
-### JWT Configuration
-| Setting | Recommended Value |
-|---------|------------------|
-| Access Token Expiry | 15-30 minutes |
-| Refresh Token Expiry | 7-14 days |
-| Algorithm | RS256 (asymmetric) or HS256 |
-| Storage | httpOnly + secure + sameSite cookie |
-| Payload | Minimal: userId, role only (no PII) |
-| Renewal | Silent refresh or token rotation |
+Sessions, tokens and secrets
+- Session and auth tokens live in `HttpOnly`, `Secure`, `SameSite` cookies, not in `localStorage`. The session ID rotates at login and is invalidated server-side at logout.
+- Passwords are hashed with Argon2id or bcrypt; login failures do not reveal which field was wrong; login and reset endpoints are rate limited.
+- Secrets come from the environment or a secret manager. None appear in source, committed config, logs or client bundles; client-exposed environment variables (for example `NEXT_PUBLIC_*`) hold nothing secret.
+- Webhook receivers verify the provider's signature before trusting the payload. Scheduler-invoked HTTP endpoints require a shared-secret check with a constant-time compare.
 
-### Session Security
-- Regenerate session ID after login
-- Invalidate session on logout (server-side)
-- Set session timeout (30 min idle)
-- Bind session to IP/User-Agent (optional, strict)
-
-## HTTP Security Headers
-
-| Header | Value | Purpose |
-|--------|-------|---------|
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Force HTTPS |
-| `X-Content-Type-Options` | `nosniff` | Prevent MIME sniffing |
-| `X-Frame-Options` | `DENY` or `SAMEORIGIN` | Prevent clickjacking |
-| `Content-Security-Policy` | `default-src 'self'` | Prevent XSS |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` | Limit referrer |
-| `Permissions-Policy` | `camera=(), microphone=()` | Restrict browser features |
-
-## Input Validation Checklist
-
-| Type | Method | Tool |
-|------|--------|------|
-| Schema validation | Type + structure check | Zod, Joi, pydantic, Go validator |
-| Length limits | Min/max constraints | Schema definitions |
-| SQL Injection | Parameterized queries | ORM (Prisma, GORM, SQLAlchemy) |
-| XSS Prevention | HTML escaping | DOMPurify (client), server escape |
-| Path Traversal | Path normalization | filepath.Clean + whitelist |
-| File Upload | Type + size validation | MIME type + magic number check |
-| CORS | Origin whitelist | Never `origin: '*'` with credentials |
-
-## Sensitive Data Handling
-
-| Data Type | Storage | Transmission | Logging |
-|----------|---------|-------------|---------|
-| Passwords | bcrypt hash only | HTTPS only | NEVER |
-| API Keys | Environment variables | Header (Authorization) | Masked (first 4 chars) |
-| PII | Encrypted (AES-256) | HTTPS only | Masked |
-| Credit Cards | Tokenized (payment provider) | Provider SDK | NEVER |
-| Sessions | httpOnly cookie | HTTPS only | NEVER |
-
-## Security Review Severity Levels
-
-| Level | Label | Action | Example |
-|-------|-------|--------|---------|
-| P0 | CRITICAL | Block release | SQL injection, auth bypass |
-| P1 | HIGH | Fix before merge | Missing authorization check |
-| P2 | MEDIUM | Fix within sprint | Weak password policy |
-| P3 | LOW | Track in backlog | Missing security header |
-
-## Trust Boundary Verification Principles
-
-| Principle | Applies To | Defense |
-|-----------|------------|---------|
-| Cached/client-supplied session state is not proof of current identity | Any framework caching or locally decoding a session/JWT value | Re-verify identity against the server-side source of truth (session store, token introspection, identity provider) before every authorization decision |
-| Edge/gateway/middleware auth checks are a UX convenience, not a security boundary | Reverse proxies, framework middleware, API gateways, serverless edge functions | Every mutation-handling endpoint independently re-checks authentication AND resource-ownership authorization |
-| Scheduled/cron-triggered HTTP endpoints are still public URLs | Any scheduler that invokes an HTTP endpoint (cron jobs, scheduled serverless functions, container-orchestrator scheduled jobs) | Require a shared-secret bearer check (constant-time compare) on every scheduled-endpoint invocation |
-| Production builds must not expose source maps or equivalent debug artifacts | Any bundler/build tool | Disable production source maps, verbose stack traces, and build manifests in production configuration |
-| Webhook receivers must verify a signature/HMAC header before trusting the payload | Any webhook provider | Verify signature/HMAC against a shared secret before treating the payload as legitimate business data |
-
-<!-- moai:evolvable-start id="rationalizations" -->
-## Common Rationalizations
-
-| Rationalization | Reality |
-|---|---|
-| "This is an internal application, OWASP does not apply" | Internal applications are reachable from compromised internal services. OWASP applies to all web applications. |
-| "The framework handles XSS protection" | Frameworks protect default rendering paths. Dynamic HTML insertion, innerHTML, and template literals bypass the protection. |
-| "We do not store sensitive data, so encryption is unnecessary" | Session tokens, API keys, and PII are sensitive data. If the application has users, it has sensitive data. |
-| "Security headers are just defense-in-depth, not critical" | Each security header blocks a specific attack class. Missing CSP enables XSS even when output is escaped. |
-| "I will do a security review before release" | Late security reviews find issues that are expensive to fix. Secure coding practices prevent them from the start. |
-
-<!-- moai:evolvable-end -->
-
-<!-- moai:evolvable-start id="red-flags" -->
-## Red Flags
-
-- User input rendered in HTML without escaping or sanitization
-- SQL query built with string concatenation instead of parameterized queries
-- Authentication token stored in localStorage instead of httpOnly cookie
-- Missing Content-Security-Policy header on response
-- Secrets (API keys, passwords) found in source code or configuration files committed to git
-
-<!-- moai:evolvable-end -->
-
-<!-- moai:evolvable-start id="verification" -->
-## Verification
-
-- [ ] OWASP Top 10 checklist reviewed for the change (show which items were evaluated)
-- [ ] User input sanitized before rendering in HTML output
-- [ ] All database queries use parameterized statements
-- [ ] Security headers present (CSP, X-Frame-Options, X-Content-Type-Options)
-- [ ] No secrets found in source code (show grep results for common secret patterns)
-- [ ] Authentication tokens use httpOnly, Secure, SameSite cookie attributes
-
-<!-- moai:evolvable-end -->
+HTTP surface
+- Production responses do not include stack traces, internal paths or source maps.
+- CORS allows specific origins; never a wildcard combined with credentials.
+- Sensitive routes send `Strict-Transport-Security`, `Content-Security-Policy`, `X-Content-Type-Options: nosniff` and frame protection (`frame-ancestors` or `X-Frame-Options`).
+- Responses expose only the fields the caller may see; serialize through an explicit response shape rather than returning database rows.
