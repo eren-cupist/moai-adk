@@ -288,39 +288,6 @@ func Registry() []Site {
 			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
 		},
 
-		// NOTICE.md carries BOTH a historical citation and a live one in the
-		// same sentence: "8 retained agents at consolidation time; now 10 per
-		// CLAUDE.md §4". The LIVE half is registered here; the historical half
-		// needs no repair and gets none. Registering the live claim rather than
-		// exempting the whole path is what keeps the stale 10 enumerable.
-		{
-			ID:               "notice-current-catalog-size",
-			SweepUnreachable: "count-only claim: an attribution paragraph citing the current roster size",
-			Path:             ".claude/rules/moai/NOTICE.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `now (\d+) per CLAUDE\.md §4`,
-			KnownStale: &Staleness{
-				Reason: "The live half of the sentence says the catalog is now 10; the roster carries 13. " +
-					"The historical half (8 at consolidation time) is correct and is not this row's subject.",
-				FollowUp:      "unassigned — reported by card t930, prose repair out of its scope",
-				DeclaredCount: 10,
-			},
-		},
-		{
-			ID:               "notice-current-catalog-size-mirror",
-			SweepUnreachable: "count-only claim; template mirror of the row above",
-			Path:             "internal/template/templates/.claude/rules/moai/NOTICE.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `now (\d+) per CLAUDE\.md §4`,
-			KnownStale: &Staleness{
-				Reason:        "Template mirror of the row above, stale identically.",
-				FollowUp:      "unassigned — reported by card t930, prose repair out of its scope",
-				DeclaredCount: 10,
-			},
-		},
-
 		// ── Registered count rows the NUMERAL layer cannot reach ───────────
 		//
 		// The three localized README headings state the roster size in their own

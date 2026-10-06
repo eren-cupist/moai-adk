@@ -1,73 +1,9 @@
-# moai-mcp Tool Catalogue
+# moai MCP tools
 
-> Single source of truth for the 47 tools exposed by the self-hosted `moai` MCP
-> server (`.mcp.json` → `{command: "moai", args: ["mcp-server"]}`). Each tool is
-> prefixed `mcp__moai__` at the call site. This rule tells agents and the
-> orchestrator WHEN to prefer an MCP tool over its CLI/slash equivalent.
->
-> Wiring parity (local ↔ template) and per-agent `tools:` lists are owned by the
-> agent definitions; this file owns the capability map + the MCP-over-CLI rule.
+The 47 tools exposed by the self-hosted `moai` MCP server (`.mcp.json` → `{command: "moai", args: ["mcp-server"]}`) carry MoAI's CLI capabilities and are prefixed `mcp__moai__`; the Go producer is `internal/cli/mcp_server.go`. When a tool is in your `tools:` list, prefer it over the equivalent `moai` CLI call: it backs the same implementation, returns structured output and avoids shell quoting. Use the CLI when the tool is not in your list.
 
-## MCP-over-CLI rule
+## The `project_root` input
 
-Prefer the MCP tool when it is in the calling agent's `tools:` list. The MCP path
-and the Bash CLI back the SAME implementation; the MCP path returns structured
-output, avoids shell-quoting hazards, and is lower-latency inside a subagent
-where Bash may be restricted. Use the Bash CLI only when the MCP tool is absent
-from the agent's `tools:` list, or when orchestrating from the main session and
-the CLI form reads more naturally inline.
+Twenty-two tools accept an optional `project_root` string: `spec_progress`, `spec_audit`, `spec_drift`, `verify_snapshot`, `verify_trend`, `codex_audit`, `codex_review`, `codex_task`, `glm_audit`, `glm_review`, `claude_audit`, `audit_multi`, `graph_file_api`, `graph_find_code`, `graph_shortest_path`, `graph_trace_calls`, `factory_decide`, `todo_add`, `todo_list`, `factory_next`, `factory_stage`, and `factory_complete`. It names the tree the call should act on. `codex_task`, `factory_next`, `factory_stage` and `factory_complete` require it and refuse a call without it.
 
-## The `project_root` input — name your own tree
-
-Twenty-two tools accept an optional `project_root` string: `spec_progress`,
-`spec_audit`, `spec_drift`, `verify_snapshot`, `verify_trend`, `codex_audit`,
-`codex_review`, `codex_task`, `glm_audit`, `glm_review`, `claude_audit`,
-`audit_multi`, `graph_file_api`, `graph_find_code`, `graph_shortest_path`,
-`graph_trace_calls`, `factory_decide`, `todo_add`, `todo_list`, `factory_next`,
-`factory_stage`, and `factory_complete`. It names the tree the call should act
-on. Four of the twenty-two
-REQUIRE it rather than accept it: the lane verbs `factory_next`, `factory_stage`,
-and `factory_complete` reject a call without it naming the argument, and
-`codex_task` is required rather than optional — pass your own toplevel or the
-call is refused (`project_root is required ...`); it is never defaulted.
-
-[HARD] **An agent working inside a worktree MUST pass it**, and the value is its
-own `git rev-parse --show-toplevel`. This is not a convenience. The server cannot
-work the answer out for itself: it is a long-lived subprocess, so its working
-directory cannot follow a worktree switch, and the environment variable it falls
-back on names the PROJECT — the primary checkout — even for a session working in
-a worktree. Omit the parameter from a worktree and the call acts on the primary
-checkout instead, which means a SPEC that exists only on the card's branch is not
-in the catalogue the auditor reads. It is not reported missing; it is simply
-absent.
-
-The caller is the only party that holds the answer, which is why it is an input.
-
-| Situation | What to pass | What happens |
-|---|---|---|
-| Session in a worktree | `project_root: <git rev-parse --show-toplevel>` | the call acts on that tree |
-| Session in the primary checkout | nothing | resolves exactly as it always has |
-| Path that is not a MoAI project root | — | the call is REJECTED with an error naming the path |
-
-The rejection is deliberate, not a rough edge: a silent fallback would send a
-caller who mistyped its own worktree path back to the primary checkout — the
-exact failure the parameter exists to prevent — while reporting success.
-
-An accepted path is **canonicalized** before use, so the call acts on the real
-directory rather than on whichever spelling reached it and a containment check
-cannot be walked through by pointing a link outside the boundary. A path that
-cannot be canonicalized is rejected on the same terms.
-
-A registered linked worktree of a repository that keeps `.moai` untracked is also
-accepted.
-
-For `audit_multi` the root reaches every backend in the fan-out: Claude and GLM
-use it to collect the diff sent to their isolated reviewer, while codex receives
-it as the working directory it reviews in. Passing it keeps all independent
-opinions about the same tree.
-
----
-
-Classification: Evolvable reference rule — the MCP tool surface map. Update this
-file whenever a tool is added/removed/renamed on the `moai mcp-server` (the Go
-producer lives in `internal/cli/mcp_server.go`).
+When working inside a worktree, pass your own `git rev-parse --show-toplevel` as `project_root`. The server is a long-lived process whose working directory and environment point at the primary checkout, so without it the call silently acts on the primary checkout — a SPEC that exists only on your branch is simply absent, not reported missing. In the primary checkout, omit it. A path that is not a MoAI project root (or a registered linked worktree of one) is rejected rather than falling back, and accepted paths are canonicalized before use. For `audit_multi`, the root reaches every backend in the fan-out, so all reviewers see the same tree.

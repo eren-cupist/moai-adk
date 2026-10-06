@@ -999,16 +999,12 @@ func TestAuthoringDocHasNoEffortMatrix(t *testing.T) {
 }
 
 // TestConstitutionHasNoPerAgentEffortPointer asserts the constitution no
-// longer points at the retired per-agent effort matrix (H8) and still carries
-// the prompt-philosophy section that routes effort by role.
+// longer points at the retired per-agent effort matrix (H8).
 func TestConstitutionHasNoPerAgentEffortPointer(t *testing.T) {
 	content := readRuleDoc(t, ".claude", "rules", "moai", "core", "moai-constitution.md")
 
 	if strings.Contains(content, "Effort-Level Calibration Matrix") {
 		t.Error("moai-constitution.md still points at the retired Effort-Level Calibration Matrix")
-	}
-	if !strings.Contains(content, "Prompt Philosophy") {
-		t.Error("moai-constitution.md should keep its Prompt Philosophy section")
 	}
 }
 

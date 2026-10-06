@@ -37,8 +37,6 @@ var cardIDBaseline = []cardIDBaselineEntry{
 	{".claude/hooks/moai/sync-phase-quality-gate.sh", "t604"},
 	{".claude/hooks/moai/sync-phase-quality-gate.sh", "t663"},
 	{".claude/hooks/moai/sync-phase-quality-gate.sh", "t664"},
-	{".claude/rules/moai/core/askuser-protocol-reference.md", "t1303"},
-	{".claude/rules/moai/workflow/session-handoff-format.md", "t1303"},
 }
 
 // isCardIDBaselined reports whether the (relPath, matched) pair is a baseline
@@ -84,7 +82,7 @@ func TestCardIDBaselineHasNoStaleEntries(t *testing.T) {
 func TestCardIDBaselineIsPerFileAndPerLiteral(t *testing.T) {
 	t.Parallel()
 
-	const baselinedFile, baselinedID = ".claude/rules/moai/core/askuser-protocol-reference.md", "t1303"
+	const baselinedFile, baselinedID = ".claude/hooks/moai/sync-phase-quality-gate.sh", "t1388"
 	if !isCardIDBaselined(baselinedFile, baselinedID) {
 		t.Fatalf("positive control failed: %s %s is not in the baseline", baselinedFile, baselinedID)
 	}

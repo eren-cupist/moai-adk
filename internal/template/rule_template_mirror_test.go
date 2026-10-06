@@ -54,16 +54,7 @@ import (
 var declaredForkedPairs = []struct {
 	path   string
 	reason string
-}{
-	{
-		path:   ".claude/rules/moai/core/verification-claim-integrity.md",
-		reason: "local retains [ZONE:Evolvable] governance tags and internal provenance (SPEC-IDs, concrete per-instance examples) that the neutral template copy omits",
-	},
-	{
-		path:   ".claude/rules/moai/core/agent-common-protocol-reference.md",
-		reason: "local carries internal provenance markers (SPEC-IDs, card ids) stripped from the neutral distribution copy",
-	},
-}
+}{}
 
 // mirrorForkMarker is the HTML-comment declaration substring that must open
 // every intentionally-forked pair (after the title/heading line). Both copies
