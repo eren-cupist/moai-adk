@@ -465,8 +465,6 @@ func Registry() []Site {
 		// design and assert nothing.
 		{ID: "moai-router-skill-listing", Path: ".claude/skills/moai/SKILL.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: the router's per-workflow agent lines together name every retained agent."},
 		{ID: "moai-router-skill-listing-mirror", Path: "internal/template/templates/.claude/skills/moai/SKILL.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: template mirror of the router skill."},
-		{ID: "plan-spec-assembly-listing", Path: ".claude/skills/moai/workflows/plan/spec-assembly.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: the plan assembly walks the whole agent chain."},
-		{ID: "plan-spec-assembly-listing-mirror", Path: "internal/template/templates/.claude/skills/moai/workflows/plan/spec-assembly.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: template mirror of the plan assembly sub-skill."},
 		{ID: "moai-workflows-spec-assembly-listing", Path: ".moai/workflows/plan/spec-assembly.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: repository-local workflow copy walking the agent chain."},
 		{ID: "autonomous-workflow-strategy-listing", Path: ".moai/docs/autonomous-workflow-strategy.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: a maintainer strategy note naming the agents of the autonomous pipeline."},
 		{ID: "hns-best-practices-listing", Path: ".claude/skills/hns-moaiadk-best-practices/SKILL.md", Axis: AxisSubsetByDesign, Note: "USER-OWNED HARNESS SKILL: maintainer harness reference that names the retained agents."},
@@ -618,17 +616,6 @@ func NumeralExemptions() []NumeralExempt {
 		},
 
 		// ── Measured false positives ───────────────────────────────────────
-		{
-			ID:   "spec-frontmatter-schema-best-practice-number",
-			Path: ".claude/rules/moai/development/spec-frontmatter-schema.md",
-			Reason: "Two hits in one sentence, neither a live roster count: \"Best Practice #7\" is a " +
-				"numbered practice, and \"(8 retained agents)\" names the consolidation policy as it was.",
-		},
-		{
-			ID:     "spec-frontmatter-schema-best-practice-number-mirror",
-			Path:   "internal/template/templates/.claude/rules/moai/development/spec-frontmatter-schema.md",
-			Reason: "Template mirror of the row above; same two hits, same reason.",
-		},
 		{
 			ID:     "foundation-quality-reference-section-marker",
 			Path:   ".claude/skills/moai-foundation-quality/references/reference.md",
