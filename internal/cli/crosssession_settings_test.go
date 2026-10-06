@@ -2,12 +2,14 @@ package cli
 
 import (
 	"encoding/json"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/modu-ai/moai-adk/internal/config"
+	"github.com/modu-ai/moai-adk/internal/template"
 )
 
 // crosssession_settings_test.go — the crosssession.yaml → injected --settings
@@ -211,4 +213,39 @@ func TestAppendCrossSessionSettingsGeneralLaunch(t *testing.T) {
 		}
 		t.Cleanup(func() { _ = os.Remove(got[3]) })
 	})
+}
+
+// TestTemplateNeverShipsIsolatePeerMachines is the template half of the guard:
+// the distributed templates must never carry the Claude Code settings key
+// `isolatePeerMachines` in any settings-bearing (non-prose) file. A true from
+// ANY Claude Code scope applies and cannot be turned off from a lower scope,
+// so the shipped default must never introduce one.
+func TestTemplateNeverShipsIsolatePeerMachines(t *testing.T) {
+	embedded, err := template.EmbeddedTemplates()
+	if err != nil {
+		t.Fatalf("EmbeddedTemplates: %v", err)
+	}
+	var offenders []string
+	err = fs.WalkDir(embedded, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() || strings.HasSuffix(path, ".md") {
+			return nil // prose surfaces document the key; only settings-bearing files set it
+		}
+		data, readErr := fs.ReadFile(embedded, path)
+		if readErr != nil {
+			return readErr
+		}
+		if strings.Contains(string(data), "isolatePeerMachines") {
+			offenders = append(offenders, path)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("walk embedded templates: %v", err)
+	}
+	if len(offenders) > 0 {
+		t.Errorf("settings-bearing template files carry isolatePeerMachines (a shipped true can never be turned off from a lower scope): %v", offenders)
+	}
 }
