@@ -1,195 +1,68 @@
 ---
 name: moai-ref-react-patterns
 description: >
-  React/Next.js component design patterns, state management strategies, and project
-  structure reference for frontend development. Agent-extending skill that amplifies
-  frontend domain work (spawned via Agent(general-purpose) with frontend instructions)
-  with production-grade React patterns.
-  NOT for: backend API design, database modeling, DevOps, mobile apps.
+  Review rubric for React and Next.js components: where state lives, data fetching,
+  client/server boundaries, component structure, rendering cost and accessibility. Used
+  when implementing UI and by the /moai review UX perspective. Not for framework version
+  facts or design direction (moai-domain-frontend), or backend work.
 
 when_to_use: >
-  Use for React/Next.js component design patterns: state-management
-  strategies, hooks, component composition, and project structure.
-  Amplifies frontend domain work (Agent(general-purpose) with frontend
-  instructions) with production-grade React patterns.
+  Load when writing or reviewing React components, hooks or client state.
 
 user-invocable: false
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
   category: "domain"
   status: "active"
   updated: "2026-03-30"
-  tags: "react, nextjs, component, patterns, frontend, reference"
+  tags: "react, nextjs, components, state, accessibility, review, reference"
 
 # MoAI Extension: Progressive Disclosure
 progressive_disclosure:
   enabled: true
   level1_tokens: 100
-  level2_tokens: 3000
+  level2_tokens: 1000
 ---
 
-# React Patterns Reference
+# React Component Rubric
 
-## Target Spawn
+Follow the project's existing patterns first: its folder layout, its state and query libraries, its component kit. Report each item below that a change violates as a finding with severity and confidence.
 
-Frontend domain work spawned via `Agent(general-purpose)` with frontend instructions - Applies these patterns directly to component design and state management.
+## Where state lives
 
-## Component Design Patterns
+| State | Home |
+|-------|------|
+| Restorable from the URL (filters, tabs, pagination) | search params |
+| Server data | server components, or the project's query library on the client |
+| Form input and validation | the project's form library, with the same schema validated on the server |
+| Shared client-only UI state | the project's store, or context for rarely changing values |
+| Local to one component | `useState` or `useReducer` |
 
-### 1. Compound Components
-Parent and child share implicit state via Context.
+Findings: server data copied into a client store or `useState`; state derivable from props or other state stored separately and synced with an effect; URL-shaped state kept only in memory so reload or share loses it.
 
-Suited for: Tab, Accordion, Dropdown, Select
-Structure: `<Select>` + `<Select.Trigger>` + `<Select.Option>`
+## Data and boundaries
 
-### 2. Custom Hooks (Extraction Pattern)
-Extract state logic into reusable hooks.
+- No `useEffect` plus `fetch` for data a server component or the query library could load; no request waterfalls where requests could run in parallel.
+- `'use client'` sits on the smallest subtree that needs interactivity; server-only modules (database clients, secrets) are never imported into client code.
+- Every async view has loading, empty and error states, and an error boundary (`error.tsx` or equivalent) covers the route.
+- Mutations show pending state, handle failure visibly, and refresh or revalidate the data they change.
 
-Suited for: Form management, API calls, localStorage, debounce
-Naming: `use` prefix required - `useForm`, `useDebounce`, `useAuth`
+## Structure
 
-### 3. Container/Presentational Separation
-Separate data logic (Container) from UI (Presentational).
+- Props are typed; no `any` in props or state.
+- A component that mixes data loading, business rules and markup, or has grown past what fits on a screen, is split along those lines.
+- Reused logic lives in a hook; reused markup in a component from the shared kit.
+- Effects have correct dependencies and clean up subscriptions and timers; effects are not used to respond to events that a handler could handle.
 
-Suited for: Large apps, when testability is needed
-Container: Data fetch, state management, event handlers
-Presentational: Renders only from props, functionally pure
+## Rendering cost
 
-### 4. Headless Component
-Provides behavior/state without UI.
+- Lists render with stable keys (not array indexes when items reorder); long lists are virtualized.
+- Large client dependencies are loaded lazily; images use the framework's image component with sizes set.
+- Memoization is added where a profile shows a cost, not by default (and not at all when the React Compiler handles it).
 
-Suited for: Design system-independent logic
-Examples: headless `useCombobox`, `useDialog`, `useTable`
+## Accessibility
 
-## State Management Selection Guide
-
-| State Type | Tool | Rationale |
-|-----------|------|-----------|
-| UI Local | useState, useReducer | Component-internal |
-| Server State | React Query / TanStack Query | Caching, refetch, optimistic |
-| Global Client | Zustand | Concise, minimal boilerplate |
-| Complex Global | Zustand + Immer | Immutability convenience |
-| URL State | nuqs / useSearchParams | Filters, pagination |
-| Form State | React Hook Form + Zod | Integrated validation |
-| Theme/i18n | Context + Provider | Low change frequency |
-
-### Decision Flow
-```
-Restorable from URL? -> URL state (nuqs)
-Server data? -> React Query
-Shared across components? -> Zustand
-Component-internal? -> useState
-Complex transitions? -> useReducer
-```
-
-## Next.js App Router Structure
-
-```
-src/
-├── app/                    # App Router
-│   ├── (auth)/             # Auth route group
-│   │   ├── login/page.tsx
-│   │   └── register/page.tsx
-│   ├── (main)/             # Main route group
-│   │   ├── dashboard/page.tsx
-│   │   └── settings/page.tsx
-│   ├── api/                # API Routes
-│   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Home
-├── components/
-│   ├── ui/                 # Base UI (Button, Input, Modal)
-│   └── features/           # Feature components
-│       ├── auth/
-│       └── dashboard/
-├── hooks/                  # Custom hooks
-├── lib/                    # Utilities, config
-├── stores/                 # Zustand stores
-├── types/                  # TypeScript types
-└── styles/                 # Global styles
-```
-
-## Component Quality Standards
-
-| Item | Standard |
-|------|----------|
-| Component Size | Under 200 lines (split if exceeded) |
-| Props | 5 or fewer (group into object if exceeded) |
-| Custom Hooks | Always extract when reusing logic |
-| Error Boundaries | Set at the page level |
-| Loading States | Provide loading UI for all async ops |
-| Form Validation | Validate on both client and server |
-
-## Performance Patterns
-
-| Pattern | When | Tool |
-|---------|------|------|
-| Memoization | Expensive computation | `useMemo`, `React.memo` |
-| Lazy Loading | Bundle size | `React.lazy`, `next/dynamic` |
-| Virtualization | 1000+ item lists | `@tanstack/react-virtual` |
-| Image Optimization | Image loading | `next/image` |
-| Optimistic Updates | Immediate feedback | React Query `onMutate` |
-| Debounce | Search, input | `useDeferredValue` or custom hook |
-
-## Error Handling
-
-### Hierarchical Error Boundaries
-```
-RootErrorBoundary (global)
-  └── LayoutErrorBoundary (per section)
-      └── ComponentErrorFallback (individual)
-```
-
-### API Error Handling
-| HTTP Status | Client Handling |
-|------------|----------------|
-| 401 | Auto logout + redirect |
-| 403 | Unauthorized UI |
-| 404 | Not Found page |
-| 422 | Per-field form error |
-| 429 | Retry + wait notice |
-| 500 | Generic error + retry button |
-
-## Accessibility Checklist
-
-- [ ] Alt text on all images
-- [ ] Keyboard navigation (Tab, Enter, Escape)
-- [ ] ARIA labels (aria-label, role)
-- [ ] Color contrast 4.5:1 or above
-- [ ] Visible focus indicator
-- [ ] Semantic HTML (button, nav, main, section)
-
-<!-- moai:evolvable-start id="rationalizations" -->
-## Common Rationalizations
-
-| Rationalization | Reality |
-|---|---|
-| "useEffect is fine for data fetching in React 19" | React 19 provides use() and server components for data fetching. useEffect for fetch is a legacy pattern that causes waterfalls. |
-| "Global state is simpler than prop drilling" | Global state couples distant components. Prop drilling or composition via children is more predictable and testable. |
-| "I will add TypeScript types later" | Untyped components accumulate any-typed callers. Retrofitting types into a used component is much harder than starting typed. |
-| "This component does not need memoization" | Premature memoization is waste, but components rendering lists or expensive trees should be profiled, not assumed fast. |
-| "CSS-in-JS is fine, everyone uses it" | CSS-in-JS adds runtime overhead and bundle size. Tailwind or CSS Modules achieve the same scoping without the cost. |
-
-<!-- moai:evolvable-end -->
-
-<!-- moai:evolvable-start id="red-flags" -->
-## Red Flags
-
-- useEffect used for data fetching when server components or use() are available
-- Component receives more than 5 props without decomposition or object grouping
-- State management library used for server-cacheable data (use React Query or SWR instead)
-- Inline styles or hardcoded pixel values instead of design tokens
-- Component missing error boundary wrapping for async operations
-
-<!-- moai:evolvable-end -->
-
-<!-- moai:evolvable-start id="verification" -->
-## Verification
-
-- [ ] Data fetching uses server components, use(), or React Query (not useEffect + fetch)
-- [ ] Components have TypeScript interfaces for all props
-- [ ] Error boundaries wrap components with async operations
-- [ ] Accessibility checklist completed (alt text, keyboard nav, ARIA, contrast, focus, semantics)
-- [ ] No inline styles or hardcoded color/spacing values (design tokens used)
-- [ ] Component renders correctly in React Strict Mode (no double-effect issues)
-
-<!-- moai:evolvable-end -->
+- Interactive elements are real `button`, `a` and form elements, reachable and operable by keyboard, with a visible focus style.
+- Every control has an accessible name; images have meaningful `alt` (empty for decorative ones).
+- Dialogs and menus trap and restore focus and close on Escape.
+- Text and essential UI meet WCAG AA contrast; information is not conveyed by color alone; motion respects `prefers-reduced-motion`.

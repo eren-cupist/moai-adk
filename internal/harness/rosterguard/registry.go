@@ -219,26 +219,6 @@ func Registry() []Site {
 			CountPattern: `consists of exactly (\d+) retained agents`,
 			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
 		},
-		{
-			ID:           "agents-reference-catalog",
-			Path:         ".claude/skills/moai-foundation-core/modules/agents-reference.md",
-			Axis:         AxisRetainedRoster,
-			Claims:       ClaimMembership | ClaimCount,
-			BlockStart:   "| Agent | Phase scope |",
-			BlockEnd:     "| `Explore` | Read-only codebase exploration",
-			CountPattern: `\*\*(\d+) retained agents\*\*`,
-			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
-		},
-		{
-			ID:           "agents-reference-catalog-mirror",
-			Path:         "internal/template/templates/.claude/skills/moai-foundation-core/modules/agents-reference.md",
-			Axis:         AxisRetainedRoster,
-			Claims:       ClaimMembership | ClaimCount,
-			BlockStart:   "| Agent | Phase scope |",
-			BlockEnd:     "| `Explore` | Read-only codebase exploration",
-			CountPattern: `\*\*(\d+) retained agents\*\*`,
-			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
-		},
 		readmeSite("readme-en", "README.md", `### The (\d+)-agent catalog`, ""),
 		readmeSite("readme-ko", "README.ko.md", `### (\d+)-에이전트 카탈로그`, localizedHeadingUnreachable),
 		readmeSite("readme-ja", "README.ja.md", `### (\d+) エージェント・カタログ`, localizedHeadingUnreachable),
@@ -288,92 +268,6 @@ func Registry() []Site {
 		// The two model-policy.md matrix-size rows (and their mirror) left
 		// with the per-agent profile matrix section they measured
 		// (SPEC-AGENT-MODEL-INHERIT-001 H5).
-		{
-			ID:               "foundation-core-skill-catalog-size",
-			SweepUnreachable: "count-only claim: a module-index sentence citing the catalog size",
-			Path:             ".claude/skills/moai-foundation-core/SKILL.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `(\d+)-agent retained catalog`,
-			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
-		},
-		{
-			ID:               "foundation-core-skill-catalog-size-mirror",
-			SweepUnreachable: "count-only claim; template mirror of the row above",
-			Path:             "internal/template/templates/.claude/skills/moai-foundation-core/SKILL.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `(\d+)-agent retained catalog`,
-			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
-		},
-
-		// INDEX.md states the same size THREE times, in three different
-		// sentences. Three rows rather than one: a CountPattern must match its
-		// body exactly once, and a pattern loose enough to cover all three
-		// would be ambiguous about which claim it asserts.
-		{
-			ID:               "foundation-core-index-catalog-size-headline",
-			SweepUnreachable: "count-only claim: a module-index line",
-			Path:             ".claude/skills/moai-foundation-core/modules/INDEX.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `MoAI-ADK's (\d+) retained agents`,
-			KnownStale:       indexCatalogStale("Cites 11 where the retained roster carries 13."),
-		},
-		{
-			ID:               "foundation-core-index-catalog-size-bullet",
-			SweepUnreachable: "count-only claim: a module-index line",
-			Path:             ".claude/skills/moai-foundation-core/modules/INDEX.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `- (\d+) retained agents \(10 MoAI-custom`,
-			KnownStale:       indexCatalogStale("Cites 11 where the retained roster carries 13; the same file's third claim."),
-		},
-		{
-			ID:               "foundation-core-index-catalog-size-table",
-			SweepUnreachable: "count-only claim: a module-index table cell",
-			Path:             ".claude/skills/moai-foundation-core/modules/INDEX.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `\| (\d+) retained agents, flat catalog`,
-			KnownStale:       indexCatalogStale("Cites 11 where the retained roster carries 13, in the module table."),
-		},
-		{
-			ID:               "foundation-core-index-catalog-size-headline-mirror",
-			SweepUnreachable: "count-only claim; template mirror",
-			Path:             "internal/template/templates/.claude/skills/moai-foundation-core/modules/INDEX.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `MoAI-ADK's (\d+) retained agents`,
-			KnownStale:       indexCatalogStale("Template mirror, stale identically."),
-		},
-		{
-			ID:               "foundation-core-index-catalog-size-bullet-mirror",
-			SweepUnreachable: "count-only claim; template mirror",
-			Path:             "internal/template/templates/.claude/skills/moai-foundation-core/modules/INDEX.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `- (\d+) retained agents \(10 MoAI-custom`,
-			KnownStale:       indexCatalogStale("Template mirror, stale identically."),
-		},
-		{
-			ID:               "foundation-core-index-catalog-size-table-mirror",
-			SweepUnreachable: "count-only claim; template mirror",
-			Path:             "internal/template/templates/.claude/skills/moai-foundation-core/modules/INDEX.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `\| (\d+) retained agents, flat catalog`,
-			KnownStale:       indexCatalogStale("Template mirror, stale identically."),
-		},
-
-		// The three foundation-core modules whose header banner cites the
-		// catalog size in one identical sentence.
-		agentCatalogSizeSite("foundation-core-delegation-advanced-catalog-size", ".claude/skills/moai-foundation-core/modules/delegation-advanced.md"),
-		agentCatalogSizeSite("foundation-core-delegation-advanced-catalog-size-mirror", "internal/template/templates/.claude/skills/moai-foundation-core/modules/delegation-advanced.md"),
-		agentCatalogSizeSite("foundation-core-delegation-implementation-catalog-size", ".claude/skills/moai-foundation-core/modules/delegation-implementation.md"),
-		agentCatalogSizeSite("foundation-core-delegation-implementation-catalog-size-mirror", "internal/template/templates/.claude/skills/moai-foundation-core/modules/delegation-implementation.md"),
-		agentCatalogSizeSite("foundation-core-token-optimization-catalog-size", ".claude/skills/moai-foundation-core/modules/token-optimization.md"),
-		agentCatalogSizeSite("foundation-core-token-optimization-catalog-size-mirror", "internal/template/templates/.claude/skills/moai-foundation-core/modules/token-optimization.md"),
 
 		{
 			ID:               "foundation-quality-skill-catalog-size",
@@ -475,35 +369,6 @@ func Registry() []Site {
 		{ID: "t1171-fixture-roles-other-manager-lead-listing", Path: "internal/cli/testdata/codex-rollouts-t1171/roles-other-version/manager-lead.toml", Axis: AxisSubsetByDesign, Note: "HISTORICAL FIXTURE: a captured codex role definition quoting the roster as it stood."},
 		{ID: "t1171-fixture-real-rollout-b7e2-listing", Path: "internal/cli/testdata/codex-rollouts-t1171/real/rollout-2026-09-24T18-41-35-01a0d2ca-b7e2-7e50-8f7f-0ab053beb07f.jsonl", Axis: AxisSubsetByDesign, Note: "HISTORICAL FIXTURE: a captured codex rollout quoting the roster as it stood."},
 		{ID: "cutover-audit-workflow-inventory-listing", Path: "reports/workflow-performance-audit-20260911/workflow-inventory.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: a 2026-09-11 audit workflow inventory listing agents as measured."},
-	}
-}
-
-// indexCatalogStale builds the staleness marker shared by the INDEX.md rows,
-// which differ only in which sentence they anchor on.
-func indexCatalogStale(reason string) *Staleness {
-	return &Staleness{
-		Reason:        reason,
-		FollowUp:      "unassigned — reported by card t930, prose repair out of its scope",
-		DeclaredCount: 11,
-	}
-}
-
-// agentCatalogSizeSite builds a row for the foundation-core module banner,
-// which cites the catalog size in one identical sentence across three modules
-// and their three mirrors.
-func agentCatalogSizeSite(id, path string) Site {
-	return Site{
-		ID:               id,
-		SweepUnreachable: "count-only claim: a module header banner citing the catalog size",
-		Path:             path,
-		Axis:             AxisRetainedRoster,
-		Claims:           ClaimCount,
-		CountPattern:     `(\d+)-agent catalog in \[agents-reference\.md\]`,
-		KnownStale: &Staleness{
-			Reason:        "The module banner cites an 11-agent catalog where the roster carries 13.",
-			FollowUp:      "unassigned — reported by card t930, prose repair out of its scope",
-			DeclaredCount: 11,
-		},
 	}
 }
 
