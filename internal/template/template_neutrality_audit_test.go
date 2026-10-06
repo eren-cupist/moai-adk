@@ -399,9 +399,10 @@ func TestTemplateNeutralityAudit(t *testing.T) {
 // TestTemplateNeutralityAuditC8Preserve verifies the C8 GOOS=<os> false-positive
 // PRESERVE contract (REQ-TNA-008 / AC-TNA-011): the Go cross-compile env var
 // MUST be preserved in the template tree AND MUST NOT be emitted as a
-// neutrality violation. Exactly 2 files carry the GOOS= substring
-// (the 3rd, scripts/ci-mirror/cross-compile.sh, was dropped from templates
-// in 17dcbea4a — this count tracks the live template tree).
+// neutrality violation. Exactly 1 file carries the GOOS= substring
+// (sync/delivery.md; the manager-develop brief template no longer pins a
+// Go cross-compile step, and scripts/ci-mirror/cross-compile.sh was dropped
+// from templates earlier — this count tracks the live template tree).
 func TestTemplateNeutralityAuditC8Preserve(t *testing.T) {
 	t.Parallel()
 
@@ -431,12 +432,12 @@ func TestTemplateNeutralityAuditC8Preserve(t *testing.T) {
 		t.Fatalf("C8 scan error: %v", err)
 	}
 
-	if len(preserved) != 2 {
+	if len(preserved) != 1 {
 		var files []string
 		for f := range preserved {
 			files = append(files, f)
 		}
-		t.Errorf("C8 GOOS= PRESERVE expected 2 files, got %d: %s",
+		t.Errorf("C8 GOOS= PRESERVE expected 1 file, got %d: %s",
 			len(preserved), strings.Join(files, ", "))
 	}
 }
