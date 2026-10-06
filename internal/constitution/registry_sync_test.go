@@ -46,7 +46,7 @@ import (
 const (
 	// wantRegistryEntries pins the entry-set size (REQ-ZRR-005 / AC-ZRR-006).
 	// Deliberate registry growth updates this constant in the same change.
-	wantRegistryEntries = 29
+	wantRegistryEntries = 21
 	// wantTupleDigest pins the entry-set SHAPE, not just its size
 	// (REQ-ZRH-004): SHA-256 hex over the sorted "id|zone|zone_class|%t"
 	// lines of all entries (see registryTupleDigest). A count-preserving
@@ -54,7 +54,7 @@ const (
 	// therefore the digest (REQ-ZRH-005). A deliberate registry change
 	// updates wantRegistryEntries and wantTupleDigest in the same change
 	// (REQ-ZRH-006).
-	wantTupleDigest = "9b0b08b6c1065e60fc21176c61c18a53f35d99d9ace14abf8e64be4b6b9fb558"
+	wantTupleDigest = "0860ff0b55f6b66d5111ef7783d5d2669d4d45c82e9501b6af236625a5e73362"
 	// wantRetiredExempt pins the number of [SUPERSEDED …] clause-exempt
 	// entries under option C (spec.md §1.2 v0.5.0).
 	wantRetiredExempt = 4

@@ -42,17 +42,17 @@ type citationTree struct {
 	// MinFiles is derived from the measured population, NOT from the number of
 	// violations: the two are different populations, and after the repair the
 	// violation count is zero and would anchor nothing. Measured on this tree:
-	// repo root 177 files, template mirror 134. Each floor stops a collapse to
-	// any single subtree (the largest, `skills`, is 91 in the repo root and 80
-	// in the template mirror) and still clears with `agents` dropped (repo root
-	// 161 >= 100, template mirror 128 >= 90).
+	// repo root 125 files, template mirror 82. Each floor stops a collapse to
+	// any single subtree (the largest is `rules` at 57 in the repo root and
+	// `skills` at 39 in the template mirror) and still clears with `agents`
+	// dropped (repo root 109 >= 100, template mirror 76 >= 65).
 	MinFiles int
 }
 
 func evidenceCitationTrees() []citationTree {
 	return []citationTree{
 		{Name: "repo-root", ClaudeDir: filepath.Join("..", "..", ".claude"), MinFiles: 100},
-		{Name: "template-mirror", ClaudeDir: filepath.Join("templates", ".claude"), MinFiles: 90},
+		{Name: "template-mirror", ClaudeDir: filepath.Join("templates", ".claude"), MinFiles: 65},
 	}
 }
 

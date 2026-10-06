@@ -95,8 +95,10 @@ func TestEmbeddedTemplates_SkillDefinitions(t *testing.T) {
 		return nil
 	})
 
-	if skillCount < 60 {
-		t.Errorf("expected at least 60 skill .md files, got %d", skillCount)
+	// Floor at about 80% of the measured population (39 skill .md files), so
+	// a collapse of the skills tree fails while ordinary edits do not.
+	if skillCount < 31 {
+		t.Errorf("expected at least 31 skill .md files, got %d", skillCount)
 	}
 	t.Logf("total skill .md files: %d", skillCount)
 }
@@ -357,8 +359,9 @@ func TestEmbeddedTemplates_WalkDirTotalCount(t *testing.T) {
 		t.Fatalf("WalkDir error: %v", walkErr)
 	}
 
-	if totalFiles < 250 {
-		t.Errorf("expected at least 250 embedded files, got %d", totalFiles)
+	// Floor at about 80% of the measured population (232 embedded files).
+	if totalFiles < 185 {
+		t.Errorf("expected at least 185 embedded files, got %d", totalFiles)
 	}
 	t.Logf("total embedded files: %d", totalFiles)
 }

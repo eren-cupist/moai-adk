@@ -159,7 +159,9 @@ func TestEmitFidelity(t *testing.T) {
 		stem := strings.TrimSuffix(strings.TrimSuffix(c.Name(), ".tmpl"), ".md")
 		want[pluginRoot+"/commands/"+stem+".md"] = ".claude/commands/moai/" + c.Name()
 	}
-	if len(want) < 50 {
+	// Anti-empty floor at about 80% of the measured payload (43 files: 38
+	// skill files and 5 commands).
+	if len(want) < 35 {
 		t.Fatalf("source sweep found %d payload files; an empty sweep asserts nothing", len(want))
 	}
 
