@@ -367,11 +367,14 @@ var sweepSkipFiles = map[string]bool{
 // SweepThreshold is the number of distinct agent names that makes a file a
 // roster listing for the purposes of the anti-vacuity sweep.
 //
-// It is deliberately below the full roster size: a listing that has gone stale
-// by two names is exactly the shape this package exists to find, and a
-// threshold set at the full roster size would exclude every stale site — the
-// sweep would then be vacuous on its own subject matter.
-const SweepThreshold = 10
+// With the thirteen-name roster it sat three below the full roster size, so a
+// listing gone stale by a name or two was still found. The roster is now seven
+// names, and any threshold below seven reaches every routine plan→run→sync
+// pipeline description rather than catalog listings, so the sweep looks for
+// complete listings. Staleness of a registered site is still caught by its
+// membership and count assertions; the sweep's job is only to find new,
+// undeclared listings.
+const SweepThreshold = 7
 
 // maxSweptFileBytes bounds what the sweep reads, so a large binary or vendored
 // blob cannot dominate the walk.

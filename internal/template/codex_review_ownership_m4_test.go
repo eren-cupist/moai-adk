@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -28,12 +27,10 @@ const (
 	coGLMReview   = "mcp__moai__glm_review"
 	coCodexAudit  = "mcp__moai__codex_audit"
 	coGLMAudit    = "mcp__moai__glm_audit"
-
-	coCardReviewPath = ".moai/reports/<card-id>/card-review.md"
 )
 
 var (
-	coReviewHolders = []string{"manager-develop", "manager-docs", "manager-lead"}
+	coReviewHolders = []string{"manager-develop", "manager-docs"}
 	coAuditHolders  = []string{"plan-auditor", "sync-auditor"}
 )
 
@@ -173,160 +170,6 @@ func coWithTool(agents map[string]string, agent, tool string, add bool) (map[str
 
 // --- doctrine ---
 
-// coSection returns the text from the line that equals heading to the next
-// heading of the same or a higher level (or the end of the document).
-func coSection(doc, heading string) string {
-	level := len(heading) - len(strings.TrimLeft(heading, "#"))
-	lines := strings.Split(doc, "\n")
-	start := -1
-	for i, l := range lines {
-		if strings.TrimRight(l, " ") == heading {
-			start = i
-			break
-		}
-	}
-	if start < 0 {
-		return ""
-	}
-	end := len(lines)
-	for i := start + 1; i < len(lines); i++ {
-		l := lines[i]
-		if !strings.HasPrefix(l, "#") {
-			continue
-		}
-		if n := len(l) - len(strings.TrimLeft(l, "#")); n <= level && strings.HasPrefix(l[n:], " ") {
-			end = i
-			break
-		}
-	}
-	return strings.Join(lines[start:end], "\n")
-}
-
-// coSentence returns the sentence around the first occurrence of token: from
-// the previous ". " (or the start of the paragraph) to the next ". " (or the
-// end of the paragraph).
-func coSentence(section, token string) string {
-	i := strings.Index(section, token)
-	if i < 0 {
-		return ""
-	}
-	start := 0
-	if p := strings.LastIndex(section[:i], "\n\n"); p >= 0 {
-		start = p + 2
-	}
-	if p := strings.LastIndex(section[start:i], ". "); p >= 0 {
-		start += p + 2
-	}
-	end := len(section)
-	if p := strings.Index(section[i:], "\n\n"); p >= 0 {
-		end = i + p
-	}
-	if p := strings.Index(section[i:end], ". "); p >= 0 {
-		end = i + p + 1
-	}
-	return strings.TrimSpace(section[start:end])
-}
-
-const (
-	coDetailStageHeading = "## The card-review stage"
-	coStubStageHeading   = "### The lane's task list carries the card's stages"
-	coStubReadHeading    = "## Completion is read, never trusted"
-)
-
-var (
-	coStageItem = regexp.MustCompile("(?m)^[0-9]+\\. `\\[([a-z-]+)\\]`")
-	coNegation  = regexp.MustCompile("(?i)\\bno card-review\\b|not required|`\\[card-review\\]`[^\n]*\\b(skipped|optional)\\b|may skip the card-review")
-	coCeiling   = regexp.MustCompile(`(?i)\bat most (2|two)\b`)
-)
-
-// coDetailProblems judges factory-dispatch-detail.md: the ordered stage list
-// puts card-review after run-exit verification and before integration, the
-// re-review ceiling and the evidence path are written down, and no sentence in
-// the section negates the stage.
-func coDetailProblems(detail string) []string {
-	sec := coSection(detail, coDetailStageHeading)
-	if sec == "" {
-		return []string{"detail: section " + coDetailStageHeading + " is missing"}
-	}
-	var problems []string
-	var order []string
-	for _, m := range coStageItem.FindAllStringSubmatch(sec, -1) {
-		order = append(order, m[1])
-	}
-	if got, want := strings.Join(order, ">"), "run-exit>card-review>integration>report"; got != want {
-		problems = append(problems, fmt.Sprintf("detail: ordered stage list = %q, want %q", got, want))
-	}
-	if !strings.Contains(sec, coCardReviewPath) {
-		problems = append(problems, "detail: the card-review evidence path "+coCardReviewPath+" is not stated")
-	}
-	if !coCeiling.MatchString(sec) {
-		problems = append(problems, "detail: the re-review ceiling (at most 2) is not stated")
-	}
-	if !strings.Contains(strings.ToLower(sec), "advisory") {
-		problems = append(problems, "detail: the stage is not described as advisory")
-	}
-	if loc := coNegation.FindString(sec); loc != "" {
-		problems = append(problems, fmt.Sprintf("detail: the stage section carries a negating phrase %q", loc))
-	}
-	return problems
-}
-
-// coStubProblems judges factory-dispatch.md: the stage is named in the lane
-// stage section, the leader's conditional sentence sits there, and the leader's
-// completion-read section lists the evidence path and the gap rule.
-func coStubProblems(stub string) []string {
-	var problems []string
-
-	stage := coSection(stub, coStubStageHeading)
-	if stage == "" {
-		return []string{"stub: section " + coStubStageHeading + " is missing"}
-	}
-	for _, need := range []string{"`card-review`", coCardReviewPath, "advisory"} {
-		if !strings.Contains(stage, need) {
-			problems = append(problems, "stub: the lane stage section does not carry "+need)
-		}
-	}
-	if loc := coNegation.FindString(stage); loc != "" {
-		problems = append(problems, fmt.Sprintf("stub: the lane stage section carries a negating phrase %q", loc))
-	}
-
-	// The leader's sentence is conditional: the tree_scope: skip condition and
-	// the missing turn-end gate share one sentence, condition first.
-	sent := coSentence(stage, "turn-end codex review gate")
-	condIdx := strings.Index(sent, "`tree_scope: skip`")
-	gateIdx := strings.Index(sent, "turn-end codex review gate")
-	switch {
-	case sent == "":
-		problems = append(problems, "stub: no sentence in the lane stage section names the turn-end codex review gate")
-	case condIdx < 0:
-		problems = append(problems, "stub: the leader sentence is unconditional — it does not name `tree_scope: skip`")
-	case condIdx > gateIdx:
-		problems = append(problems, "stub: the leader sentence names `tree_scope: skip` after the gate — not a condition")
-	case !regexp.MustCompile(`^(With|If|Where|While|When) `).MatchString(sent):
-		problems = append(problems, "stub: the leader sentence does not open with a condition")
-	case !strings.Contains(sent, "directly with the same tools"):
-		problems = append(problems, "stub: the leader sentence does not say the leader reviews directly with the same tools")
-	}
-
-	read := coSection(stub, coStubReadHeading)
-	if read == "" {
-		return append(problems, "stub: section "+coStubReadHeading+" is missing")
-	}
-	rule := coSentence(read, "card-review.md")
-	if rule == "" {
-		return append(problems, "stub: the completion-read section does not name card-review.md")
-	}
-	for _, need := range []string{coCardReviewPath, "neither cites", "nor records a reason", "gap", "stays in its stage"} {
-		if !strings.Contains(rule, need) {
-			problems = append(problems, "stub: the completion-read gap rule lacks "+need)
-		}
-	}
-	if regexp.MustCompile(`(?i)not a gap|need not|is not required`).MatchString(rule) {
-		problems = append(problems, "stub: the completion-read gap rule is negated")
-	}
-	return problems
-}
-
 func coRead(t *testing.T, root, rel string) string {
 	t.Helper()
 	raw, err := os.ReadFile(filepath.Join(root, rel))
@@ -337,8 +180,6 @@ func coRead(t *testing.T, root, rel string) string {
 }
 
 const (
-	coStubRel   = ".claude/rules/moai/workflow/factory-dispatch.md"
-	coDetailRel = ".claude/rules/moai/workflow/factory-dispatch-detail.md"
 	coTplPrefix = "internal/template/templates/"
 )
 
@@ -474,7 +315,7 @@ func TestReviewOwnership_ToolHolderMutants(t *testing.T) {
 		{"review tool granted to a fourth agent", fourth, coCodexReview, true, fourth},
 		{"glm review granted to an auditor", "sync-auditor", coGLMReview, true, "sync-auditor"},
 		{"audit tool granted to a lane agent", "manager-develop", coGLMAudit, true, "manager-develop"},
-		{"review tool withheld from a lane agent", "manager-lead", coGLMReview, false, "manager-lead"},
+		{"review tool withheld from a lane agent", "manager-develop", coGLMReview, false, "manager-develop"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -517,153 +358,6 @@ func TestReviewOwnership_ToolHolderMutants(t *testing.T) {
 			t.Error("parity checker is blind to a one-sided tools edit")
 		}
 	})
-}
-
-// TestReviewOwnership_CardReviewDoctrine — AC-013 and AC-014 on the local
-// copies and the distributed mirrors, plus mirror neutrality.
-func TestReviewOwnership_CardReviewDoctrine(t *testing.T) {
-	root := findProjectRootForMirrorTest(t)
-	for _, rel := range []string{coStubRel, coTplPrefix + coStubRel} {
-		for _, p := range coStubProblems(coRead(t, root, rel)) {
-			t.Errorf("%s: %s", rel, p)
-		}
-	}
-	for _, rel := range []string{coDetailRel, coTplPrefix + coDetailRel} {
-		for _, p := range coDetailProblems(coRead(t, root, rel)) {
-			t.Errorf("%s: %s", rel, p)
-		}
-	}
-	// The detail companion is byte-identical between the two trees today and
-	// stays so; the stub may differ elsewhere, so only the card-review text is
-	// compared there.
-	if coRead(t, root, coDetailRel) != coRead(t, root, coTplPrefix+coDetailRel) {
-		t.Error("factory-dispatch-detail.md differs between the local and distributed trees")
-	}
-	for _, h := range []string{coStubStageHeading, coStubReadHeading} {
-		if a, b := coSection(coRead(t, root, coStubRel), h), coSection(coRead(t, root, coTplPrefix+coStubRel), h); a != b {
-			t.Errorf("stub section %q differs between the local and distributed trees", h)
-		}
-	}
-	// The distributed card-review text carries no SPEC id, card number or date.
-	// Only the paragraphs that talk about card-review are judged: the stage
-	// section also holds an older paragraph this work does not own.
-	for _, c := range []struct{ rel, heading string }{
-		{coTplPrefix + coStubRel, coStubStageHeading},
-		{coTplPrefix + coStubRel, coStubReadHeading},
-		{coTplPrefix + coDetailRel, coDetailStageHeading},
-	} {
-		sec := coSection(coRead(t, root, c.rel), c.heading)
-		if sec == "" {
-			continue // reported by the problem checks above
-		}
-		for _, para := range strings.Split(sec, "\n\n") {
-			if !strings.Contains(para, "card-review") && c.rel != coTplPrefix+coDetailRel {
-				continue
-			}
-			if loc := mirrorForkLeakPattern.FindString(para); loc != "" {
-				t.Errorf("%s § %s carries an internal token %q in a card-review paragraph", c.rel, c.heading, loc)
-			}
-		}
-	}
-}
-
-// TestReviewOwnership_DoctrineMutants — the doctrine checkers must go red on
-// the cheapest wrong shapes of the stage text.
-func TestReviewOwnership_DoctrineMutants(t *testing.T) {
-	root := findProjectRootForMirrorTest(t)
-	detail := coRead(t, root, coTplPrefix+coDetailRel)
-	stub := coRead(t, root, coTplPrefix+coStubRel)
-
-	apply := func(t *testing.T, doc string, edit func(string) string) string {
-		t.Helper()
-		out := edit(doc)
-		if out == doc {
-			t.Fatal("mutant did not apply — the text it edits is absent (RED until the doctrine lands)")
-		}
-		return out
-	}
-	swap := func(a, b string) func(string) string {
-		return func(s string) string {
-			ia := regexp.MustCompile("(?m)^[0-9]+\\. `\\[" + a + "\\]`.*$").FindString(s)
-			ib := regexp.MustCompile("(?m)^[0-9]+\\. `\\[" + b + "\\]`.*$").FindString(s)
-			if ia == "" || ib == "" {
-				return s
-			}
-			s = strings.Replace(s, ia, "\x00A", 1)
-			s = strings.Replace(s, ib, "\x00B", 1)
-			s = strings.Replace(s, "\x00A", ib, 1)
-			return strings.Replace(s, "\x00B", ia, 1)
-		}
-	}
-	detailMutants := []struct {
-		name string
-		edit func(string) string
-		want string
-	}{
-		{"stage placed after integration", swap("card-review", "integration"), "ordered stage list"},
-		{"stage placed after the report", swap("card-review", "report"), "ordered stage list"},
-		{"stage item removed", func(s string) string {
-			return regexp.MustCompile("(?m)^[0-9]+\\. `\\[card-review\\]`.*\n").ReplaceAllString(s, "")
-		}, "ordered stage list"},
-		{"negating sentence in the section", func(s string) string {
-			return strings.Replace(s, "Running `[card-review]`:", "A lane with no card-review is acceptable.\n\nRunning `[card-review]`:", 1)
-		}, "negating phrase"},
-		{"re-review ceiling dropped", func(s string) string { return regexp.MustCompile(`(?i)at most 2`).ReplaceAllString(s, "any number of") }, "ceiling"},
-		{"evidence path dropped", func(s string) string { return strings.ReplaceAll(s, coCardReviewPath, ".moai/reports/card-review.md") }, "evidence path"},
-	}
-	for _, m := range detailMutants {
-		t.Run("detail/"+m.name, func(t *testing.T) {
-			got := strings.Join(coDetailProblems(apply(t, detail, m.edit)), "\n")
-			if !strings.Contains(got, m.want) {
-				t.Errorf("not flagged (%q); problems:\n%s", m.want, got)
-			}
-		})
-	}
-
-	stubMutants := []struct {
-		name string
-		edit func(string) string
-		want string
-	}{
-		{"leader sentence made unconditional", func(s string) string {
-			return strings.Replace(s, "With `tree_scope: skip` configured for the leader's checkout, the leader session", "The leader session", 1)
-		}, "unconditional"},
-		{"condition placed after the gate", func(s string) string {
-			return strings.Replace(s, "With `tree_scope: skip` configured for the leader's checkout, the leader session carries no turn-end codex review gate", "The leader session carries no turn-end codex review gate when `tree_scope: skip` is configured for its checkout, and it", 1)
-		}, ""},
-		{"gap rule negated", func(s string) string {
-			return strings.Replace(s, "is a gap and stays in its stage", "is not a gap and need not stay in its stage", 1)
-		}, "gap rule"},
-		{"gap rule moved out of the completion-read section", func(s string) string {
-			i := strings.Index(s, coStubReadHeading)
-			if i < 0 {
-				return s
-			}
-			sec := coSection(s, coStubReadHeading)
-			rule := coSentence(sec, "card-review.md")
-			if rule == "" {
-				return s
-			}
-			moved := strings.Replace(sec, rule, "", 1)
-			s = strings.Replace(s, sec, moved, 1)
-			return strings.Replace(s, "## Boundaries", rule+"\n\n## Boundaries", 1)
-		}, "completion-read"},
-		{"evidence path missing from the stage section", func(s string) string {
-			sec := coSection(s, coStubStageHeading)
-			return strings.Replace(s, sec, strings.ReplaceAll(sec, coCardReviewPath, "the review file"), 1)
-		}, coCardReviewPath},
-	}
-	for _, m := range stubMutants {
-		t.Run("stub/"+m.name, func(t *testing.T) {
-			got := coStubProblems(apply(t, stub, m.edit))
-			if len(got) == 0 {
-				t.Fatalf("mutant passed the stub checker")
-			}
-			if m.want != "" && !strings.Contains(strings.Join(got, "\n"), m.want) {
-				t.Errorf("flagged, but not for %q; problems:\n%s", m.want, strings.Join(got, "\n"))
-			}
-		})
-	}
 }
 
 // TestReviewOwnership_TemplateWorkflowKeyIsCommentOnly — AC-015 (iii)(iv): the

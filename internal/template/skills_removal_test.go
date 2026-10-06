@@ -48,6 +48,14 @@ func TestRemovedSkillsNotPresent(t *testing.T) {
 		"moai-workflow-research",           // REMOVED
 		"moai-workflow-pencil-integration", // REMOVED
 		"moai-formats-data",                // REMOVED
+		// Single-user Opus 5.5 reconstruction prune.
+		"moai-foundation-cc", "moai-foundation-thinking", "moai-domain-svg-infographic",
+		"moai-domain-html-report", "moai-domain-humanize", "moai-domain-design-dna",
+		"moai-workflow-loop", "moai-workflow-docs-claim-check", "moai-meta-harness",
+		"moai-harness-learner", "moai-factory-foreman", "moai-lane-watchdog",
+		"moai-jev-skill-suggestion", "moai-ref-jev-question-design", "moai-ref-aside-browser",
+		"moai-ref-ui-polish", "moai-ref-seo", "moai-ref-supply-chain",
+		"moai-ref-llm-security", "moai-ref-cross-model-audit",
 		// NOT removed (still exist): moai-domain-backend, moai-domain-frontend, moai-domain-database,
 		// moai-framework-electron, moai-platform-auth, moai-platform-deployment, moai-platform-chrome-extension
 	}

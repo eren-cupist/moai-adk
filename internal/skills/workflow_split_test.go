@@ -140,7 +140,7 @@ func TestEntryRouterLOCCeiling(t *testing.T) {
 	root := findProjectRoot(t)
 	workflowsDir := filepath.Join(root, ".claude", "skills", "moai", "workflows")
 
-	entryRouters := []string{"run.md", "sync.md", "project.md", "plan.md"}
+	entryRouters := []string{"run.md", "sync.md", "plan.md"}
 	const maxLOC = 200
 
 	for _, name := range entryRouters {

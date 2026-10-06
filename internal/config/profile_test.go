@@ -74,7 +74,7 @@ func TestValidateProfileRule(t *testing.T) {
 func TestValidateAgentOverridesRule(t *testing.T) {
 	valid := Config{LLM: LLMConfig{AgentOverrides: map[string]ModelEffort{
 		"manager-develop": {Model: "opus", Effort: "xhigh"},
-		"manager-todo":    {Model: "haiku", Effort: "low"},
+		"manager-git":     {Model: "haiku", Effort: "low"},
 		"Explore":         {Model: "inherit"},
 	}}}
 	if errs := validateAgentOverrides(&valid); len(errs) != 0 {

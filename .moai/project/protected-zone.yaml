@@ -22,7 +22,6 @@ categories:
       - "**/*_test.go"
       - "**/*_test.sh"
       - .github/workflows/
-      - .claude/workflows/tests/
   apply_rollback:
     paths:
       - internal/harness/applier.go

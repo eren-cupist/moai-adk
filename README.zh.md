@@ -481,7 +481,7 @@ flowchart TD
 | **TDD**（默认） | RED → GREEN → REFACTOR | 新项目、功能开发 |
 | **DDD** | ANALYZE → PRESERVE → IMPROVE | 覆盖率低于 10% 的存量代码 |
 
-### 13 智能体目录
+### 7 智能体目录
 
 | 分类 | 智能体 | 职责 |
 |------|------|------|
@@ -489,19 +489,13 @@ flowchart TD
 | | manager-develop | run 阶段 TDD/DDD/autofix 实现 |
 | | manager-docs | sync 阶段文档 |
 | | manager-git | PR 创建与路由 |
-| | manager-design | 设计阶段协作（Claude Design） |
-| | manager-lead | 层级团队 Tier L 协调 + 工厂主导会话派工（唯一的 Agent 携带者，深度 2 封印） |
 | **评审者** | plan-auditor | 独立 plan 审计（防偏） |
 | | sync-auditor | 4 维质量评分（功能性 40 · 安全 25 · 做工 20 · 一致性 15） |
-| **构建者** | builder-harness | 项目专用智能体、技能、命令、钩子的脚手架 |
-| **顾问** | super-advisor | 按需高推理咨询（E1-E4 升级） |
-| **专员** | e2e-tester | Web/移动/桌面 E2E 测试执行（CLI 优先） |
-| | manager-todo | 待办队列管理（队列生命周期、`/moai:todo --auto` 串行循环、调度指导）— 对已封存快照的只读判定子角色只返回一个判定，从不自己执行（由 GTD 工作流调用，因此不占选择决策树的行） |
 | **内置** | Explore | 只读代码库探查 |
 
 所有智能体都原样继承会话的模型与推理强度 —— 会话用什么模型和 effort 起跑，就是全体的指派。写作和审计从一开始就分给别人 —— 写的人永远不给自己的作业打分。
 
-十三个里有十二个是 moai-adk 自造的智能体，`Explore` 是 Claude Code 本来就有的内置智能体。
+七个里有六个是 moai-adk 自造的智能体，`Explore` 是 Claude Code 本来就有的内置智能体。
 
 ### trust-but-verify —— 给完成主张绑上证据
 

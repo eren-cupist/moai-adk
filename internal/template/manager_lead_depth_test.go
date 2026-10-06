@@ -35,9 +35,9 @@ import (
 	"testing"
 )
 
-// TestManagerLeadIsSoleAgentCarrier asserts that manager-lead.md is the only
-// retained agent under .claude/agents/moai/ whose tools: field contains Agent.
-func TestManagerLeadIsSoleAgentCarrier(t *testing.T) {
+// TestNoRetainedAgentCarriesAgent asserts that no retained agent under
+// .claude/agents/moai/ lists Agent in its tools: field.
+func TestNoRetainedAgentCarriesAgent(t *testing.T) {
 	t.Parallel()
 
 	projectRoot := findProjectRootDepth(t)
@@ -75,56 +75,13 @@ func TestManagerLeadIsSoleAgentCarrier(t *testing.T) {
 		}
 	}
 
-	// Verify exactly one carrier and that it is manager-lead.md.
-	if len(carriers) != 1 {
+	// The flat hierarchy holds by tool omission: no retained agent carries Agent.
+	if len(carriers) != 0 {
 		t.Errorf(
-			"DEPTH_SEAL_VIOLATION: expected exactly 1 agent under .claude/agents/moai/ "+
-				"carrying Agent in tools: (manager-lead.md); found %d carriers: %v. "+
-				"manager-lead is the sole depth-1 carrier; every other retained agent "+
+			"DEPTH_SEAL_VIOLATION: expected no agent under .claude/agents/moai/ "+
+				"carrying Agent in tools:; found %d carriers: %v. Every retained agent "+
 				"preserves the flat hierarchy by tool omission.",
 			len(carriers), carriers,
-		)
-		return
-	}
-	if carriers[0] != "manager-lead.md" {
-		t.Errorf(
-			"DEPTH_SEAL_VIOLATION: the sole Agent-carrier under .claude/agents/moai/ "+
-				"must be manager-lead.md; found %s. Either rename the carrier or remove "+
-				"Agent from its tools: list.",
-			carriers[0],
-		)
-	}
-}
-
-// TestManagerLeadCarriesAgent asserts that manager-lead.md itself carries the
-// Agent token in its tools: list — the depth-1 carrier invariant. A regression
-// that removes Agent from manager-lead's tools would silently close the fan-out
-// seam and defeat the agent's purpose.
-func TestManagerLeadCarriesAgent(t *testing.T) {
-	t.Parallel()
-
-	projectRoot := findProjectRootDepth(t)
-	leadPath := filepath.Join(projectRoot, ".claude", "agents", "moai", "manager-lead.md")
-
-	data, err := os.ReadFile(leadPath)
-	if err != nil {
-		t.Skipf("manager-lead.md not found at %s; skipping (test ships alongside the agent file)", leadPath)
-	}
-
-	fm := extractFrontmatter(data)
-	toolsLine := frontmatterFieldValue(fm, "tools")
-	if toolsLine == "" {
-		t.Fatalf(
-			"DEPTH_SEAL_VIOLATION: manager-lead.md has no tools: field in frontmatter; " +
-				"the depth-1 carrier MUST declare tools: with Agent present.",
-		)
-	}
-	if !hasAgentToken(toolsLine) {
-		t.Errorf(
-			"DEPTH_SEAL_VIOLATION: manager-lead.md tools: field is missing the Agent "+
-				"token (found: %q). manager-lead is the sole Agent-carrier; removing "+
-				"it closes the fan-out seam. tools: MUST include Agent.",
-			toolsLine,
 		)
 	}
 }

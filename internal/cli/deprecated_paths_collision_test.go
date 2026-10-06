@@ -67,11 +67,11 @@ func TestDeprecatedPaths_NoTemplateCollision(t *testing.T) {
 // guard is a real executed check, not a vacuous pass.
 func TestDeprecatedPaths_CollisionGuardDetectsReinsertion(t *testing.T) {
 	// `.claude/rules/moai/design` IS shipped by the v3 template
-	// (internal/template/templates/.claude/rules/moai/design/constitution.md).
+	// (internal/template/templates/.claude/rules/moai/languages/go.md).
 	// Re-inserting it must reproduce a collision.
 	poisoned := append([]defs.DeprecatedPathEntry(nil), defs.DeprecatedPaths...)
 	poisoned = append(poisoned, defs.DeprecatedPathEntry{
-		Path:            ".claude/rules/moai/design",
+		Path:            ".claude/rules/moai/languages",
 		DeprecatedSince: "TEST-SYNTHETIC",
 		DeprecatedBy:    "TEST-SYNTHETIC",
 		RemovalSchedule: "never",
@@ -80,14 +80,14 @@ func TestDeprecatedPaths_CollisionGuardDetectsReinsertion(t *testing.T) {
 	collisions := collidingDeprecatedPaths(t, poisoned)
 	found := false
 	for _, c := range collisions {
-		if c == ".claude/rules/moai/design" {
+		if c == ".claude/rules/moai/languages" {
 			found = true
 			break
 		}
 	}
 	if !found {
 		t.Errorf("collision guard failed to detect a re-inserted colliding entry "+
-			".claude/rules/moai/design; collisions=%v", collisions)
+			".claude/rules/moai/languages; collisions=%v", collisions)
 	}
 }
 
@@ -132,7 +132,7 @@ func TestUpdate_ZeroNetChange_DesignDirNoLongerTriggersLoop(t *testing.T) {
 		t.Fatalf("scanDeprecatedPaths: %v", err)
 	}
 	for _, rel := range removable {
-		if rel == ".claude/rules/moai/design" {
+		if rel == ".claude/rules/moai/languages" {
 			t.Errorf("scanDeprecatedPaths still reports %q as removable; the "+
 				"clean-reinstall would remove-and-redeploy it every update (#1084 loop)", rel)
 		}
@@ -180,7 +180,7 @@ func TestRunCleanReinstall_ZeroRemovalOnDesignOnlyV3(t *testing.T) {
 		t.Fatalf("runCleanReinstall: %v", err)
 	}
 	for _, rel := range result.RemovedPaths {
-		if rel == ".claude/rules/moai/design" {
+		if rel == ".claude/rules/moai/languages" {
 			t.Errorf("clean-reinstall removed the template-shipped design dir %q; "+
 				"it must no longer be a DeprecatedPaths entry", rel)
 		}

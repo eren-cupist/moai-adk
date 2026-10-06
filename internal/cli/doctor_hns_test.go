@@ -29,11 +29,9 @@ func TestClassifySkill_HNS(t *testing.T) {
 	}{
 		{"hns-acme-verify", "INFO"},
 		{"hns-moaiadk-patterns", "INFO"},
-		// SPEC-V3R6-DOCTOR-FALSE-SIGNAL-001 (#1088): moai-harness-learner ships
-		// in the embedded templates, so the manifest-derived allowlist now knows
-		// it — it classifies PASS, not WARN. (The prior WARN assertion pinned the
-		// exact static-slice drift this SPEC repairs; see AC-DFS-005 anti-drift.)
-		{"moai-harness-learner", "PASS"},
+		// SPEC-V3R6-DOCTOR-FALSE-SIGNAL-001 (#1088): an embedded skill is known
+		// to the manifest-derived allowlist and classifies PASS, not WARN.
+		{"moai-workflow-worktree", "PASS"},
 	}
 
 	for _, tt := range tests {

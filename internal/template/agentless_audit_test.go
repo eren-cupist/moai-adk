@@ -25,14 +25,11 @@ import (
 	"testing"
 )
 
-// utilitySkillPaths lists the 4 utility skill files subject to Agentless classification.
+// utilitySkillPaths lists the utility skill files subject to Agentless classification.
 // Path separator is forward-slash (embedded FS convention).
 // (coverage.md removed by SPEC-SUBCOMMAND-RETIRE-001, 2026-07-01.)
 var utilitySkillPaths = []string{
 	".claude/skills/moai/workflows/fix.md",
-	".claude/skills/moai/workflows/mx.md",
-	".claude/skills/moai/workflows/codemaps.md",
-	".claude/skills/moai/workflows/clean.md",
 }
 
 // implementationSkillPaths lists the 3 implementation skill files that must reject
@@ -240,37 +237,6 @@ func TestRunSkillContainsModeTeamUnavailableSentinel(t *testing.T) {
 
 		if !strings.Contains(string(data), sentinel) {
 			t.Errorf("file %s missing sentinel %s", skillPath, sentinel)
-		}
-	})
-}
-
-// TestLoopAliasCrossReference verifies that loop.md contains the literal string
-// "/moai run --mode loop" documenting the alias relationship (REQ-WF003-004).
-// At M1 (RED), the single subtest fails because the cross-reference has not yet been added.
-//
-// @MX:NOTE: [AUTO] REQ-WF003-004 enforcer — loop.md must cross-reference
-// "/moai run --mode loop" to document the alias so users understand the equivalence.
-func TestLoopAliasCrossReference(t *testing.T) {
-	t.Parallel()
-
-	fsys, err := EmbeddedTemplates()
-	if err != nil {
-		t.Fatalf("EmbeddedTemplates() error: %v", err)
-	}
-
-	const crossRef = "/moai run --mode loop"
-
-	const skillPath = ".claude/skills/moai/workflows/loop.md"
-	t.Run(path.Base(skillPath), func(t *testing.T) {
-		t.Parallel()
-
-		data, readErr := fs.ReadFile(fsys, skillPath)
-		if readErr != nil {
-			t.Fatalf("ReadFile(%q) error: %v", skillPath, readErr)
-		}
-
-		if !strings.Contains(string(data), crossRef) {
-			t.Errorf("file %s missing cross-reference %q", skillPath, crossRef)
 		}
 	})
 }

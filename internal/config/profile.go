@@ -135,14 +135,8 @@ var retainedAgentNames = map[string]bool{
 	"plan-auditor":    true,
 	"sync-auditor":    true,
 	"manager-develop": true,
-	"super-advisor":   true,
-	"manager-design":  true,
-	"manager-lead":    true,
-	"builder-harness": true,
-	"e2e-tester":      true,
 	"manager-docs":    true,
 	"manager-git":     true,
-	"manager-todo":    true,
 	"Explore":         true,
 }
 

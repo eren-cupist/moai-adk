@@ -26,7 +26,7 @@ func TestInitForceCarriesManifestProvenance(t *testing.T) {
 
 	const (
 		olderRule  = ".claude/rules/moai/core/moai-constitution.md"
-		olderSkill = ".agents/skills/moai-gate/SKILL.md"
+		olderSkill = ".agents/skills/moai-plan/SKILL.md"
 		editedRule = ".claude/rules/moai/workflow/mx-tag-protocol.md"
 		ownedRule  = ".claude/rules/moai/languages/go.md"
 		olderBody  = "older deploy\n"

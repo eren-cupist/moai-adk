@@ -37,7 +37,6 @@ func closureMarkerBlock(t *testing.T, path string) (string, int) {
 // TestAC_CLOSURE_025 — template neutrality of the auditor instructions.
 func TestAC_CLOSURE_025(t *testing.T) {
 	copies := []string{
-		"templates/.claude/skills/moai-ref-cross-model-audit/SKILL.md",
 		"templates/.claude/agents/moai/sync-auditor.md",
 	}
 	forbidden := regexp.MustCompile(`SPEC-[A-Z]|\bt[0-9]{3,5}\b|20[0-9]{2}-[0-9]{2}-[0-9]{2}|A-Q[0-9]|\b[0-9a-f]{9,40}\b`)

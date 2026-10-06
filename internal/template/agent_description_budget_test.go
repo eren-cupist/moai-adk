@@ -19,8 +19,9 @@ import (
 )
 
 const (
-	// agentDescTotalBudget caps the summed UTF-16 length of all agent description blocks.
-	agentDescTotalBudget = 10460
+	// agentDescTotalBudget caps the summed UTF-16 length of all agent description blocks
+	// (lowered from 10460 when the roster was pruned to six agents; measured total 4913).
+	agentDescTotalBudget = 5200
 	// agentDescPerAgentCap caps a single agent description block.
 	agentDescPerAgentCap = 1815
 

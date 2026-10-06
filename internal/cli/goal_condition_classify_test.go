@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/modu-ai/moai-adk/internal/goal"
@@ -95,27 +93,6 @@ func TestParseCondition_TranscriptReferentsAreModel(t *testing.T) {
 		cond := parseCondition(in)
 		if cond.Type != goal.ConditionModel {
 			t.Errorf("%q classified as %q, want model", in, cond.Type)
-		}
-	}
-}
-
-// TestRunmdAcConvergeProseMatchesFixture keeps the fixture above honest: if the
-// canonical run.md text drifts, this test says so rather than letting the
-// regression silently stop covering the real condition.
-func TestRunmdAcConvergeProseMatchesFixture(t *testing.T) {
-	t.Parallel()
-
-	data, err := os.ReadFile("../../.claude/skills/moai/workflows/run.md")
-	if err != nil {
-		t.Skipf("run.md unavailable: %v", err)
-	}
-	body := string(data)
-	for _, frag := range []string{
-		"has its PASS evidence surfaced in",
-		"the conversation (test output, build exit 0, or explicit AC-id: PASS",
-	} {
-		if !strings.Contains(body, frag) {
-			t.Errorf("run.md no longer contains %q — update canonicalAcConvergeProse", frag)
 		}
 	}
 }

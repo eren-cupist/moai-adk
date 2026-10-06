@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -786,50 +785,9 @@ func TestWSR013_RootProvenance(t *testing.T) {
 	}
 }
 
-// wsrRepoRoot returns the repository root from the package directory.
-func wsrRepoRoot(t *testing.T) string {
-	t.Helper()
-	abs, err := filepath.Abs(filepath.Join("..", ".."))
-	if err != nil {
-		t.Fatal(err)
-	}
-	return abs
-}
-
-// AC-WSR-015: the rule section, its template mirror, the shared project_root
-// description, and the tool descriptions state the new behaviour.
+// AC-WSR-015: the shared project_root description and the tool descriptions
+// state the new behaviour.
 func TestWSR015_Documentation(t *testing.T) {
-	repo := wsrRepoRoot(t)
-	rel := filepath.Join(".claude", "rules", "moai", "core", "moai-mcp-tools-catalogue.md")
-	local, err := os.ReadFile(filepath.Join(repo, rel))
-	if err != nil {
-		t.Fatal(err)
-	}
-	mirror, err := os.ReadFile(filepath.Join(repo, "internal", "template", "templates", rel))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(local) != string(mirror) {
-		t.Errorf("rule file and template mirror differ")
-	}
-	sectionStart := strings.Index(string(local), "## Linked worktrees of a repository that keeps `.moai` untracked")
-	if sectionStart < 0 {
-		t.Fatal("catalogue section heading not found")
-	}
-	section := string(local)[sectionStart:]
-	for _, want := range []string{"primary checkout's `.moai/state`", "tree identity", "union", "receipt guard"} {
-		if !strings.Contains(section, want) {
-			t.Errorf("catalogue section lacks %q", want)
-		}
-	}
-	if strings.Contains(section, "still read from the accepted tree") {
-		t.Errorf("catalogue section still says state and catalogue are read from the accepted tree")
-	}
-	for _, pat := range []string{`SPEC-[A-Z]`, `\bt[0-9]{2,5}\b`, `20[0-9]{2}-[0-9]{2}-[0-9]{2}`} {
-		if regexp.MustCompile(pat).Match(mirror) {
-			t.Errorf("template copy matches forbidden pattern %s", pat)
-		}
-	}
 	if strings.Contains(projectRootDescCommon, "still read from the accepted tree") {
 		t.Errorf("projectRootDescCommon still says state is read from the accepted tree")
 	}

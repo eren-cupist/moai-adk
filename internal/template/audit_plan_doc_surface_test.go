@@ -24,11 +24,10 @@ import (
 const (
 	auditPlanPlanAuditor = ".claude/agents/moai/plan-auditor.md"
 	auditPlanSyncAuditor = ".claude/agents/moai/sync-auditor.md"
-	auditPlanSkill       = ".claude/skills/moai-ref-cross-model-audit/SKILL.md"
 	auditPlanSyncWf      = ".claude/skills/moai/workflows/sync.md"
 )
 
-// auditPlanCommonLiterals is the set every one of the four documents carries:
+// auditPlanCommonLiterals is the set every one of the three documents carries:
 // the verb, the flags it is run with, the plan member the auditors branch on,
 // the legacy-path signature and its Gap wording, and the blocking rule.
 var auditPlanCommonLiterals = []string{
@@ -60,12 +59,6 @@ var auditPlanSpecificLiterals = map[string][]string{
 	auditPlanSyncAuditor: {
 		"read-only",
 		"not final until the orchestrator",
-		"convergence_check",
-	},
-	auditPlanSkill: {
-		".moai/state/audit-plan-result.json",
-		"overwrite",
-		"only the path",
 		"convergence_check",
 	},
 	// sync.md owns the post-PASS audit_multi call, the both-must-pass rule and
@@ -101,7 +94,7 @@ func TestAuditPlanDocSurface(t *testing.T) {
 		"template": filepath.Join(projectRoot, "internal", "template", "templates"),
 	}
 
-	for _, rel := range []string{auditPlanPlanAuditor, auditPlanSyncAuditor, auditPlanSkill, auditPlanSyncWf} {
+	for _, rel := range []string{auditPlanPlanAuditor, auditPlanSyncAuditor, auditPlanSyncWf} {
 		for tree, base := range trees {
 			rel, tree, base := rel, tree, base
 			t.Run(filepath.Base(rel)+"/"+tree, func(t *testing.T) {

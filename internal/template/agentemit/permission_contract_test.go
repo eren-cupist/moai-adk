@@ -107,8 +107,8 @@ func TestRolePermissionContractNoSilentDrop(t *testing.T) {
 			t.Errorf("%s/%s/%s: report verdict with no contract mapping", v.Role, v.Axis, v.Kind)
 		}
 	}
-	if len(roles) != 12 {
-		t.Errorf("report covers %d roles, want 12", len(roles))
+	if len(roles) != 6 {
+		t.Errorf("report covers %d roles, want 6", len(roles))
 	}
 	for path, data := range pub.CodexTOML {
 		doc, err := decodeTOML(string(data))
@@ -139,8 +139,8 @@ func TestRolePermissionContractNoSilentDrop(t *testing.T) {
 	}
 
 	broad := mustManifest(t)
-	broad.Fields["sandbox_mode"].RoleValues["manager-todo"] = "workspace-write"
-	if _, err := agentemit.EmitAll(fsys, agentMDRoot, broad); err == nil || !strings.Contains(err.Error(), "manager-todo") {
+	broad.Fields["sandbox_mode"].RoleValues["plan-auditor"] = "workspace-write"
+	if _, err := agentemit.EmitAll(fsys, agentMDRoot, broad); err == nil || !strings.Contains(err.Error(), "plan-auditor") {
 		t.Errorf("read-only contract role emitted workspace-write: emitter must refuse, got %v", err)
 	}
 
@@ -278,7 +278,7 @@ func TestRolePermissionUnsupportedNeverPass(t *testing.T) {
 	// so it no longer derives shell/deny (pinned by the negative anchor below),
 	// but it still lacks the Agent tool and derives subagent/deny.
 	for _, k := range []roleAxis{
-		{"manager-todo", "subagent", "deny"},
+		{"sync-auditor", "subagent", "deny"},
 		{"manager-develop", "write-path-scope", "path-scope"},
 		{"plan-auditor", "mcp-tool", "subset"},
 	} {
@@ -287,8 +287,7 @@ func TestRolePermissionUnsupportedNeverPass(t *testing.T) {
 		}
 	}
 	for _, k := range []roleAxis{
-		{"manager-lead", "subagent", "deny"},
-		{"manager-todo", "shell", "deny"},
+		{"manager-develop", "shell", "deny"},
 		{"plan-auditor", "write-path-scope", "path-scope"},
 		{"sync-auditor", "write-path-scope", "path-scope"},
 	} {

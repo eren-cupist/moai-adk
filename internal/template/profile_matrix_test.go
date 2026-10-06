@@ -64,8 +64,8 @@ func TestProfileMatrixAgents_CurrentRoster(t *testing.T) {
 	if slices.Contains(agents, "Explore") {
 		t.Error("Explore must not appear (no definition file — off the console surface)")
 	}
-	if !slices.Contains(agents, "manager-todo") {
-		t.Error("manager-todo must appear (current catalog)")
+	if !slices.Contains(agents, "manager-git") {
+		t.Error("manager-git must appear (current catalog)")
 	}
 }
 
@@ -143,8 +143,8 @@ func TestResolveAgentModelEffort_Precedence(t *testing.T) {
 	t.Run("default cell under each profile", func(t *testing.T) {
 		for _, col := range profileColumns {
 			cfg := config.LLMConfig{Profile: col}
-			me, mapped := ResolveAgentModelEffort(cfg, "super-advisor")
-			want := DefaultProfileMatrix()[col]["super-advisor"]
+			me, mapped := ResolveAgentModelEffort(cfg, "manager-spec")
+			want := DefaultProfileMatrix()[col]["manager-spec"]
 			if me != want || !mapped {
 				t.Errorf("profile %s: = %+v,%v; want %+v,true", col, me, mapped, want)
 			}
@@ -188,11 +188,11 @@ func TestValidPerformanceTiers_SelectorVocabulary(t *testing.T) {
 }
 
 // TestAgentGroup_CurrentMembership pins the group layer to the current roster:
-// manager-todo is mapped, mission-governor is not, Explore keeps its mapped
+// manager-git is mapped, mission-governor is not, Explore keeps its mapped
 // cell (old-config overrides for it stay resolvable).
 func TestAgentGroup_CurrentMembership(t *testing.T) {
-	if g, ok := AgentGroup("manager-todo"); !ok || g == "" {
-		t.Errorf("AgentGroup(manager-todo) = %q,%v; want a mapped group", g, ok)
+	if g, ok := AgentGroup("manager-git"); !ok || g == "" {
+		t.Errorf("AgentGroup(manager-git) = %q,%v; want a mapped group", g, ok)
 	}
 	if _, ok := AgentGroup("mission-governor"); ok {
 		t.Error("AgentGroup(mission-governor) mapped — the retired agent must not be a member")

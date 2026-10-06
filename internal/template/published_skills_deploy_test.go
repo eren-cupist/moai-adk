@@ -38,8 +38,8 @@ func TestPublishedSkillsNamesMatchTree(t *testing.T) {
 			t.Errorf("publishedSkillNames carries %q with no committed directory under templates/.agents/skills/", name)
 		}
 	}
-	if len(seen) != 17 {
-		t.Errorf("committed published tree holds %d directories, want 17", len(seen))
+	if len(seen) != 5 {
+		t.Errorf("committed published tree holds %d directories, want 5", len(seen))
 	}
 }
 
@@ -49,7 +49,7 @@ func TestPublishedSkillPathScope(t *testing.T) {
 		want bool
 	}{
 		{".agents/skills/moai-plan/SKILL.md", true},
-		{".agents/skills/moai-todo/SKILL.md", true},
+		{".agents/skills/moai-sync/SKILL.md", true},
 		// Mirror entry shapes: not published-skill paths.
 		{".agents/skills/moai-workflow-tdd", false},
 		{".agents/skills/moai-workflow-tdd/SKILL.md", false},
@@ -87,10 +87,8 @@ func TestPublishedSkillInitDistribution(t *testing.T) {
 		t.Fatalf("Deploy: %v", err)
 	}
 
-	commands := []string{"clean", "codemaps", "e2e", "feedback", "fix", "gate",
-		"goal", "gtd", "harness", "loop", "mx", "plan", "project", "review", "run",
-		"sync", "todo"}
-	if len(commands) != 17 {
+	commands := []string{"fix", "plan", "review", "run", "sync"}
+	if len(commands) != 5 {
 		t.Fatalf("fixture inventory drifted: %d commands", len(commands))
 	}
 	for _, cmd := range commands {

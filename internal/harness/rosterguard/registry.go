@@ -79,11 +79,12 @@ func Registry() []Site {
 			// ranking is display order, not catalog policy — hence a
 			// subset-by-design row with an empty Claim set: the sweep's
 			// registration requirement is what this row discharges.
-			ID:         "agentfm-grid-bucket-rank",
-			Path:       "internal/web/agentfm.go",
-			Axis:       AxisSubsetByDesign,
-			BlockStart: "func agentGroupRank(name string) int {",
-			BlockEnd:   "return 4 // other (harness specialists, …)",
+			ID:               "agentfm-grid-bucket-rank",
+			Path:             "internal/web/agentfm.go",
+			SweepUnreachable: "the rank switch names the six definition-file agents (no Explore), one name short of the full-roster sweep threshold",
+			Axis:             AxisSubsetByDesign,
+			BlockStart:       "func agentGroupRank(name string) int {",
+			BlockEnd:         "return 4 // other (harness specialists, …)",
 			Note: "agentGroupRank assigns the grid's five display buckets; " +
 				"the names it enumerates are bucket members, not a roster " +
 				"claim.",
@@ -142,11 +143,12 @@ func Registry() []Site {
 
 		// ── Definition-file axis (12; the built-in Explore has no file) ────
 		{
-			ID:     "template-catalog",
-			Path:   "internal/template/catalog.yaml",
-			Axis:   AxisDefinitionFiles,
-			Claims: ClaimMembership,
-			Note:   "An inventory of templates/.claude/agents/moai/*.md — the file population by construction.",
+			ID:               "template-catalog",
+			Path:             "internal/template/catalog.yaml",
+			SweepUnreachable: "an inventory of the six agent definition files (no Explore), one name short of the full-roster sweep threshold",
+			Axis:             AxisDefinitionFiles,
+			Claims:           ClaimMembership,
+			Note:             "An inventory of templates/.claude/agents/moai/*.md — the file population by construction.",
 		},
 
 		// ── Retained-roster sites that are currently consistent ────────────
@@ -175,45 +177,6 @@ func Registry() []Site {
 			CountPattern:       `\*\*Retained agents \((\d+)\)\*\*`,
 			NumeralUnreachable: "same heading-form count as the row above; template mirror",
 			Note:               "Template mirror of the row above; both copies are registered so a repair to one cannot leave the other behind.",
-		},
-		{
-			ID:           "agent-authoring-catalog",
-			Path:         ".claude/rules/moai/development/agent-authoring.md",
-			Axis:         AxisRetainedRoster,
-			Claims:       ClaimMembership | ClaimCount,
-			BlockStart:   "### Retained MoAI-custom Agents (",
-			BlockEnd:     "- Explore: Read-only codebase exploration",
-			CountPattern: `consists of exactly \*\*(\d+) retained agents\*\*`,
-			Note:         "The block deliberately spans into the following §Anthropic Built-in section so Explore is inside the membership region.",
-		},
-		{
-			ID:           "agent-authoring-catalog-mirror",
-			Path:         "internal/template/templates/.claude/rules/moai/development/agent-authoring.md",
-			Axis:         AxisRetainedRoster,
-			Claims:       ClaimMembership | ClaimCount,
-			BlockStart:   "### Retained MoAI-custom Agents (",
-			BlockEnd:     "- Explore: Read-only codebase exploration",
-			CountPattern: `consists of exactly \*\*(\d+) retained agents\*\*`,
-		},
-		{
-			ID:           "agent-patterns-static-file-criterion",
-			Path:         ".claude/rules/moai/development/agent-patterns.md",
-			Axis:         AxisDefinitionFiles,
-			Claims:       ClaimMembership | ClaimCount,
-			BlockStart:   "MoAI-custom retained agents (`manager-spec`",
-			CountPattern: `The (\d+) MoAI-custom retained agents`,
-			Note: "The sentence enumerates the MoAI-CUSTOM agents — the population that has " +
-				"definition files. The coincidence with the file count is causal, not " +
-				"accidental: the criterion the sentence states is exactly what earns an " +
-				"agent a static file.",
-		},
-		{
-			ID:           "agent-patterns-static-file-criterion-mirror",
-			Path:         "internal/template/templates/.claude/rules/moai/development/agent-patterns.md",
-			Axis:         AxisDefinitionFiles,
-			Claims:       ClaimMembership | ClaimCount,
-			BlockStart:   "MoAI-custom retained agents (`manager-spec`",
-			CountPattern: `The (\d+) MoAI-custom retained agents`,
 		},
 		{
 			ID:           "docs-truth-catalog",
@@ -245,12 +208,7 @@ func Registry() []Site {
 			Claims:       ClaimMembership | ClaimCount,
 			BlockStart:   "the MoAI agent catalog consists of exactly",
 			CountPattern: `consists of exactly (\d+) retained agents`,
-			KnownStale: &Staleness{
-				Reason:        "Claims completeness while enumerating 11; manager-lead and manager-todo are absent.",
-				FollowUp:      "repair scoped OUT of card t922 by the lead; unassigned",
-				MissingNames:  []string{"manager-lead", "manager-todo"},
-				DeclaredCount: 11,
-			},
+			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
 		},
 		{
 			ID:           "spec-workflow-catalog-sentence-mirror",
@@ -259,12 +217,7 @@ func Registry() []Site {
 			Claims:       ClaimMembership | ClaimCount,
 			BlockStart:   "the MoAI agent catalog consists of exactly",
 			CountPattern: `consists of exactly (\d+) retained agents`,
-			KnownStale: &Staleness{
-				Reason:        "Template mirror of the row above, stale identically.",
-				FollowUp:      "repair scoped OUT of card t922 by the lead; unassigned",
-				MissingNames:  []string{"manager-lead", "manager-todo"},
-				DeclaredCount: 11,
-			},
+			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
 		},
 		{
 			ID:           "agents-reference-catalog",
@@ -274,12 +227,7 @@ func Registry() []Site {
 			BlockStart:   "| Agent | Phase scope |",
 			BlockEnd:     "| `Explore` | Read-only codebase exploration",
 			CountPattern: `\*\*(\d+) retained agents\*\*`,
-			KnownStale: &Staleness{
-				Reason:        "Claims completeness (\"11 retained agents: 10 MoAI-custom plus the Anthropic built-in Explore\"); manager-lead and manager-todo are absent.",
-				FollowUp:      "repair scoped OUT of card t922 by the lead; unassigned",
-				MissingNames:  []string{"manager-lead", "manager-todo"},
-				DeclaredCount: 11,
-			},
+			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
 		},
 		{
 			ID:           "agents-reference-catalog-mirror",
@@ -289,12 +237,7 @@ func Registry() []Site {
 			BlockStart:   "| Agent | Phase scope |",
 			BlockEnd:     "| `Explore` | Read-only codebase exploration",
 			CountPattern: `\*\*(\d+) retained agents\*\*`,
-			KnownStale: &Staleness{
-				Reason:        "Template mirror of the row above, stale identically.",
-				FollowUp:      "repair scoped OUT of card t922 by the lead; unassigned",
-				MissingNames:  []string{"manager-lead", "manager-todo"},
-				DeclaredCount: 11,
-			},
+			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
 		},
 		readmeSite("readme-en", "README.md", `### The (\d+)-agent catalog`, ""),
 		readmeSite("readme-ko", "README.ko.md", `### (\d+)-에이전트 카탈로그`, localizedHeadingUnreachable),
@@ -352,11 +295,7 @@ func Registry() []Site {
 			Axis:             AxisRetainedRoster,
 			Claims:           ClaimCount,
 			CountPattern:     `(\d+)-agent retained catalog`,
-			KnownStale: &Staleness{
-				Reason:        "Cites an 11-agent retained catalog (10 MoAI-custom + Explore) where the roster carries 13.",
-				FollowUp:      "unassigned — reported by card t930, prose repair out of its scope",
-				DeclaredCount: 11,
-			},
+			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
 		},
 		{
 			ID:               "foundation-core-skill-catalog-size-mirror",
@@ -365,11 +304,7 @@ func Registry() []Site {
 			Axis:             AxisRetainedRoster,
 			Claims:           ClaimCount,
 			CountPattern:     `(\d+)-agent retained catalog`,
-			KnownStale: &Staleness{
-				Reason:        "Template mirror of the row above, stale identically.",
-				FollowUp:      "unassigned — reported by card t930, prose repair out of its scope",
-				DeclaredCount: 11,
-			},
+			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
 		},
 
 		// INDEX.md states the same size THREE times, in three different
@@ -447,11 +382,7 @@ func Registry() []Site {
 			Axis:             AxisRetainedRoster,
 			Claims:           ClaimCount,
 			CountPattern:     `for the (\d+)-agent catalog`,
-			KnownStale: &Staleness{
-				Reason:        "Cites an 11-agent catalog where the roster carries 13.",
-				FollowUp:      "unassigned — reported by card t930, prose repair out of its scope",
-				DeclaredCount: 11,
-			},
+			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
 		},
 		{
 			ID:               "foundation-quality-skill-catalog-size-mirror",
@@ -460,43 +391,7 @@ func Registry() []Site {
 			Axis:             AxisRetainedRoster,
 			Claims:           ClaimCount,
 			CountPattern:     `for the (\d+)-agent catalog`,
-			KnownStale: &Staleness{
-				Reason:        "Template mirror of the row above, stale identically.",
-				FollowUp:      "unassigned — reported by card t930, prose repair out of its scope",
-				DeclaredCount: 11,
-			},
-		},
-
-		// manager-design cites the roster size and is CURRENTLY CORRECT. It is
-		// registered for exactly that reason: an already-correct count is what a
-		// guard protects, and leaving it undeclared would mean the next drift in
-		// it goes unreported. Three copies — the local definition, the deployed
-		// mirror, and the machine-emitted codex form — each take a row.
-		{
-			ID:               "manager-design-catalog-citation",
-			SweepUnreachable: "count-only claim: a Context field citing the roster size, naming one agent",
-			Path:             ".claude/agents/moai/manager-design.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `§ 4 \((\d+) retained agents`,
-		},
-		{
-			ID:               "manager-design-catalog-citation-mirror",
-			SweepUnreachable: "count-only claim; template mirror of the row above",
-			Path:             "internal/template/templates/.claude/agents/moai/manager-design.md",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `§ 4 \((\d+) retained agents`,
-		},
-		{
-			ID:               "manager-design-catalog-citation-codex",
-			SweepUnreachable: "count-only claim; the machine-emitted codex form of the row above",
-			Path:             "internal/template/templates/.codex/agents/moai/manager-design.toml",
-			Axis:             AxisRetainedRoster,
-			Claims:           ClaimCount,
-			CountPattern:     `§ 4 \((\d+) retained agents`,
-			Note: "Emitted from the .claude mirror by internal/template/agentemit and never hand-edited. " +
-				"Registered anyway: registering is a read, not an edit, and a stale emission is still a stale claim on disk.",
+			// KnownStale deleted: repaired by the single-user roster prune (count and table now match the 7-name roster).
 		},
 
 		// NOTICE.md carries BOTH a historical citation and a live one in the
@@ -549,19 +444,37 @@ func Registry() []Site {
 		// rule) — and the numeral layer's citations for the overlapping paths
 		// are carried by the NumeralExemptions rows.
 		// Removing the preservation copies removes these rows with them.
-		{ID: "cutover-manifest-listing", Path: ".moai/manifest.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: the cutover-preserved manifest enumerates the agent definitions as deployed."},
+		{ID: "cutover-manifest-listing", SweepUnreachable: "a historical capture naming fewer than the seven current roster names", Path: ".moai/manifest.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: the cutover-preserved manifest enumerates the agent definitions as deployed."},
 		{ID: "cutover-policy-agent-authoring-listing", Path: ".moai/policies/development/agent-authoring.md", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: preserved policy copy quoting the agent names as deployed."},
 		{ID: "cutover-policy-agent-patterns-listing", Path: ".moai/policies/development/agent-patterns.md", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: preserved policy copy quoting the agent names as deployed."},
 		{ID: "cutover-policy-spec-workflow-listing", Path: ".moai/policies/workflow/spec-workflow.md", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: preserved policy copy quoting the agent names as deployed."},
 		{ID: "cutover-audit-cards-before-listing", Path: "reports/hooks-audit-20260911-01a08e35/cards-before.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: a 2026-09-11 hooks-audit card capture, listing agents as they stood."},
 		{ID: "cutover-audit-cards-after-listing", Path: "reports/hooks-audit-20260911-01a08e35/cards-after.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: a 2026-09-11 hooks-audit card capture, listing agents as they stood."},
 		{ID: "cutover-audit-agent-inventory-listing", Path: "reports/workflow-performance-audit-20260911/agent-inventory.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: a 2026-09-11 audit inventory of agent files as they stood."},
-		{ID: "cutover-audit-baseline-listing", Path: "reports/workflow-performance-audit-20260911/baseline.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: a 2026-09-11 audit baseline capture listing agents as measured."},
+		{ID: "cutover-audit-baseline-listing", SweepUnreachable: "a historical capture naming fewer than the seven current roster names", Path: "reports/workflow-performance-audit-20260911/baseline.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: a 2026-09-11 audit baseline capture listing agents as measured."},
 		{ID: "cutover-audit-evidence-listing", Path: "reports/workflow-performance-audit-20260911/evidence.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: a 2026-09-11 audit evidence capture listing agents as measured."},
-		{ID: "cutover-audit-print-check-listing", Path: "reports/workflow-performance-audit-20260911/print-check.pdf", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: the audit's print-check PDF, quoting the report's listings."},
+		{ID: "cutover-audit-print-check-listing", SweepUnreachable: "a historical capture naming fewer than the seven current roster names", Path: "reports/workflow-performance-audit-20260911/print-check.pdf", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: the audit's print-check PDF, quoting the report's listings."},
 		{ID: "cutover-audit-report-html-listing", Path: "reports/workflow-performance-audit-20260911/report.html", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: the audit report's HTML rendering, quoting the agent listings."},
 		{ID: "cutover-audit-report-md-listing", Path: "reports/workflow-performance-audit-20260911/report.md", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: the audit report, quoting the agent listings it measured."},
 		{ID: "cutover-audit-rules-inventory-listing", Path: "reports/workflow-performance-audit-20260911/rules-inventory.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: a 2026-09-11 audit capture whose rule inventory quotes the agent names."},
+
+		// ── Pipeline descriptions that name every retained agent ───────────
+		// With a seven-name roster, the full-roster sweep threshold reaches
+		// workflow and test files that walk the whole plan→run→sync agent chain.
+		// They describe a pipeline, not the catalog, so they are partial by
+		// design and assert nothing.
+		{ID: "moai-router-skill-listing", Path: ".claude/skills/moai/SKILL.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: the router's per-workflow agent lines together name every retained agent."},
+		{ID: "moai-router-skill-listing-mirror", Path: "internal/template/templates/.claude/skills/moai/SKILL.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: template mirror of the router skill."},
+		{ID: "plan-spec-assembly-listing", Path: ".claude/skills/moai/workflows/plan/spec-assembly.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: the plan assembly walks the whole agent chain."},
+		{ID: "plan-spec-assembly-listing-mirror", Path: "internal/template/templates/.claude/skills/moai/workflows/plan/spec-assembly.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: template mirror of the plan assembly sub-skill."},
+		{ID: "moai-workflows-spec-assembly-listing", Path: ".moai/workflows/plan/spec-assembly.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: repository-local workflow copy walking the agent chain."},
+		{ID: "autonomous-workflow-strategy-listing", Path: ".moai/docs/autonomous-workflow-strategy.md", Axis: AxisSubsetByDesign, Note: "PIPELINE DESCRIPTION: a maintainer strategy note naming the agents of the autonomous pipeline."},
+		{ID: "hns-best-practices-listing", Path: ".claude/skills/hns-moaiadk-best-practices/SKILL.md", Axis: AxisSubsetByDesign, Note: "USER-OWNED HARNESS SKILL: maintainer harness reference that names the retained agents."},
+		{ID: "catalog-tier-audit-test-listing", Path: "internal/template/catalog_tier_audit_test.go", Axis: AxisSubsetByDesign, Note: "TEST: the catalog tier audit names the agent files it expects."},
+		{ID: "t1171-fixture-roles-manager-lead-listing", Path: "internal/cli/testdata/codex-rollouts-t1171/roles/manager-lead.toml", Axis: AxisSubsetByDesign, Note: "HISTORICAL FIXTURE: a captured codex role definition quoting the roster as it stood."},
+		{ID: "t1171-fixture-roles-other-manager-lead-listing", Path: "internal/cli/testdata/codex-rollouts-t1171/roles-other-version/manager-lead.toml", Axis: AxisSubsetByDesign, Note: "HISTORICAL FIXTURE: a captured codex role definition quoting the roster as it stood."},
+		{ID: "t1171-fixture-real-rollout-b7e2-listing", Path: "internal/cli/testdata/codex-rollouts-t1171/real/rollout-2026-09-24T18-41-35-01a0d2ca-b7e2-7e50-8f7f-0ab053beb07f.jsonl", Axis: AxisSubsetByDesign, Note: "HISTORICAL FIXTURE: a captured codex rollout quoting the roster as it stood."},
+		{ID: "cutover-audit-workflow-inventory-listing", Path: "reports/workflow-performance-audit-20260911/workflow-inventory.json", Axis: AxisSubsetByDesign, Note: "HISTORICAL CAPTURE: a 2026-09-11 audit workflow inventory listing agents as measured."},
 	}
 }
 
@@ -758,7 +671,6 @@ func NumeralExemptions() []NumeralExempt {
 		// rows. If the preservation copies are later removed, these rows must
 		// go with them: an exemption for a path the layer no longer reaches
 		// fails the breadth-set test by design.
-		{ID: "cutover-preserved-codex-agent-manager-design", Path: ".codex/agents/moai/manager-design.toml", Reason: "HISTORICAL CITATION: cutover-preserved emitted codex agent definition, quoting roster counts as deployed."},
 		{ID: "cutover-preserved-codex-agent-manager-docs", Path: ".codex/agents/moai/manager-docs.toml", Reason: "HISTORICAL CITATION: cutover-preserved emitted codex agent definition, quoting roster counts as deployed."},
 		{ID: "cutover-preserved-codex-agent-manager-spec", Path: ".codex/agents/moai/manager-spec.toml", Reason: "HISTORICAL CITATION: cutover-preserved emitted codex agent definition, quoting roster counts as deployed."},
 		{ID: "cutover-preserved-policy-agent-authoring", Path: ".moai/policies/development/agent-authoring.md", Reason: "HISTORICAL CITATION: cutover-preserved policy copy, quoting agent counts as deployed."},

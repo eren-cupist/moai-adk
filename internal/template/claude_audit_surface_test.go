@@ -15,8 +15,6 @@ func TestClaudeAuditTemplateSurfacesAndCatalogHash(t *testing.T) {
 	}
 	for _, path := range []string{
 		".claude/rules/moai/core/moai-mcp-tools.md",
-		".claude/rules/moai/core/moai-mcp-tools-catalogue.md",
-		".claude/skills/moai-ref-cross-model-audit/SKILL.md",
 		".claude/agents/moai/plan-auditor.md",
 		".claude/agents/moai/sync-auditor.md",
 		".codex/agents/moai/plan-auditor.toml",
@@ -31,24 +29,6 @@ func TestClaudeAuditTemplateSurfacesAndCatalogHash(t *testing.T) {
 		if !strings.Contains(string(data), "claude_audit") && !strings.Contains(string(data), "claude:") {
 			t.Errorf("%s does not carry the Claude audit contract", path)
 		}
-	}
-
-	var stored string
-	for _, entry := range allCatalogEntries(loadCatalog(t)) {
-		if entry.Name == "moai-ref-cross-model-audit" {
-			stored = entry.Hash
-			break
-		}
-	}
-	if stored == "" {
-		t.Fatal("moai-ref-cross-model-audit is absent from catalog.yaml")
-	}
-	computed, err := ComputeDirTreeHash(templates, ".claude/skills/moai-ref-cross-model-audit")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if stored != computed {
-		t.Fatalf("cross-model audit catalog hash = %s, computed %s", stored, computed)
 	}
 
 	for _, name := range []string{"plan-auditor.md", "sync-auditor.md"} {

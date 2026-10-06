@@ -27,12 +27,8 @@ const publishedSkillsDir = ".agents/skills/"
 // output by the drift check); publishedSkillsNamesMatchTree is the guard
 // that keeps this list from drifting from the committed set.
 var publishedSkillNames = map[string]struct{}{
-	"moai-clean": {}, "moai-codemaps": {}, "moai-e2e": {},
-	"moai-feedback": {}, "moai-fix": {}, "moai-gate": {},
-	"moai-goal": {}, "moai-gtd": {}, "moai-harness": {}, "moai-loop": {},
-	"moai-mx": {}, "moai-plan": {}, "moai-project": {},
-	"moai-review": {}, "moai-run": {}, "moai-sync": {},
-	"moai-todo": {},
+	"moai-fix": {}, "moai-plan": {}, "moai-review": {},
+	"moai-run": {}, "moai-sync": {},
 }
 
 // isPublishedSkillPath reports whether a deploy-relative path is a

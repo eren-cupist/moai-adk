@@ -45,7 +45,7 @@ func TestMigrationClassification(t *testing.T) {
 	}
 	identicalPath := ".claude/skills/moai-foundation-core/SKILL.md"
 	modifiedPath := ".claude/skills/moai-workflow-tdd/SKILL.md"
-	absentRecordPath := ".claude/commands/moai/todo.md"
+	absentRecordPath := ".claude/skills/moai/workflows/fix.md"
 	foreignPath := ".claude/skills/moai-custom/SKILL.md"
 
 	identicalContent, err := fs.ReadFile(embedded, identicalPath)

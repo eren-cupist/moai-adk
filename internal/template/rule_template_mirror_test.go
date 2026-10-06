@@ -63,10 +63,6 @@ var declaredForkedPairs = []struct {
 		path:   ".claude/rules/moai/core/agent-common-protocol-reference.md",
 		reason: "local carries internal provenance markers (SPEC-IDs, card ids) stripped from the neutral distribution copy",
 	},
-	{
-		path:   ".claude/rules/moai/workflow/cross-session-messaging-detail.md",
-		reason: "local carries internal provenance (card ids, GLM-pane specifics) stripped from the neutral distribution copy",
-	},
 }
 
 // mirrorForkMarker is the HTML-comment declaration substring that must open
@@ -187,8 +183,6 @@ var workflowOptMirroredPaths = []string{
 	// parity is enforced by TestSanitizedPairParity (sanitizedPairPaths,
 	// where the pair was already enrolled) and mirror cleanliness by
 	// TestTemplateNoInternalContentLeak — not here.
-	// (new entry — REQ-TMD-005 — hooks-system.md mirror parity)
-	".claude/rules/moai/core/hooks-system.md",
 	// Layer E — Phase Transitions skip policy
 	".claude/rules/moai/workflow/spec-workflow.md",
 	// SPEC-SESSION-HANDOFF-ALIGN-001 — session-handoff.md mirror parity (REQ-SHA-007).
@@ -202,31 +196,12 @@ var workflowOptMirroredPaths = []string{
 	// tokens live only in .moai/specs/, not in these rule files). Enrolled so future
 	// single-tree edits on these canonical worktree/session-handoff rules are caught at CI.
 	".claude/rules/moai/workflow/worktree-integration.md",
-	".claude/rules/moai/workflow/session-handoff-examples.md",
-	// model-policy.md mirror parity. The GLM-mode reconciliation subsection
-	// (availableModels [1m] expansion) is added to BOTH trees byte-identically;
-	// pre-existing internal dates were stripped from both per CLAUDE.local.md §25 so
-	// byte-parity holds and the template mirror is internal-content clean. Enrolled
-	// so future single-tree edits on this rule are caught at CI.
-	".claude/rules/moai/development/model-policy.md",
 	// NOTE: main-checkout-branch-guard.md is NOT in this byte-parity allowlist.
 	// It is a §25 sanitized pair (see sanitized_pair_parity_test.go registry):
 	// the source rule retains the SPEC-ID + REQ/AC tokens for traceability, while
 	// the template mirror is held sanitized for neutral distribution. Byte-parity
 	// cannot hold; doctrine parity is enforced by TestSanitizedPairParity and
 	// mirror cleanliness by TestTemplateNoInternalContentLeak.
-	// resource-slot-lease.md — the slot-lease rule ships identically to both
-	// trees: it names no SPEC, card, date or SHA, so no sanitization is needed
-	// and byte-parity is the right invariant. Enrolled at creation so a future
-	// single-tree edit is caught at CI rather than after a release.
-	".claude/rules/moai/workflow/resource-slot-lease.md",
-	// factory-dispatch-cards.md + factory-dispatch-gates.md — split from
-	// factory-dispatch-detail.md by its per-file budget (card t1483). Both
-	// ship byte-identically to both trees and name no SPEC, card id or date,
-	// so byte-parity is the right invariant. Enrolled at creation so a future
-	// single-tree edit is caught at CI rather than after a release.
-	".claude/rules/moai/workflow/factory-dispatch-cards.md",
-	".claude/rules/moai/workflow/factory-dispatch-gates.md",
 	// Layer G — evaluator profile D7/D8 weight registration
 	".moai/config/evaluator-profiles/default.md",
 	".moai/config/evaluator-profiles/frontend.md",

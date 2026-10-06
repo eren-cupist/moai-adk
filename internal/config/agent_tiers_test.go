@@ -58,11 +58,9 @@ func TestAgentTiers_RejectsUnknownToken(t *testing.T) {
 func TestDefaultAgentTierAssignment(t *testing.T) {
 	cfg := NewDefaultConfig()
 	want := map[string]string{
-		"super-advisor":   AgentTierMax,
 		"manager-spec":    AgentTierMax,
 		"manager-develop": AgentTierMedium,
 		"manager-docs":    AgentTierMedium,
-		"e2e-tester":      AgentTierMedium,
 		"explore":         AgentTierLow,
 		"lane":            AgentTierMedium, // the general implementation lane
 	}
@@ -87,8 +85,8 @@ func TestAgentTiers_UserOverrideWins(t *testing.T) {
 		t.Errorf("user override: manager-develop resolves to %q, want %q", got, AgentTierLow)
 	}
 	// Untouched classes keep the built-in default.
-	if got := ResolveAgentClassTier(tiers, "super-advisor"); got != AgentTierMax {
-		t.Errorf("user override leaked: super-advisor resolves to %q, want the built-in %q", got, AgentTierMax)
+	if got := ResolveAgentClassTier(tiers, "manager-spec"); got != AgentTierMax {
+		t.Errorf("user override leaked: manager-spec resolves to %q, want the built-in %q", got, AgentTierMax)
 	}
 }
 

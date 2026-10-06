@@ -131,16 +131,6 @@ func TestLoadCatalog(t *testing.T) {
 		}
 	}
 
-	// LookupAgent: harness-generated
-	e, ok = cat.LookupAgent("builder-harness")
-	if !ok {
-		t.Error("LookupAgent(builder-harness) returned false")
-	} else {
-		if e.Tier != TierHarnessGenerated {
-			t.Errorf("LookupAgent(builder-harness).Tier = %q, want %q", e.Tier, TierHarnessGenerated)
-		}
-	}
-
 	// LookupAgent: missing returns false
 	if _, ok := cat.LookupAgent("nonexistent-agent-xyz"); ok {
 		t.Error("LookupAgent(nonexistent) should return false")

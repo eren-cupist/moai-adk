@@ -481,7 +481,7 @@ flowchart TD
 | **TDD** (기본) | RED → GREEN → REFACTOR | 신규 프로젝트·기능 작업 |
 | **DDD** | ANALYZE → PRESERVE → IMPROVE | 커버리지 10% 미만의 기존 코드 |
 
-### 13-에이전트 카탈로그
+### 7-에이전트 카탈로그
 
 | 분류 | 에이전트 | 역할 |
 |------|------|------|
@@ -489,19 +489,13 @@ flowchart TD
 | | manager-develop | run 단계 TDD/DDD/autofix 구현 |
 | | manager-docs | sync 단계 문서화 |
 | | manager-git | PR 생성·라우팅 |
-| | manager-design | 디자인 단계 협업 (Claude Design) |
-| | manager-lead | 계층 팀 Tier L 조율 + 팩토리 리더 세션 배차 (유일한 Agent 보유, 깊이 2 봉인) |
 | **평가자** | plan-auditor | 독립 plan 감사 (편향 방지) |
 | | sync-auditor | 4차원 품질 채점 (기능성 40 · 보안 25 · 제작 20 · 일관성 15) |
-| **빌더** | builder-harness | 프로젝트 전용 에이전트·스킬·커맨드·훅 스캐폴딩 |
-| **자문** | super-advisor | 고추론 자문 (E1-E4 에스컬레이션) |
-| **스페셜리스트** | e2e-tester | 웹/모바일/데스크톱 E2E 테스트 실행 (CLI 우선) |
-| | manager-todo | 투두 큐 관리(큐 수명 주기, `/moai:todo --auto` 직렬 사이클, 배차 안내) — 봉인 스냅숏에 대한 읽기 전용 판정 하위 역할은 판정 하나만 돌려주고 직접 적용하지 않는다 (GTD 워크플로가 부르므로 선택 결정 트리에 행이 없다) |
 | **내장** | Explore | 읽기 전용 코드베이스 탐색 |
 
 모든 에이전트는 세션의 모델과 추론 강도를 그대로 상속한다 — 세션을 어떤 모델·effort로 띄웠는지가 곧 전체 에이전트의 배정이다. 작성과 감사를 처음부터 나눠 맡기니 자기 일을 자기가 채점하는 일이 없다.
 
-열세 개 가운데 열두 개가 moai-adk가 만든 에이전트이고, `Explore`는 Claude Code에 이미 있는 내장 에이전트다.
+일곱 개 가운데 여섯 개가 moai-adk가 만든 에이전트이고, `Explore`는 Claude Code에 이미 있는 내장 에이전트다.
 
 ### trust-but-verify — 완료 주장에 증거를 묶기
 

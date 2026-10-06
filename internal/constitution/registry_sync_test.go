@@ -46,7 +46,7 @@ import (
 const (
 	// wantRegistryEntries pins the entry-set size (REQ-ZRR-005 / AC-ZRR-006).
 	// Deliberate registry growth updates this constant in the same change.
-	wantRegistryEntries = 101
+	wantRegistryEntries = 29
 	// wantTupleDigest pins the entry-set SHAPE, not just its size
 	// (REQ-ZRH-004): SHA-256 hex over the sorted "id|zone|zone_class|%t"
 	// lines of all entries (see registryTupleDigest). A count-preserving
@@ -54,7 +54,7 @@ const (
 	// therefore the digest (REQ-ZRH-005). A deliberate registry change
 	// updates wantRegistryEntries and wantTupleDigest in the same change
 	// (REQ-ZRH-006).
-	wantTupleDigest = "2edb5384085bccbea2f9fd85e535ac4bc3ec63f7cb0918c075340882b16f51c5"
+	wantTupleDigest = "9b0b08b6c1065e60fc21176c61c18a53f35d99d9ace14abf8e64be4b6b9fb558"
 	// wantRetiredExempt pins the number of [SUPERSEDED …] clause-exempt
 	// entries under option C (spec.md §1.2 v0.5.0).
 	wantRetiredExempt = 4
@@ -319,7 +319,7 @@ func TestRegistryTupleDigestRejectsSubstitution(t *testing.T) {
 		field    string
 		newValue string
 	}{
-		{"id substitution", "id", "CONST-V3R2-0040"},
+		{"id substitution", "id", "CONST-V3R2-0020"},
 		{"zone substitution", "zone", "Evolvable"},
 		{"zone_class substitution", "zone_class", "frozen-safety"},
 		{"canary_gate flip", "canary_gate", "false"},
@@ -345,7 +345,7 @@ func TestRegistryTupleDigestRejectsSubstitution(t *testing.T) {
 
 // writeMutatedRegistryCopy copies the real registry into a temp dir with the
 // R1 scenario mutation applied (guard-failure-scenario.md §1): one character
-// inserted mid-span inside the quoted clause value of CONST-V3R2-004 — the
+// inserted mid-span inside the quoted clause value of CONST-V3R2-002 — the
 // smallest edit a real rules edit could make, never touching the YAML key or
 // quoting. The clause text is read from the registry at run time, so the
 // fixture tracks the entry through future rewordings and does not collide
@@ -356,10 +356,10 @@ func writeMutatedRegistryCopy(t *testing.T, srcRegistry string) string {
 	if err != nil {
 		t.Fatalf("read registry for mutation copy: %v", err)
 	}
-	re := regexp.MustCompile(`(- id: CONST-V3R2-004\n(?:  [a-z_]+: [^\n]*\n)*?  clause: ")([^"\n]+)(")`)
+	re := regexp.MustCompile(`(- id: CONST-V3R2-002\n(?:  [a-z_]+: [^\n]*\n)*?  clause: ")([^"\n]+)(")`)
 	m := re.FindStringSubmatch(string(data))
 	if m == nil {
-		t.Fatalf("R1 mutation fixture drifted: no single-line double-quoted clause found for CONST-V3R2-004 in %s", srcRegistry)
+		t.Fatalf("R1 mutation fixture drifted: no single-line double-quoted clause found for CONST-V3R2-002 in %s", srcRegistry)
 	}
 	clause := m[2]
 	mutatedClause := clause[:len(clause)/2] + "x" + clause[len(clause)/2:]
@@ -373,7 +373,7 @@ func writeMutatedRegistryCopy(t *testing.T, srcRegistry string) string {
 }
 
 // writeTupleMutatedRegistryCopy copies the real registry into a temp dir with
-// one tuple field line rewritten inside the CONST-V3R2-004 entry block — a
+// one tuple field line rewritten inside the CONST-V3R2-002 entry block — a
 // count-preserving substitution of a pinned (id, zone, zone_class,
 // canary_gate) field (SPEC-ZONE-REGISTRY-HARDEN-001 F2 / REQ-ZRH-005). The
 // entry block is located by id at run time, so the fixture tracks the entry
@@ -388,10 +388,10 @@ func writeTupleMutatedRegistryCopy(t *testing.T, srcRegistry, field, newValue st
 		t.Fatalf("read registry for tuple mutation copy: %v", err)
 	}
 	src := string(data)
-	const marker = "- id: CONST-V3R2-004\n"
+	const marker = "- id: CONST-V3R2-002\n"
 	start := strings.Index(src, marker)
 	if start < 0 {
-		t.Fatalf("tuple mutation fixture drifted: entry CONST-V3R2-004 not found in %s", srcRegistry)
+		t.Fatalf("tuple mutation fixture drifted: entry CONST-V3R2-002 not found in %s", srcRegistry)
 	}
 	head := src[start+len(marker):]
 	end := len(src)
@@ -408,7 +408,7 @@ func writeTupleMutatedRegistryCopy(t *testing.T, srcRegistry, field, newValue st
 	}
 	fieldRe := regexp.MustCompile(`(?m)^` + regexp.QuoteMeta(prefix+field) + `: .*$`)
 	if !fieldRe.MatchString(block) {
-		t.Fatalf("tuple mutation fixture drifted: field %q not found in the CONST-V3R2-004 block of %s", field, srcRegistry)
+		t.Fatalf("tuple mutation fixture drifted: field %q not found in the CONST-V3R2-002 block of %s", field, srcRegistry)
 	}
 	mutated := src[:start] + fieldRe.ReplaceAllString(block, prefix+field+": "+newValue) + src[end:]
 

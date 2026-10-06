@@ -38,18 +38,12 @@ var cardIDBaseline = []cardIDBaselineEntry{
 	{".claude/hooks/moai/sync-phase-quality-gate.sh", "t663"},
 	{".claude/hooks/moai/sync-phase-quality-gate.sh", "t664"},
 	{".claude/rules/moai/core/askuser-protocol-reference.md", "t1303"},
-	{".claude/rules/moai/workflow/auto-semantics.md", "t1339"},
-	{".claude/rules/moai/workflow/auto-semantics.md", "t1393"},
-	{".claude/rules/moai/workflow/factory-dispatch-detail.md", "t133"},
-	{".claude/rules/moai/workflow/factory-dispatch-detail.md", "t224"},
-	{".claude/rules/moai/workflow/factory-dispatch.md", "t1330"},
 	{".claude/rules/moai/workflow/session-handoff-format.md", "t1303"},
 	{".claude/rules/moai/workflow/worktree-integration-ops.md", "t529"},
 	{".claude/rules/moai/workflow/worktree-integration-ops.md", "t741"},
 	{".claude/rules/moai/workflow/worktree-integration-ops.md", "t852"},
 	{".claude/rules/moai/workflow/worktree-integration-ops.md", "t880"},
 	{".claude/rules/moai/workflow/worktree-integration.md", "t1398"},
-	{".claude/skills/moai/workflows/gtd.md", "t696"},
 }
 
 // isCardIDBaselined reports whether the (relPath, matched) pair is a baseline
@@ -95,7 +89,7 @@ func TestCardIDBaselineHasNoStaleEntries(t *testing.T) {
 func TestCardIDBaselineIsPerFileAndPerLiteral(t *testing.T) {
 	t.Parallel()
 
-	const baselinedFile, baselinedID = ".claude/skills/moai/workflows/gtd.md", "t696"
+	const baselinedFile, baselinedID = ".claude/rules/moai/core/askuser-protocol-reference.md", "t1303"
 	if !isCardIDBaselined(baselinedFile, baselinedID) {
 		t.Fatalf("positive control failed: %s %s is not in the baseline", baselinedFile, baselinedID)
 	}

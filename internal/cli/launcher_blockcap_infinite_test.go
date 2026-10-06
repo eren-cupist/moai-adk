@@ -12,41 +12,6 @@ import (
 	"github.com/modu-ai/moai-adk/internal/config"
 )
 
-// TestAC003_BlockCapDoctrineClauseSpecific asserts the doctrine surface carries
-// a SINGLE line naming BOTH `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` AND `--max-turns 0`
-// — i.e. the raised-value recommendation is scoped to the infinite-goal case
-// this SPEC delivers (not merely the cap name, which already exists).
-//
-// The cap name alone is already present in goal-directive.md / goal.md today,
-// so a name-only grep passes vacuously; this clause-specific grep is the AC.
-func TestAC003_BlockCapDoctrineClauseSpecific(t *testing.T) {
-	files := []string{
-		"../../.claude/rules/moai/workflow/goal-directive.md",
-		"../../.claude/skills/moai/workflows/goal.md",
-	}
-	anyMatch := false
-	for _, f := range files {
-		data, err := os.ReadFile(f)
-		if err != nil {
-			t.Logf("skip unreadable doctrine file %s: %v", f, err)
-			continue
-		}
-		// A line carrying BOTH the cap name AND the --max-turns 0 arming context.
-		for _, line := range strings.Split(string(data), "\n") {
-			if strings.Contains(line, "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP") &&
-				strings.Contains(line, "--max-turns 0") {
-				anyMatch = true
-				t.Logf("clause match in %s: %s", f, strings.TrimSpace(line))
-			}
-		}
-	}
-	if !anyMatch {
-		t.Errorf("AC-003: no doctrine line names BOTH CLAUDE_CODE_STOP_HOOK_BLOCK_CAP " +
-			"and --max-turns 0 (the raised-value recommendation must be scoped to " +
-			"the infinite-goal arming case)")
-	}
-}
-
 // clearFactoryLauncherEnv unsets every kanban signal variable plus the runtime
 // block-cap key so the inject's negative controls below start from a
 // known-absent state. A session running these tests inside Kanban Mode carries

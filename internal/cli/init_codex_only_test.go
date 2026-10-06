@@ -57,18 +57,17 @@ func TestInitCodexOnlyRequiredSurfaces(t *testing.T) {
 		}
 	}
 
-	// .codex/agents/moai/*.toml — 12 template TOMLs (manager-todo added).
+	// .codex/agents/moai/*.toml — 6 template TOMLs.
 	tomls, err := filepath.Glob(filepath.Join(projectDir, ".codex", "agents", "moai", "*.toml"))
 	if err != nil {
 		t.Fatalf("glob codex agent tomls: %v", err)
 	}
-	if len(tomls) != 12 {
-		t.Errorf(".codex/agents/moai/*.toml count = %d, want 12", len(tomls))
+	if len(tomls) != 6 {
+		t.Errorf(".codex/agents/moai/*.toml count = %d, want 6", len(tomls))
 	}
 
-	// 16 published skills — real template files.
-	for _, cmd := range []string{"plan", "run", "sync", "fix", "gate", "goal", "loop",
-		"mx", "clean", "codemaps", "e2e", "feedback", "harness", "project", "review", "todo"} {
+	// 5 published skills — real template files.
+	for _, cmd := range []string{"plan", "run", "sync", "fix", "review"} {
 		p := filepath.Join(projectDir, ".agents", "skills", "moai-"+cmd, "SKILL.md")
 		if _, err := os.Stat(p); err != nil {
 			t.Errorf("published skill missing after codex-only init: %s: %v", p, err)
@@ -77,7 +76,7 @@ func TestInitCodexOnlyRequiredSurfaces(t *testing.T) {
 
 	// Catalog skills remapped to .agents/skills/<name> — every catalog skill
 	// directory present under the new root. The catalog source of truth is the
-	// embedded FS's .claude/skills listing (34 directories).
+	// embedded FS's .claude/skills listing (18 directories).
 	embeddedFS, fsErr := template.EmbeddedTemplates()
 	if fsErr != nil {
 		t.Fatalf("embedded templates: %v", fsErr)

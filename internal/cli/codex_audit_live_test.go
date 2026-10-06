@@ -390,41 +390,6 @@ func TestCodexAuditLaunchLiveContract(t *testing.T) {
 	}
 }
 
-// TestCodexAuditLaunchLiveReadOnlyRoles is AC-CAR-011.
-func TestCodexAuditLaunchLiveReadOnlyRoles(t *testing.T) {
-	f := newCodexAuditLiveFixture(t, true) // the same isolated environment as AC-CAR-010
-	budget := newLiveBudget(codexAuditLive011Budget, codexAuditLive011Window)
-	var roles []liveAuditItem
-	for _, role := range []string{"manager-todo", "super-advisor"} {
-		probe := "audit-probe-" + role + ".txt"
-		item, ok := f.runDirect(t, budget, role, codexAuditProbeTask(role, probe, ""), probe)
-		if !ok {
-			break
-		}
-		roles = append(roles, item)
-	}
-	ev := map[string]any{
-		"invocations":     budget.used,
-		"aborted":         budget.aborted(),
-		"roles":           roles,
-		"ledger":          f.ledger,
-		"elapsed_seconds": budget.elapsedSeconds(),
-		"cleaned_pids":    f.procs.reap(),
-	}
-	emitLiveEvidence(t, f.evDir, "ac-car-011-evidence.json", "ACCAR011", "", ev)
-	if budget.aborted() {
-		t.Fatalf("ABORTED after %d invocations", budget.used)
-	}
-	for _, r := range roles {
-		if r.SessionSandbox != "read-only" || !r.ProbeCommandExecuted || r.ProbeExitCode == nil || *r.ProbeExitCode == 0 || r.ProbeExists || !r.WriteDenied || r.AttemptOutput == "" {
-			t.Errorf("%s: sandbox=%q executed=%v exit=%v exists=%v denied=%v output=%q", r.Role, r.SessionSandbox, r.ProbeCommandExecuted, r.ProbeExitCode, r.ProbeExists, r.WriteDenied, r.AttemptOutput)
-		}
-	}
-	if len(roles) != codexAuditLive011Budget {
-		t.Errorf("roles run = %d, want %d", len(roles), codexAuditLive011Budget)
-	}
-}
-
 func codexAuditRecordNames(root string) map[string]bool {
 	out := map[string]bool{}
 	entries, _ := os.ReadDir(filepath.Join(root, ".moai", "reports", "codex-audit"))

@@ -167,23 +167,23 @@ func TestEmbeddedSkillAndCommandSourcesRetained(t *testing.T) {
 	if err != nil {
 		t.Fatalf("walk embedded tree: %v", err)
 	}
-	if skills != 38 {
-		t.Errorf("embedded skill directory count = %d, want 38", skills)
+	if skills != 18 {
+		t.Errorf("embedded skill directory count = %d, want 18", skills)
 		// Plan-pin note: spec.md P-02/L-24 recorded 41, measured through the
 		// session shell's `ls` alias (`ls -la`), whose output adds the
 		// total line and the . and .. entries to the 38 real directories.
 		// /bin/ls and find agree on 38; this pin is the unpolluted count.
 	}
-	if commands != 17 {
-		t.Errorf("embedded command count = %d, want 17 (the base-tree pin, P-03)", commands)
+	if commands != 5 {
+		t.Errorf("embedded command count = %d, want 5 (the base-tree pin, P-03)", commands)
 	}
 
 	cat, err := LoadEmbeddedCatalog()
 	if err != nil {
 		t.Fatalf("load catalog: %v", err)
 	}
-	// The P-02 pin counts `tier: <x>` markers: 36 core (skills AND agents),
-	// 13 optional-pack, 1 harness-generated.
+	// The P-02 pin counts `tier: <x>` markers: 17 core (skills AND agents),
+	// 7 optional-pack, 0 harness-generated.
 	tiers := map[string]int{}
 	packTier := 0
 	for _, entry := range cat.AllEntries() {
@@ -194,14 +194,14 @@ func TestEmbeddedSkillAndCommandSourcesRetained(t *testing.T) {
 			packTier++ // FormatOptionalPackTier(<pack>) values
 		}
 	}
-	if tiers["core"] != 36 {
-		t.Errorf("core tier entry count = %d, want 36", tiers["core"])
+	if tiers["core"] != 17 {
+		t.Errorf("core tier entry count = %d, want 17", tiers["core"])
 	}
-	if packTier != 13 {
-		t.Errorf("optional-pack tier entry count = %d, want 13", packTier)
+	if packTier != 7 {
+		t.Errorf("optional-pack tier entry count = %d, want 7", packTier)
 	}
-	if tiers["harness-generated"] != 1 {
-		t.Errorf("harness-generated tier entry count = %d, want 1", tiers["harness-generated"])
+	if tiers["harness-generated"] != 0 {
+		t.Errorf("harness-generated tier entry count = %d, want 0", tiers["harness-generated"])
 	}
 }
 

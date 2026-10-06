@@ -244,8 +244,8 @@ func TestUpdateMirrorHeal_RestoresPathA(t *testing.T) {
 func TestUpdateMirrorHeal_RestoresPathB(t *testing.T) {
 	root := mirrorHealDeployedProject(t)
 	want := embeddedPublishedSKILLs(t)
-	if len(want) != 17 {
-		t.Fatalf("production published set is %d names, expected 17", len(want))
+	if len(want) != 5 {
+		t.Fatalf("production published set is %d names, expected 5", len(want))
 	}
 
 	if err := os.RemoveAll(filepath.Join(root, ".agents")); err != nil {

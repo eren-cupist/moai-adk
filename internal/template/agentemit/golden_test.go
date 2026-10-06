@@ -1,6 +1,6 @@
 // golden_test.go — SPEC-CODEX-DUAL-AGENTS-001 MS3 golden guards.
 //
-// These tests run the emitter against the REAL 12 template .md sources and
+// These tests run the emitter against the REAL 6 template .md sources and
 // pin the committed artifacts under templates/.codex/agents/moai/. They are
 // the drift guard: a hand-edited .toml or a behavior change in the emitter
 // or manifest fails here until regenerated via:
@@ -33,11 +33,11 @@ const templatesDir = "../templates"
 // agentMDRoot is the neutral-layer source root inside the template tree.
 const agentMDRoot = ".claude/agents/moai"
 
-// expectedMCPCarriers is the AC-007 inventory: exactly these 7 agents carry
+// expectedMCPCarriers is the AC-007 inventory: exactly these 5 agents carry
 // mcp__moai__* tokens (plan.md §A.2, verified against the template tree).
 var expectedMCPCarriers = map[string]bool{
-	"manager-develop": true, "manager-docs": true, "manager-lead": true,
-	"manager-spec": true, "plan-auditor": true, "super-advisor": true,
+	"manager-develop": true, "manager-docs": true,
+	"manager-spec": true, "plan-auditor": true,
 	"sync-auditor": true,
 }
 
@@ -53,8 +53,8 @@ func emitRealSet(t *testing.T) *agentemit.Publication {
 	if err != nil {
 		t.Fatalf("EmitAll over real template set: %v", err)
 	}
-	if len(pub.CodexTOML) != 12 {
-		t.Fatalf("emitted %d TOMLs, want 12", len(pub.CodexTOML))
+	if len(pub.CodexTOML) != 6 {
+		t.Fatalf("emitted %d TOMLs, want 6", len(pub.CodexTOML))
 	}
 	return pub
 }
@@ -151,14 +151,14 @@ func hashMDTree(t *testing.T) map[string]string {
 		}
 		out[e.Name()] = fmt.Sprintf("%x", sha256.Sum256(data))
 	}
-	if len(out) != 12 {
-		t.Fatalf("expected 12 .md sources, found %d", len(out))
+	if len(out) != 6 {
+		t.Fatalf("expected 6 .md sources, found %d", len(out))
 	}
 	return out
 }
 
 // TestRealSetCodexShape pins the AC-007/AC-008/AC-009 (+ sandbox) shape over
-// the real 12: exactly the 7 inventory carriers declare mcp_servers, zero
+// the real 6: exactly the 5 inventory carriers declare mcp_servers, zero
 // carry a model_reasoning_effort or a model key (subagents inherit the parent
 // session's model and effort), and role-specific sandbox modes match the
 // manifest.
@@ -206,7 +206,7 @@ func TestRealSetCodexShape(t *testing.T) {
 		// writes their verdict file from the returned text.
 		wantSandbox := "workspace-write"
 		switch name {
-		case "manager-todo", "super-advisor", "plan-auditor", "sync-auditor":
+		case "plan-auditor", "sync-auditor":
 			wantSandbox = "read-only"
 		}
 		if got, _ := doc["sandbox_mode"].(string); got != wantSandbox {
@@ -223,7 +223,7 @@ func TestRealSetCodexShape(t *testing.T) {
 
 // TestRealSetBodiesByteEqual verifies AC-003/R-005 against the REAL sources:
 // every emitted developer_instructions decodes byte-equal to the .md body of
-// its agent, and name equals the frontmatter name, 12 of 12.
+// its agent, and name equals the frontmatter name, 6 of 6.
 func TestRealSetBodiesByteEqual(t *testing.T) {
 	pub := emitRealSet(t)
 	man, err := agentemit.LoadManifest()
@@ -265,7 +265,7 @@ func TestRealSetBodiesByteEqual(t *testing.T) {
 }
 
 // TestEmbedFSPresenceAndByteEquality is AC-010's embed half: the embedded
-// template FS (all:templates — dot-dirs included) exposes all 12 .codex TOML
+// template FS (all:templates — dot-dirs included) exposes all 6 .codex TOML
 // paths byte-equal to the committed sources.
 func TestEmbedFSPresenceAndByteEquality(t *testing.T) {
 	embedded, err := template.EmbeddedTemplates()
@@ -296,8 +296,8 @@ func TestEmbedFSPresenceAndByteEquality(t *testing.T) {
 			t.Errorf("%s: embedded bytes differ from committed (run make build)", rel)
 		}
 	}
-	if count != 12 {
-		t.Errorf("committed .codex/agents/moai carries %d TOMLs, want 12", count)
+	if count != 6 {
+		t.Errorf("committed .codex/agents/moai carries %d TOMLs, want 6", count)
 	}
 }
 

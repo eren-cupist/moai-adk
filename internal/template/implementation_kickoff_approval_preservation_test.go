@@ -99,31 +99,6 @@ func TestImplementationKickoffApprovalPreservedBeforeGoal(t *testing.T) {
 			"reference; the Implementation Kickoff Approval human gate is an AskUserQuestion gate", runSkillRelPath)
 	}
 
-	goalIdx := strings.Index(body, "/goal")
-	if goalIdx < 0 {
-		t.Fatalf("IMPLEMENTATION_KICKOFF_APPROVAL_PRESERVATION_VIOLATION: run skill body %s contains no /goal token; "+
-			"the Run-phase Autonomy section must wire the ac_converge /goal", runSkillRelPath)
-	}
-
-	// The Implementation Kickoff Approval AskUserQuestion ordering reference (both
-	// markers) MUST appear textually before the first /goal token. We require the
-	// Implementation Kickoff Approval marker AND the AskUserQuestion marker each
-	// to precede the first /goal occurrence.
-	if gateIdx >= goalIdx {
-		t.Errorf("IMPLEMENTATION_KICKOFF_APPROVAL_PRESERVATION_VIOLATION: Implementation Kickoff Approval marker (offset %d) does not precede the "+
-			"first /goal token (offset %d) in %s; the human gate must be ordered before any "+
-			"/goal set", gateIdx, goalIdx, runSkillRelPath)
-	}
-	if askUserIdx >= goalIdx {
-		t.Errorf("IMPLEMENTATION_KICKOFF_APPROVAL_PRESERVATION_VIOLATION: AskUserQuestion marker (offset %d) does not "+
-			"precede the first /goal token (offset %d) in %s; the human-gate channel must be "+
-			"ordered before any /goal set", askUserIdx, goalIdx, runSkillRelPath)
-	}
-
-	// --- Check B: score-independence statement + doctrine cross-reference ---
-	// Score-independence: the body must state Implementation Kickoff Approval is
-	// emitted regardless of the plan-auditor score (including the per-tier
-	// skip-eligible case — S 0.75 / M 0.80 / L 0.85 per SPEC-AUDIT-SNAPSHOT-001 A2).
 	hasScoreIndependence := strings.Contains(body, "regardless of") &&
 		strings.Contains(body, "plan-auditor")
 	if !hasScoreIndependence {

@@ -17,12 +17,12 @@ import (
 
 // acDHR012RoleLoadClause is the role-load clause of the AC-DHR-012 judge,
 // verbatim, with the evidence object as the input instead of $e.
-const acDHR012RoleLoadClause = `([.roles[]|select((.nonce_sent|type)=="string" and (.nonce_sent|length)>0 and .nonce_returned==.nonce_sent)]|length)==12 and ([.roles[].nonce_sent]|unique|length)==12`
+const acDHR012RoleLoadClause = `([.roles[]|select((.nonce_sent|type)=="string" and (.nonce_sent|length)>0 and .nonce_returned==.nonce_sent)]|length)==6 and ([.roles[].nonce_sent]|unique|length)==6`
 
 func TestCodexRoleLoadNegativeControl(t *testing.T) {
 	roles := codexRoleNames(t, filepath.Join("..", "..", "internal", "template", "templates", ".codex", "agents", "moai"))
-	if len(roles) != 12 {
-		t.Fatalf("emitted roles = %d, want 12", len(roles))
+	if len(roles) != 6 {
+		t.Fatalf("emitted roles = %d, want 6", len(roles))
 	}
 	// The unloaded role's item: the recorded sessions of an item that ran a
 	// different role (t1100 m8 run1), so no subagent ran under this role.
@@ -31,7 +31,7 @@ func TestCodexRoleLoadNegativeControl(t *testing.T) {
 		r := parseCodexRollout(readFixture(t, f))
 		rollouts = append(rollouts, r)
 	}
-	const unloaded = "e2e-tester"
+	const unloaded = "manager-git"
 
 	build := func(loadUnloaded bool) []codexRoleLoad {
 		var loads []codexRoleLoad

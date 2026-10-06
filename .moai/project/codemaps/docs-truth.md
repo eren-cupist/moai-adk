@@ -23,9 +23,9 @@
 
 ---
 
-## §1. Agent Catalog (13 retained)
+## §1. Agent Catalog (7 retained)
 
-The MoAI agent catalog consists of exactly **13 retained agents** (12 MoAI-custom + 1 Anthropic built-in `Explore`).
+The MoAI agent catalog consists of exactly **7 retained agents** (6 MoAI-custom + 1 Anthropic built-in `Explore`).
 
 | # | Agent | Class | Phase scope |
 |---|-------|-------|-------------|
@@ -35,19 +35,13 @@ The MoAI agent catalog consists of exactly **13 retained agents** (12 MoAI-custo
 | 4 | `manager-git` | core/manager | PR creation per Tier-based routing + Late-Branch closure |
 | 5 | `plan-auditor` | meta/evaluator | Independent plan-phase audit, bias prevention, GEARS compliance |
 | 6 | `sync-auditor` | meta/evaluator | Independent skeptical quality assessment, 4-dimension scoring |
-| 7 | `builder-harness` | builder | Dynamic project-specific harness specialist generation |
-| 8 | `super-advisor` | meta/advisor | On-demand high-reasoning consultation (E1-E4 escalation) |
-| 9 | `manager-design` | core/manager | Design-phase collaboration (Claude Design bidirectional sync, D1-D5) |
-| 10 | `e2e-tester` | core/specialist | E2E test execution (web/mobile/desktop journey scripting) |
-| 11 | `manager-lead` | core/manager (sole Agent-carrier) | Multi-milestone Tier L coordination + kanban/factory lead role (depth-2 sealed) |
-| 12 | `manager-todo` | MoAI-custom — no Selection Decision Tree row | Todo-queue management (queue lifecycle, `/moai:todo --auto` serial cycle, dispatch guidance, Jev display-only consultation); the read-only decision from a sealed mission snapshot continues as its judgment sub-role, dispatched by that workflow |
-| 13 | `Explore` | Anthropic built-in | Read-only codebase exploration (no MoAI file — invoked directly) |
+| 7 | `Explore` | Anthropic built-in | Read-only codebase exploration (no MoAI file — invoked directly) |
 
-Class breakdown: Manager ×6 (`manager-spec`, `manager-develop`, `manager-docs`, `manager-git`, `manager-design`, `manager-lead`) · Evaluator ×2 (`plan-auditor`, `sync-auditor`) · Builder ×1 (`builder-harness`) · Advisor ×1 (`super-advisor`) · Specialist ×1 (`e2e-tester`) · Mission decision ×1 (`manager-todo` — deliberately classless in the Selection Decision Tree; CLAUDE.md §4 states its judgment sub-role is dispatched by the GTD auto-mission workflow) · Anthropic built-in ×1 (`Explore`).
+Class breakdown: Manager ×4 (`manager-spec`, `manager-develop`, `manager-docs`, `manager-git`) · Evaluator ×2 (`plan-auditor`, `sync-auditor`) · Anthropic built-in ×1 (`Explore`).
 
 **Archived agents**: 12 legacy agent names are archived and MUST NOT be spawned. The full archived-name list + per-archived-agent migration table lives in `.claude/rules/moai/workflow/archived-agent-rejection.md` (consult that file rather than naming the archived agents here, to keep this checklist free of archived-name leakage).
 
-**Source:** `ls -1 .claude/agents/moai/*.md` (= 12 MoAI-custom files) + CLAUDE.md §4 Retained Agents line + `.claude/rules/moai/workflow/archived-agent-rejection.md` (archived-agent migration table).
+**Source:** `ls -1 .claude/agents/moai/*.md` (= 6 MoAI-custom files) + CLAUDE.md §4 Retained Agents line + `.claude/rules/moai/workflow/archived-agent-rejection.md` (archived-agent migration table).
 
 **Re-verified 2026-09-22 (HEAD `0314801c2`) — exhaustive, no sampling.** `find .claude/agents/moai -maxdepth 1 -name '*.md' | wc -l` → **12**. The tree listing and the §1 table rows 1-12 are compared name-by-name below; row 13 (`Explore`) is an Anthropic built-in with no file, so it is expected to be absent from the tree.
 

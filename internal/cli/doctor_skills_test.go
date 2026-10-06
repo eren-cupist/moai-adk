@@ -105,7 +105,7 @@ func TestClassifySkill(t *testing.T) {
 	}{
 		{
 			name:      "valid static core skill returns PASS",
-			skillName: "moai-foundation-cc",
+			skillName: "moai-foundation-core",
 			wantClass: "PASS",
 		},
 		{
@@ -129,8 +129,8 @@ func TestClassifySkill(t *testing.T) {
 			wantClass: "WARN",
 		},
 		{
-			name:      "valid static core skill moai-meta-harness returns PASS",
-			skillName: "moai-meta-harness",
+			name:      "valid static core skill moai-workflow-spec returns PASS",
+			skillName: "moai-workflow-spec",
 			wantClass: "PASS",
 		}, {
 			name:      "third-party skill without moai- prefix returns INFO",

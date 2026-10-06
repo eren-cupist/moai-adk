@@ -107,7 +107,6 @@ var sanitizedPairPaths = []string{
 	// right invariant. Measured at enrolment: mirror present, copies differ.
 	".claude/rules/moai/core/moai-constitution-detail.md",
 	".claude/rules/moai/core/verification-claim-integrity-detail.md",
-	".claude/rules/moai/workflow/cross-session-messaging-detail.md",
 	".claude/rules/moai/workflow/main-checkout-branch-guard-detail.md",
 }
 

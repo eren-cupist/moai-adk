@@ -42,15 +42,16 @@ type citationTree struct {
 	// MinFiles is derived from the measured population, NOT from the number of
 	// violations: the two are different populations, and after the repair the
 	// violation count is zero and would anchor nothing. Measured on this tree:
-	// repo root 363 files, template mirror 338. The floor of 300 stops a
-	// collapse to any single subtree (the largest, `skills`, is 251 < 300).
+	// repo root 242 files, template mirror 199. The floor of 180 stops a
+	// collapse to any single subtree (the largest, `skills`, is 156 < 180) and
+	// still clears with `agents` dropped (template mirror 193 >= 180).
 	MinFiles int
 }
 
 func evidenceCitationTrees() []citationTree {
 	return []citationTree{
-		{Name: "repo-root", ClaudeDir: filepath.Join("..", "..", ".claude"), MinFiles: 300},
-		{Name: "template-mirror", ClaudeDir: filepath.Join("templates", ".claude"), MinFiles: 300},
+		{Name: "repo-root", ClaudeDir: filepath.Join("..", "..", ".claude"), MinFiles: 180},
+		{Name: "template-mirror", ClaudeDir: filepath.Join("templates", ".claude"), MinFiles: 180},
 	}
 }
 
@@ -306,7 +307,7 @@ func TestEvidenceCitation_TreeVisitMutant(t *testing.T) {
 		t.Fatalf("dropping a tree root did not change the visited-tree list: %v", rep.Trees)
 	}
 	// The floor still passes — which is the point: the floor cannot see this.
-	if rep.Scanned["repo-root"] < 300 {
+	if rep.Scanned["repo-root"] < 180 {
 		t.Errorf("expected the surviving tree to still clear its floor, got %d", rep.Scanned["repo-root"])
 	}
 }

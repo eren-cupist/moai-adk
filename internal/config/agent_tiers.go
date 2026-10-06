@@ -43,18 +43,16 @@ var validAgentTiersSet = map[string]struct{}{
 }
 
 // DefaultAgentTierClasses returns the default agent-class → tier assignment
-// (REQ-TIER-008): super-advisor and manager-spec (design judgments) → max;
-// manager-develop, manager-docs, e2e-tester, and the general implementation
+// (REQ-TIER-008): manager-spec (design judgments) → max;
+// manager-develop, manager-docs, and the general implementation
 // lane ("lane") → medium; Explore and light-fix/observation/summary tasks →
 // low. A project overrides per class through workflow.agent_tiers.classes;
 // unlisted classes keep these built-ins.
 func DefaultAgentTierClasses() map[string]string {
 	return map[string]string{
-		"super-advisor":   AgentTierMax,
 		"manager-spec":    AgentTierMax,
 		"manager-develop": AgentTierMedium,
 		"manager-docs":    AgentTierMedium,
-		"e2e-tester":      AgentTierMedium,
 		"explore":         AgentTierLow,
 		"lane":            AgentTierMedium,
 	}
@@ -145,11 +143,9 @@ func (c AgentTiersConfig) Validate() error {
 // configures are appended after these by the caller if it wants them shown.
 func AgentTierClassOrder() []string {
 	return []string{
-		"super-advisor",
 		"manager-spec",
 		"manager-develop",
 		"manager-docs",
-		"e2e-tester",
 		"explore",
 		"lane",
 	}

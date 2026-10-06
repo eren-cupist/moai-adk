@@ -48,14 +48,12 @@ type grTarget struct {
 var grTargets = []grTarget{
 	{path: "CLAUDE.md", ids: []string{"contract-signing-pipeline", "contract-safe-dev"}, alwaysLoaded: true, emitter: true},
 	{path: ".claude/rules/moai/core/askuser-protocol.md", ids: []string{"contract-ambiguity"}, alwaysLoaded: true, emitter: true},
-	{path: ".claude/rules/moai/workflow/goal-directive.md", ids: []string{"contract-signing-goal"}, alwaysLoaded: true, emitter: true},
 	{path: ".claude/rules/moai/workflow/orchestration-mode-selection.md", ids: []string{"contract-signing"}, emitter: true},
 	{path: ".claude/skills/moai/SKILL.md", ids: []string{"contract-signing-router"}, emitter: true},
 	{path: ".claude/skills/moai/workflows/moai.md", ids: []string{"contract-pipeline-gates", "contract-merged-round"}, emitter: true},
 	{path: ".claude/skills/moai/workflows/plan.md", ids: []string{"contract-clarification"}, emitter: true},
 	{path: ".claude/skills/moai/workflows/plan/spec-assembly.md", ids: []string{"contract-draft", "contract-signing-review", "contract-audit-retry", "contract-quality-gate"}, emitter: true},
 	{path: ".claude/skills/moai/workflows/run.md", ids: []string{"contract-signing-run", "contract-lifecycle-run"}, emitter: true},
-	{path: ".claude/skills/moai/workflows/goal.md", ids: []string{"contract-progression"}, emitter: true},
 	{path: ".claude/skills/moai/workflows/sync.md", ids: []string{"contract-sync-gates"}},
 	{path: ".claude/skills/moai/workflows/sync/doc-execution.md", ids: []string{"contract-doc-scope"}},
 	{path: ".claude/skills/moai/workflows/sync/delivery.md", ids: []string{"contract-next-steps", "contract-error-flow"}},
@@ -921,16 +919,6 @@ func grJevNoteFindings(label, passage string, closed []string) []string {
 	return f
 }
 
-// grLineWith returns the single line containing marker ("" when absent).
-func grLineWith(text, marker string) string {
-	for _, line := range strings.Split(text, "\n") {
-		if strings.Contains(line, marker) {
-			return line
-		}
-	}
-	return ""
-}
-
 // grJevYAMLComment returns the comment run that documents the jev key.
 func grJevYAMLComment(text string) string {
 	start := strings.Index(text, "# jev: ")
@@ -1004,14 +992,6 @@ func TestJevDoctrineAmendment(t *testing.T) {
 	})
 	t.Run("rules-and-config", func(t *testing.T) {
 		for _, prefix := range []string{"", "internal/template/templates/"} {
-			cat := grRead(t, root, prefix+".claude/rules/moai/core/moai-mcp-tools-catalogue.md")
-			closed := []string{"completion predicate", "merge approval", "queue mutation"}
-			for _, marker := range []string{"| `mcp__moai__jev_ask` |", "| Judgment (gated) |"} {
-				label := prefix + "moai-mcp-tools-catalogue.md " + marker
-				for _, f := range grJevNoteFindings(label, grLineWith(cat, marker), closed) {
-					t.Error(f)
-				}
-			}
 			wf := grRead(t, root, prefix+".moai/config/sections/workflow.yaml")
 			label := prefix + "workflow.yaml jev comment"
 			for _, f := range grJevNoteFindings(label, grJevYAMLComment(wf), []string{"completion verdict", "merge", "queue mutation"}) {

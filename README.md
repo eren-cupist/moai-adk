@@ -482,7 +482,7 @@ flowchart TD
 | **TDD** (default) | RED → GREEN → REFACTOR | New projects and feature work |
 | **DDD** | ANALYZE → PRESERVE → IMPROVE | Existing code under 10% coverage |
 
-### The 13-agent catalog
+### The 7-agent catalog
 
 | Category | Agent | Role |
 |----------|-------|------|
@@ -490,19 +490,13 @@ flowchart TD
 | | manager-develop | Run-phase TDD/DDD/autofix implementation |
 | | manager-docs | Sync-phase documentation |
 | | manager-git | PR creation and routing |
-| | manager-design | Design-phase collaboration (Claude Design) |
-| | manager-lead | Hierarchical-team Tier L coordination + factory leader-session dispatch (sole Agent-carrier, depth-2 sealed) |
 | **Evaluator** | plan-auditor | Independent plan audit (bias prevention) |
 | | sync-auditor | 4-dimensional quality scoring (Functionality 40 · Security 25 · Craft 20 · Consistency 15) |
-| **Builder** | builder-harness | Project-specific agents, skills, commands, hooks scaffolding |
-| **Advisor** | super-advisor | On-demand high-reasoning consultation (E1-E4 escalation) |
-| **Specialist** | e2e-tester | Web/mobile/desktop E2E test execution (CLI-first) |
-| | manager-todo | Todo-queue management (queue lifecycle, `/moai:todo --auto` serial cycle, dispatch guidance) — its read-only sealed-snapshot judgment sub-role returns one bounded decision and never applies it (dispatched by the GTD workflow, so it carries no selection-tree row) |
 | **Built-in** | Explore | Read-only codebase exploration |
 
 Every agent inherits the session's model and reasoning effort — the model and effort the session starts with are the assignment for all of them. Authoring and auditing are separated from the start, so the writing side never grades its own work.
 
-Twelve of the thirteen are agents moai-adk built; `Explore` is a built-in that already ships with Claude Code.
+Six of the seven are agents moai-adk built; `Explore` is a built-in that already ships with Claude Code.
 
 ### trust-but-verify — binding evidence to completion claims
 

@@ -61,9 +61,9 @@ func TestEmbeddedTemplates_AgentDefinitions(t *testing.T) {
 		}
 	}
 
-	// 7 retained agents in the FLAT moai/ subfolder.
-	if mdCount < 7 {
-		t.Errorf("expected at least 7 retained agent .md files in the {moai} subfolder, got %d", mdCount)
+	// 6 retained agents in the FLAT moai/ subfolder.
+	if mdCount < 6 {
+		t.Errorf("expected at least 6 retained agent .md files in the {moai} subfolder, got %d", mdCount)
 	}
 
 	// Verify a specific retained agent file is readable and non-empty.
@@ -95,8 +95,8 @@ func TestEmbeddedTemplates_SkillDefinitions(t *testing.T) {
 		return nil
 	})
 
-	if skillCount < 180 {
-		t.Errorf("expected at least 180 skill .md files, got %d", skillCount)
+	if skillCount < 140 {
+		t.Errorf("expected at least 140 skill .md files, got %d", skillCount)
 	}
 	t.Logf("total skill .md files: %d", skillCount)
 }
@@ -357,8 +357,8 @@ func TestEmbeddedTemplates_WalkDirTotalCount(t *testing.T) {
 		t.Fatalf("WalkDir error: %v", walkErr)
 	}
 
-	if totalFiles < 380 {
-		t.Errorf("expected at least 380 embedded files, got %d", totalFiles)
+	if totalFiles < 340 {
+		t.Errorf("expected at least 340 embedded files, got %d", totalFiles)
 	}
 	t.Logf("total embedded files: %d", totalFiles)
 }

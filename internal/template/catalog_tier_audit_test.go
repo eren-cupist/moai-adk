@@ -265,7 +265,10 @@ func TestAllAgentsInCatalog(t *testing.T) {
 	// SPEC-NAVIGATOR-SYNC hierarchical-team (2026-08): manager-kanban added
 	// (11th MoAI-custom retained agent — depth-1 Agent fan-out coordinator),
 	// plus manager-todo; net +2 = 12.
-	const expectedAgentCount = 12
+	// Single-user Opus 5.5 reconstruction: pruned to the 6 agents in measured use
+	// (manager-spec, manager-develop, manager-docs, manager-git, plan-auditor,
+	// sync-auditor).
+	const expectedAgentCount = 6
 	if len(diskAgents) != expectedAgentCount {
 		t.Errorf("expected %d agent files on disk, found %d: %v", expectedAgentCount, len(diskAgents), diskAgents)
 	}

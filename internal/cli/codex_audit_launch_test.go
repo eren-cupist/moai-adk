@@ -1048,20 +1048,20 @@ func TestCodexAuditLaunchRecord(t *testing.T) {
 		cases := map[string]codexAuditRequest{
 			"destination": {Role: "plan-auditor", ProjectRoot: repo.a, Root: repo.a1, Out: filepath.Join(repo.a1, "AGENTS.md")},
 			"eligibility": {Role: "manager-docs", ProjectRoot: repo.a, Root: repo.a1},
-			"ceiling":     {Role: "manager-todo", ProjectRoot: repo.a, Root: repo.a1},
+			"ceiling":     {Role: "sync-auditor", ProjectRoot: repo.a, Root: repo.a1},
 		}
 		fsys, err := template.EmbeddedTemplates()
 		if err != nil {
 			t.Fatal(err)
 		}
-		orig, err := fs.ReadFile(fsys, codexAuditRoleDir+"/manager-todo.toml")
+		orig, err := fs.ReadFile(fsys, codexAuditRoleDir+"/sync-auditor.toml")
 		if err != nil {
 			t.Fatal(err)
 		}
 		for name, req := range cases {
 			if name == "ceiling" {
 				oversized := strings.Replace(string(orig), "developer_instructions = '''\n", "developer_instructions = '''\n"+big+"\n", 1)
-				overrideAuditRole(t, "manager-todo", oversized)
+				overrideAuditRole(t, "sync-auditor", oversized)
 			}
 			snap := auditSnapshotTree(t, repo.base)
 			r := runAudit(t, req)

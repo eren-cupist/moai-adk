@@ -37,7 +37,6 @@ const (
 	rxdRouterPath     = ".claude/skills/moai/workflows/run.md"
 	rxdRouterRowPath  = "workflows/run/external-delegation.md"
 	rxdAgentPath      = ".claude/agents/moai/manager-develop.md"
-	rxdAdvisorPath    = ".claude/agents/moai/super-advisor.md"
 	rxdTemplateRoot   = "internal/template/templates"
 	rxdMCPHeading     = "## MCP Tools"
 	rxdPointerMaxLine = 2
@@ -162,7 +161,7 @@ const rxdReadOnlySentence = "The agent never sets the write argument, so a deleg
 
 var rxdListMarker = regexp.MustCompile(`^\s*([-*]|[0-9]+\.)\s`)
 
-// rxdPairs are the four mirrored pairs that differ by design (the live copy
+// rxdPairs are the mirrored pairs that differ by design (the live copy
 // and the template copy are NOT byte-identical), with the multiset line
 // difference measured on the tree before the delegation change. A hunk applied
 // to one copy only, or worded differently in the two, moves the measure.
@@ -172,15 +171,12 @@ var rxdPairs = []struct {
 }{
 	{".claude/agents/moai/manager-develop.md", 5},
 	{".claude/skills/moai/workflows/fix.md", 4},
-	{".claude/skills/moai/workflows/loop.md", 2},
-	{".claude/rules/moai/development/agent-authoring.md", 4},
 }
 
 // rxdPointerFiles carry a pointer to the section and nothing else of it.
 var rxdPointerFiles = []string{
 	".claude/agents/moai/manager-develop.md",
 	".claude/skills/moai/workflows/fix.md",
-	".claude/skills/moai/workflows/loop.md",
 }
 
 // rxdTrees returns the live and template roots, labeled for messages.
@@ -390,7 +386,7 @@ func TestRunExternalDelegationDoctrine(t *testing.T) {
 				t.Errorf("%s: `tools:` line is not the existing prefix plus the eight delegation tools.\n got: %s\nwant: %s", where, toolLines[0], wantLine)
 			}
 			if strings.Contains(content, rxdSetupTool) {
-				t.Errorf("%s: must not carry %s (the probe tool stays with super-advisor)", where, rxdSetupTool)
+				t.Errorf("%s: must not carry %s (the probe tool is not a delegation grant)", where, rxdSetupTool)
 			}
 
 			// The body section: every grant tool leads a bullet inside it.
@@ -433,12 +429,6 @@ func TestRunExternalDelegationDoctrine(t *testing.T) {
 			}
 		}
 
-		// The probe tool is still carried by the agent that owns it.
-		for _, tree := range rxdTrees(root) {
-			if !strings.Contains(rxdRead(t, tree.base, rxdAdvisorPath), rxdSetupTool) {
-				t.Errorf("%s %s no longer carries %s", tree.label, rxdAdvisorPath, rxdSetupTool)
-			}
-		}
 	})
 
 	t.Run("section", func(t *testing.T) {

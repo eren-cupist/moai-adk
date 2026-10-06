@@ -124,17 +124,11 @@ func agentDirsFor(projectRoot string) []string {
 func agentGroupRank(name string) int {
 	switch name {
 	// core/manager
-	case "manager-spec", "manager-develop", "manager-docs", "manager-git", "manager-design", "manager-todo":
+	case "manager-spec", "manager-develop", "manager-docs", "manager-git":
 		return 0
 	// meta/evaluator
-	case "plan-auditor", "sync-auditor", "super-advisor":
+	case "plan-auditor", "sync-auditor":
 		return 1
-	// builder
-	case "builder-harness":
-		return 2
-	// specialist
-	case "e2e-tester":
-		return 3
 	}
 	return 4 // other (harness specialists, …)
 }

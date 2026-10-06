@@ -154,8 +154,6 @@ const jevDoctrineToken = "`moai contract decide` 가 Jev 를 두 번째 신호�
 
 var linkageMarkers = []linkageMarker{
 	{".moai/specs/SPEC-JEV-CORE-001/spec.md", "[AMENDED 2026-09-26"},
-	{".claude/rules/moai/core/moai-mcp-tools-catalogue.md", "contract-mode Kickoff"},
-	{"internal/template/templates/.claude/rules/moai/core/moai-mcp-tools-catalogue.md", "contract-mode Kickoff"},
 	{".moai/config/sections/workflow.yaml", "contract-mode Kickoff"},
 	{"internal/template/templates/.moai/config/sections/workflow.yaml", "contract-mode Kickoff"},
 	{"CLAUDE.local.md", jevDoctrineToken},

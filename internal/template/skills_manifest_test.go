@@ -32,9 +32,7 @@ func TestEmbeddedMoaiSkillNames(t *testing.T) {
 	// on the same footing.
 	for _, must := range []string{
 		"moai-domain-backend", "moai-domain-database", "moai-domain-frontend",
-		"moai-domain-html-report", "moai-domain-humanize", "moai-harness-learner",
-		"moai-ref-llm-security", "moai-ref-secops", "moai-ref-supply-chain",
-		"moai-ref-seo",
+		"moai-ref-secops",
 	} {
 		if !seen[must] {
 			t.Errorf("embedded manifest missing expected core skill %q", must)

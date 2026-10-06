@@ -21,17 +21,6 @@ func TestCGEmbeddedRetirementPreservesRoutingAndAudit(t *testing.T) {
 		}
 		return string(body)
 	}
-	web := render(".claude/rules/moai/core/glm-web-tooling.md")
-	for _, required := range []string{"moai migrate cg", "--accept-role-change", "--apply", "claude-only", "claude-glm", "verified", "mcp__web_search_prime__webSearchPrime", "mcp__web_reader__webReader", "mcp__zai-mcp-server__analyze_image", "moai glm tools enable"} {
-		if !strings.Contains(web, required) {
-			t.Errorf("rendered web doctrine lacks %q", required)
-		}
-	}
-	for _, retired := range []string{"cg → activate CG mode", "Enable CG mode inside tmux", "moai cg` injects these", "Leader performs evaluation inline"} {
-		if strings.Contains(web, retired) {
-			t.Errorf("rendered retired instruction: %s", retired)
-		}
-	}
 	claude := render("CLAUDE.md")
 	if !strings.Contains(claude, "Agent Teams usage ALLOWED (experimental)") || !strings.Contains(claude, "moai migrate cg") {
 		t.Error("native team allowance or explicit migration missing")

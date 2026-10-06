@@ -30,7 +30,7 @@ const (
 	migModifiedSkill  = ".claude/skills/moai-workflow-tdd/SKILL.md"
 	migForeignSkill   = ".claude/skills/moai-custom/SKILL.md"
 	migForeignCommand = ".claude/commands/moai-user-cmd.md"
-	migAbsentRecCmd   = ".claude/commands/moai/todo.md"
+	migAbsentRecCmd   = ".claude/commands/moai/fix.md"
 )
 
 // buildMigrationFixture seeds a record-less old-project tree with one file
@@ -59,7 +59,8 @@ func buildMigrationFixture(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("embedded read: %v", err)
 	}
-	todo, err := fs.ReadFile(embedded, migAbsentRecCmd)
+	// The embedded source is the .tmpl; the deployed path drops the suffix.
+	todo, err := fs.ReadFile(embedded, migAbsentRecCmd+".tmpl")
 	if err != nil {
 		t.Fatalf("embedded read: %v", err)
 	}
@@ -310,7 +311,7 @@ func TestMigrationArchivesModifiedBeforeRemoval(t *testing.T) {
 		}
 		assertFileAbsent(t, root, migModifiedSkill)
 		archivedCmd := readFixtureFile(t, root,
-			".moai/archive/files/"+templateMigrationTagForTest+"/.claude/commands/moai/todo.md")
+			".moai/archive/files/"+templateMigrationTagForTest+"/.claude/commands/moai/fix.md")
 		if archivedCmd == "" {
 			t.Error("command archive is empty")
 		}
