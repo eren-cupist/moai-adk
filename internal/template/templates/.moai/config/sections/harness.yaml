@@ -50,19 +50,13 @@ harness:
     standard: "medium"   # Balanced quality: moderate reasoning budget
     thorough: "high"     # Critical features: maximum reasoning budget
 
-  # [HARD] Global plan_audit override — prevents incident recurrence
-  #
-  # In a prior incident, 30 SPECs were generated without going through the plan-auditor
-  # gate because: (a) /moai project scope creep bypassed /moai plan entirely, and
-  # (b) the minimal level had plan_audit.enabled: false. Result: 386 cross-SPEC
-  # defects (100% FAIL rate) that required emergency remediation.
-  #
-  # This global override enforces plan_audit on ALL levels regardless of
-  # auto_detection output. The per-level plan_audit.enabled below is now
-  # treated as a hint for max_iterations only — the gate itself is always on.
+  # Global plan_audit override: plan_audit runs at every level regardless of
+  # auto_detection output, because a SPEC that skips the audit reaches run with
+  # unchecked defects. The per-level plan_audit.enabled below is a hint for
+  # max_iterations only — the gate itself is always on.
   plan_audit_global:
-    always_enabled: true              # [HARD] Cannot be disabled by auto_detection
-    enforce_gate_on_spec_creation: true  # [HARD] Blocks SPEC creation outside /moai plan
+    always_enabled: true              # cannot be disabled by auto_detection
+    enforce_gate_on_spec_creation: true  # blocks SPEC creation outside /moai plan
     rationale: "prevent scope-creep SPEC generation"
 
   # Per-Tier plan-auditor retry ceiling SSOT.

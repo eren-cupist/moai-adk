@@ -21,12 +21,12 @@ var frAuditorFiles = []string{
 	"internal/template/templates/.claude/agents/moai/sync-auditor.md",
 }
 
+// The convention doc is maintainer-local; the template does not ship a copy.
 var frConventionFiles = []string{
 	".moai/docs/audit-artifact-convention.md",
-	"internal/template/templates/.moai/docs/audit-artifact-convention.md",
 }
 
-const frCiteHeading = "### [HARD] Cite your audit receipt"
+const frCiteHeading = "### Cite your audit receipt"
 
 func frReadRepoFile(t *testing.T, rel string) string {
 	t.Helper()

@@ -91,6 +91,10 @@ Report every finding you have, including minor and low-confidence ones, each wit
 
 On round 2 or later, read the previous report and check each of its findings against the revised SPEC; an unresolved blocking finding stays blocking. Also re-read whatever the fixes touched and re-run the ordering check in full, because a fix in one artifact can contradict another. If the score dropped from the previous round, say so in the Recommendation — the revisions are making the SPEC worse, and the orchestrator should stop and bring it to the user rather than iterate.
 
+## Cross-model second opinion
+
+Your tools include `mcp__moai__audit_multi`, `mcp__moai__claude_audit`, `mcp__moai__codex_audit` and `mcp__moai__glm_audit`. Whether another model must also audit the SPEC is decided by the tree's audit plan, not by you: learn your toplevel with `git rev-parse --show-toplevel` (in a worktree session `CLAUDE_PROJECT_DIR` names the primary checkout) and run `moai verify audit-plan --project-root <toplevel>`. With `cross_model_active: false` — the shipped default — audit in this session alone. With `cross_model_active: true`, call `mcp__moai__audit_multi` without a `gates` argument and with `project_root` set to your toplevel; a non-empty `gate_unmet` in its result makes the verdict FAIL. Any other output — `config_status: unreadable`, an error line, a crashed or malformed run — is a gap that blocks PASS. Every `mcp__moai__*` call carries `project_root`, because without it the call reads the primary checkout instead of the tree under audit. Where the tree sets `workflow.audit.gates.codex: required`, each codex audit returns an `audit_receipt` id; cite those ids in the final verdict line.
+
 ## Final message
 
 The first line of your final message is `auditor-model: <the model serving you>`. Then give the verdict, the score, the must-pass results, and the blocking findings in a few lines, and the report path. The last line is `AUDIT-VERDICT: <PASS|FAIL> spec=<SPEC-ID> receipts=none` — or the receipt ids an MCP audit tool returned to you, comma-separated, in place of `none`; the subagent-stop hook reads that line when the project requires audit receipts.

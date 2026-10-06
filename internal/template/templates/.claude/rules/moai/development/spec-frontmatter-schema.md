@@ -67,7 +67,7 @@ A `completed` SPEC may go back to `in-progress` for an in-place amendment. Decla
 |------------|--------------|------------------------|
 | `(none) → draft` | manager-spec | `feat(SPEC-{ID}): plan-phase artifacts ({tier}, {N} artifacts)` — N is the tier's artifact count |
 | `draft → in-progress` | manager-develop, on the first run-phase commit | `feat(SPEC-{ID}): M1 ...` or `fix(SPEC-{ID}): M1 ...` |
-| `in-progress → implemented → completed` | manager-docs, in the single sync commit | `docs(SPEC-{ID}): sync-phase artifacts` or `chore(SPEC-{ID}): sync-phase artifacts` |
+| `in-progress → implemented → completed` | manager-docs, in the single sync commit | `docs(SPEC-{ID}): sync-phase artifacts + 3-phase close` (or `chore(SPEC-{ID}): …`); the `3-phase close` infix is what marks the completed transition |
 | `* → superseded` | manager-spec, when writing the superseding SPEC | `feat(SPEC-{NEW-ID}): supersedes SPEC-{OLD-ID}` |
 | `* → archived` | manager-docs | `chore(specs): archive SPEC-{ID}` |
 | `* → rejected` | orchestrator decision, recorded by manager-docs | `chore(SPEC-{ID}): rejected per <rationale>` |

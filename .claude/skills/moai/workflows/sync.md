@@ -37,7 +37,6 @@ triggers:
 - SPEC: the given ID; otherwise the SPEC the current branch or worktree implemented (the in-progress or implemented SPEC whose files the branch changed). With no SPEC named and none inferable, ask whether to sync the current branch's changes; if there are no changes, report "Nothing to sync" and stop.
 - Modes: `auto` (default — changed files and the docs they affect), `force` (regenerate all documentation and run full-repository checks), `status` (read-only health report: no auto-fix, no generated tests, no doc or git writes; stop after Phase 10), `project` (project-wide doc update plus full-repository checks).
 - Flags: `--pr` (deliver through a PR), `--auto-merge` (merge the PR once checks pass, see `sync/delivery.md`), `--merge` (deprecated alias of `--auto-merge`; log a warning), `--skip-mx` (skip @MX validation and note it in the report).
-- `--mode` values are ignored. `--mode pipeline` is rejected with `MODE_PIPELINE_ONLY_UTILITY`: pipeline mode is reserved for utility subcommands, and sync is a multi-agent workflow.
 
 Read `.moai/config/sections/git-strategy.yaml`, `language.yaml`, `quality.yaml`, and `harness.yaml` at the start; the SPEC lives in `.moai/specs/<SPEC-ID>/`.
 

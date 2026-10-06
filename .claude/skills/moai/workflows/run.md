@@ -77,5 +77,3 @@ A mechanical failure (lint, format, type, build, import) is fixed and re-checked
 ## Communication
 
 Your text between tool calls is what the user reads. Before the first tool call say in a sentence what you're about to do; give brief updates when you find something load-bearing or change direction. Lead the final report with the outcome, in complete sentences, then the detail a reader needs to act. Keep reports to the length the work needs.
-
-@.moai/harness/run-extension.md

@@ -1,8 +1,8 @@
 # moai agent lint — Subcommand Reference
 
 `moai agent lint` scans every `.claude/agents/moai/*.md` file (template tree +
-local tree) for 8 lint rules enforcing `agent-common-protocol.md` §User
-Interaction Boundary and related [HARD] rules.
+local tree) for lint rules enforcing the user-interaction boundary in
+`agent-common-protocol.md` and the related agent-definition rules.
 
 ---
 
@@ -42,13 +42,13 @@ Flags:
 | LR-04 | error | error | Dead hook entry: `matcher:` references a tool absent from `tools:` list. |
 | LR-05 | warning | warning | Write-heavy agent missing `isolation: worktree`. Downgraded to warning per worktree-opt-out policy. |
 | LR-06 | warning | error | `--deepthink flag:` boilerplate text in `description:` field (redundant activation instructions). |
-| LR-07 | error | error | Duplicate Skeptical-Evaluator Mandate block (canonical copy lives in `agent-common-protocol-reference.md` §Skeptical Evaluation Stance). |
+| LR-07 | error | error | Duplicate Skeptical-Evaluator Mandate block in an agent body. |
 | LR-08 | warning | warning | Skill-preload drift within same agent category (>=50% peer-omission threshold). |
 | LR-09 | error | error | `isolation: worktree` on read-only agent (`permissionMode: plan`). |
 | LR-10 | error | error | Static `team-*.md` agent file (v3r2 uses dynamic team generation only). |
 | LR-12 | retired | retired | Retired with the per-agent effort matrix: there is no canonical per-agent effort to drift from. The rule id stays reserved. |
 | LR-13 | error | error | Invalid `effort:` enum value (must be one of: low, medium, high, xhigh, max). |
-| LR-14 | error | error | Fixed `budget_tokens:` value (Opus 4.7 Adaptive Thinking rejects HTTP 400). |
+| LR-14 | error | error | Fixed `budget_tokens:` value (adaptive thinking rejects a fixed budget with HTTP 400). |
 
 ---
 
@@ -69,7 +69,7 @@ through v3.0.x minor versions; breaking field changes bump to "2.0"):
     {
       "rule": "LR-01",
       "severity": "error",
-      "file": ".claude/agents/moai/manager-strategy.md",
+      "file": ".claude/agents/moai/manager-spec.md",
       "line": 59,
       "message": "Literal AskUserQuestion found in body text ..."
     }

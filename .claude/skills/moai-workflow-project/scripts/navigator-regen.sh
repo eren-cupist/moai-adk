@@ -205,7 +205,7 @@ ROW_COUNT="$(wc -l <"$ROWS_FILE" 2>/dev/null | tr -dc '0-9' || echo 0)"
         printf '## Current frontier\n\n'
         printf 'no features tracked yet\n\n'
         printf 'The Navigator is initialized; no SPEC documents were found under '
-        printf '`.moai/specs/`. Run `/moai project` after authoring your first SPEC to populate this brief.\n\n'
+        printf '`.moai/specs/`. `/moai sync` regenerates this brief once a SPEC exists.\n\n'
     else
         printf '## Current frontier\n\n'
         # Frontier = SPECs that are not yet completed (status != completed).

@@ -1,12 +1,9 @@
 // agentless_audit_test.go: Audit suite for the Agentless contract of the
-// utility workflow (fix.md) and the pipeline-rejection sentinel of the
-// implementation workflows.
+// utility workflow (fix.md).
 //
-// @MX:NOTE - Two tests: TestAgentlessUtilityNoLLMControlFlow (REQ-WF004-013),
-// TestImplementationSkillsContainPipelineRejectionSentinel (REQ-WF004-014).
-// The run.md mode-dispatch sentinels (MODE_UNKNOWN, MODE_TEAM_UNAVAILABLE) and
-// the utility MODE_FLAG_IGNORED_FOR_UTILITY sentinel were retired with the
-// --mode flag; no non-test Go code matched them.
+// @MX:NOTE - TestAgentlessUtilityNoLLMControlFlow (REQ-WF004-013). The --mode
+// flag and its MODE_* sentinels were retired from the workflows; no non-test Go
+// code matched them, so no sentinel test remains.
 package template
 
 import (
@@ -22,14 +19,6 @@ import (
 // (coverage.md removed by SPEC-SUBCOMMAND-RETIRE-001, 2026-07-01.)
 var utilitySkillPaths = []string{
 	".claude/skills/moai/workflows/fix.md",
-}
-
-// implementationSkillPaths lists the 3 implementation skill files that must reject
-// the --mode pipeline flag per REQ-WF004-014.
-// (design.md removed by SPEC-SUBCOMMAND-RETIRE-001, 2026-07-01.)
-var implementationSkillPaths = []string{
-	".claude/skills/moai/workflows/plan.md",
-	".claude/skills/moai/workflows/sync.md",
 }
 
 // forbiddenControlFlowPatterns are regex patterns whose presence in utility skill bodies
@@ -95,36 +84,6 @@ func TestAgentlessUtilityNoLLMControlFlow(t *testing.T) {
 						)
 					}
 				}
-			}
-		})
-	}
-}
-
-// TestImplementationSkillsContainPipelineRejectionSentinel verifies that each of the
-// 4 implementation skills contains the literal sentinel string MODE_PIPELINE_ONLY_UTILITY
-// (REQ-WF004-014). At M1 (RED), all 4 subtests fail because the sentinel has not yet
-// been added to the skill files.
-func TestImplementationSkillsContainPipelineRejectionSentinel(t *testing.T) {
-	t.Parallel()
-
-	fsys, err := EmbeddedTemplates()
-	if err != nil {
-		t.Fatalf("EmbeddedTemplates() error: %v", err)
-	}
-
-	const sentinel = "MODE_PIPELINE_ONLY_UTILITY"
-
-	for _, skillPath := range implementationSkillPaths {
-		t.Run(path.Base(skillPath), func(t *testing.T) {
-			t.Parallel()
-
-			data, readErr := fs.ReadFile(fsys, skillPath)
-			if readErr != nil {
-				t.Fatalf("ReadFile(%q) error: %v", skillPath, readErr)
-			}
-
-			if !strings.Contains(string(data), sentinel) {
-				t.Errorf("file %s missing sentinel %s", skillPath, sentinel)
 			}
 		})
 	}

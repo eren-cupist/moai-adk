@@ -27,7 +27,6 @@ Deliver what was asked, at the intended scope. Make routine judgment calls yours
 - `--resume SPEC-<ID>` continues an existing draft: read its directory and pick up at the first missing or failing piece.
 - `--branch` creates a branch for the SPEC (see Optional steps). `--issue` creates a GitHub issue. Without these flags plan creates neither.
 - No description and no `--resume`: ask the user what to plan.
-- `--mode pipeline` is rejected with `MODE_PIPELINE_ONLY_UTILITY`; plan is a multi-agent workflow.
 
 ## Reference
 

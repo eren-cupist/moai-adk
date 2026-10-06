@@ -121,7 +121,7 @@ Without `card_id` no record is written and the tool behaves exactly as it does
 for an ordinary audit.
 <!-- moai:closure-second-review:end -->
 
-### [HARD] Cite your audit receipt
+### Cite your audit receipt
 
 Where the tree sets `workflow.audit.gates.codex: required`, each codex audit the server performs is recorded as a receipt, and its id comes back on the result as `audit_receipt`. End your final message with this line as the last non-empty line, citing every receipt id you received:
 

@@ -54,8 +54,8 @@ if printf '%s' "$payload" | grep -q '"tool_name"[[:space:]]*:[[:space:]]*"Bash"'
         # substitution too (a `...` backtick pair counts as 2 — open + close).
         meta_count=$(printf '%s' "$cmd" | grep -oE '\|\||&&|[|;]|`|\$\(' | wc -l | tr -d ' ')
         if [ -n "$meta_count" ] && [ "$meta_count" -gt "$bash_subcommand_soft_cap" ]; then
-            printf '[moai:bash-risk] WARN: subcommand count %s exceeds soft cap %d — consider splitting into a script file or delegating (coding-standards.md §Bash Risk-Amplifier Doctrine)\n' "$meta_count" "$bash_subcommand_soft_cap" >&2
-            printf '[moai:bash-risk] WARN: subcommand count %s exceeds soft cap %d — consider splitting into a script file or delegating (coding-standards.md §Bash Risk-Amplifier Doctrine)\n' "$meta_count" "$bash_subcommand_soft_cap" >>"$MOAI_HOOK_STDERR_LOG" 2>/dev/null || true
+            printf '[moai:bash-risk] WARN: subcommand count %s exceeds soft cap %d — consider splitting into a script file\n' "$meta_count" "$bash_subcommand_soft_cap" >&2
+            printf '[moai:bash-risk] WARN: subcommand count %s exceeds soft cap %d — consider splitting into a script file\n' "$meta_count" "$bash_subcommand_soft_cap" >>"$MOAI_HOOK_STDERR_LOG" 2>/dev/null || true
         fi
     fi
 fi
