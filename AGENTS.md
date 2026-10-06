@@ -1,26 +1,12 @@
 # AGENTS.md — standing contract for agents in this repository
 
-Every clause here binds a turn regardless of which agent harness drives it. The file is
-**self-sufficient**: it does not depend on another instruction file. If a nested `AGENTS.md`
-exists, Codex loads it as an additional, more-specific contract; the merged byte budget must cover
-the whole discovery chain.
+These clauses apply to every turn, whichever agent harness drives it, and the file stands on its own. If a nested `AGENTS.md` exists, Codex loads it as an additional, more specific contract. `CLAUDE.md` and `.claude/rules/moai/**` add Claude-only mechanisms on top; they never override a clause here.
 
-**Budget warning.** Codex charges its instruction byte budget against
-project instruction files only; a personal `~/.codex/AGENTS.md` does not shrink it. Overflow is
-truncated from the **tail**, silently — no warning, no stderr, exit 0. Clauses below are ordered
-most-critical-first for that reason.
+Codex charges its instruction byte budget against project instruction files and silently truncates overflow from the tail, so the clauses below are ordered most critical first.
 
-**Direct Codex startup.** When using `codex -C <worktree>` directly, read a present
-worktree-root `AGENTS.local.md` in full before other project work and follow it as local
-project guidance. If it exists but cannot be read, stop and report the failure. The
-MoAI Codex launcher injects this file before the session instead; see §8.
+When starting Codex directly with `codex -C <worktree>`, read a worktree-root `AGENTS.local.md` in full before other project work and follow it as local guidance; if it exists but cannot be read, stop and report that. The MoAI Codex launcher injects this file for you (see "Harness-local instructions").
 
-This file is the canonical cross-harness contract. `.claude/rules/moai/**` and `CLAUDE.md` expand
-Claude-only mechanisms; they do not override a cross-harness clause here. Compression removed
-rationale and incident records, never an obligation.
-
-**Capability bindings.** Names below are the neutral tool classes; a row exists only where a
-harness driving this contract lacks the capability.
+**Capability bindings.** Names below are neutral tool classes; a row exists where a harness driving this contract may lack the capability.
 
 | Capability | Claude implementation | If this harness lacks it |
 |---|---|---|
@@ -34,318 +20,98 @@ harness driving this contract lacks the capability.
 | worktree-entry | Claude: `moai cc -w <name>` for Claude-native trees or `moai cc -w <absolute-path>` for MoAI trees; Codex app: select Worktree; Codex CLI: `moai worktree new <name>` then `codex -C <absolute-path>` | An active Codex session uses `git -C <absolute-path>`; `moai codex -w` starts a new session in an existing tree only |
 | audit-verdict-file | The auditor agent writes its own verdict or report file | On Codex, start the read-only roles (`plan-auditor`, `sync-auditor`) through the launcher, the moai MCP tool `codex_role_audit`, and never through `spawn_agent`, which would hand them your own writing sandbox. Pass `role`, your own worktree root as `worktree_root`, the task as `task`, and the verdict or report path under `.moai/reports/` as `out`; the tool returns a job id at once, and `codex_role_audit_status` / `codex_role_audit_result` report on it. The role runs as one top-level read-only `codex exec` process, and the launcher writes the verdict or report file with exactly the returned text, unedited |
 
-**`Skill("<name>")` instructions carry no row, and are read literally.** `skill-loader` is a
-capability every harness driving this contract has, so it earns no row above; what is Claude-only
-is the per-agent grant, not the reach. Where a harness loads a skill by reading it rather than by
-calling a tool, the deployed skill is in `.agents/skills/<name>/SKILL.md` for Codex and
-`.claude/skills/<name>/SKILL.md` for Claude. The `both` profile installs both paths.
-`Skill("moai-workflow-tdd")` names the corresponding deployed SKILL.md. Agent bodies keep
-the tool-call wording for that reason — it is an address, not a Claude-only instruction.
-Codex-side loading is **deferred** — read the mirrored SKILL.md directly; no loader resolves
-`Skill("...")` calls.
+`Skill("<name>")` instructions are addresses, not Claude-only calls: every harness can load a skill. Claude reads it from `.claude/skills/<name>/SKILL.md`, Codex from `.agents/skills/<name>/SKILL.md` (the `both` profile installs both). Codex-side loading is deferred — no loader resolves `Skill("...")`, so read the mirrored SKILL.md directly.
 
 ---
 
-## 1. Evidence and verification claims
+## 1. Evidence
 
-**No unobserved claim.** An actor MUST NOT assert a verification, a completion, **a defect / debt /
-drift, OR the premise underlying a recommendation** it did not actually verify with the domain's
-mechanical tooling. Evidence absent is not evidence of success — nor of failure. The absence of a
-failure signal never establishes that a check passed; a text-pattern inference is a hypothesis, not
-a verified defect; a reference existing does not establish that the referenced capability is still
-live. Reachability is not justification.
-
-**Baseline-integrity attribution.** Every verification claim MUST be attributed to an
-actually-measured baseline — the command that was run plus the output observed, in this run,
-against this tree. A figure carried over from another package, tree, or point in time is not a
-baseline; using it as a fresh measurement violates this. Anything unattributed is a Gap, not a
-Claim.
-
-**Evidence-bearing report format.** Verification and completion reports SHOULD carry five sections:
-**Claim**, **Evidence** (command plus verbatim output), **Baseline-attribution** (tree measured in
-this run), **Gaps** (explicitly unobserved), and **Residual-risk**. An empty Gaps section claims
-nothing was left unobserved and is valid only when true.
+Only claim what you observed. Say tests pass, a build succeeds or a defect exists only after running the command that shows it, in this run, against this tree; a figure carried over from another package or an earlier run is not evidence. A reference to something existing does not show that it is still live. When reporting verification, give the command and the output that decided it, and name what you did not check.
 
 ---
 
 ## 2. Git, branches, and the shared checkout
 
-The primary checkout is shared — several sessions may work in it at once, and branch state there is
-global.
+The primary checkout is shared: several sessions may work in it at once, and branch state there is global.
 
-**Never change branch state in the primary checkout.** Forbidden there: `git checkout <branch>` /
-`git switch` (relocates every concurrent session's tree); `git checkout -b` / `git switch -c` /
-`git branch` (same, plus an unexpected branch); `git reset --hard` / `git checkout -- <path>`
-(discards work of unknown provenance); `git stash` (repository-global — absorbs another session's
-uncommitted changes); `git rebase` / `git merge` onto the checked-out branch (rewrites or advances
-shared history mid-operation). Read-only inspection, `git fetch`, and pushing the
-already-checked-out branch are permitted. Commits to the already-checked-out branch are permitted
-EXCEPT on `main` — in this repository `main` is commit-dead (no session commits there; the
-BranchGuard refuses commit-creating commands on branches listed in
-`workflow.branch_guard.deny_commits_on`), card work flows on main-based worktrees (card branches
-cut from local `main`; card PRs go to base `main` — `develop` is legacy since the 2026-10-05
-GitHub Flow cutover), and the operator-side residue procedure lives in
-`.moai/docs/gitflow-integration-chain.md`.
+Do not change branch state in the primary checkout. That rules out `git checkout <branch>`, `git switch`, `git checkout -b`, `git switch -c` and mutating `git branch` forms (they move every concurrent session's tree), `git reset --hard` and `git checkout -- <path>` (they discard work of unknown origin), `git stash` (repository-global; it absorbs other sessions' changes), and `git rebase` / `git merge` onto the checked-out branch. Read-only inspection, `git fetch`, commits to the already-checked-out branch and pushing that branch are fine, except on `main`: in this repository `main` is commit-protected (the BranchGuard refuses commits on branches listed in `workflow.branch_guard.deny_commits_on`). Work happens on branches cut from local `main` in worktrees, and lands on `main` through a PR with base `main`.
 
-**Re-read branch and commit state immediately before any commit or push** — never a value read
-earlier in the turn, never the branch reported at session start:
+Immediately before any commit or push, re-read `git rev-parse --short HEAD` and `git branch --show-current` rather than trusting a value from earlier in the turn. If either changed unexpectedly, another actor is writing the same tree: stop and report it.
 
-```bash
-git rev-parse --short HEAD
-git branch --show-current
-```
-
-A difference from what the turn assumed means another actor is writing the same tree: stop and
-report the divergence instead of proceeding.
-
-**Never sweep-stage.** In the primary checkout, never `git add -A`, `git add .`, or
-`git commit -a`. Stage by explicit pathspec and re-read `git status --short` immediately before
-staging, so another session's files are visible and excluded. This binds **even when no foreign
-session was detected** — one can arrive after the check.
-
-**Detect parallel sessions before a non-trivial direct edit** to a shared path (`.claude/`,
-`.moai/`, `internal/`, `pkg/`, `cmd/`, repo-root config), and surface any divergence:
-
-```bash
-default_ref="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD)"
-test -n "$default_ref"
-git fetch origin "${default_ref#origin/}" 2>&1
-git rev-list --count --left-right "$default_ref"...HEAD
-```
-
-`0 0` or `0 N` proceeds; `N 0` or `N M` means resolve before editing. Where another live session
-shares the checkout, isolate into a worktree rather than editing in the shared tree. The check
-decays — re-run it before any commit and after a long pause. If `origin/HEAD` is unresolved, stop
-and resolve the remote default branch instead of assuming `main`.
+In the primary checkout, stage by explicit pathspec and re-read `git status --short` first; never `git add -A`, `git add .` or `git commit -a`, because they sweep in another session's files. When another session is working in the same checkout, make your edits in a worktree instead.
 
 ---
 
 ## 3. Worktrees
 
-**Work inside an isolated worktree.** `moai worktree new <name>` creates a MoAI tree under
-`.moai/worktrees/`. Claude Code uses `moai cc -w <name>` for its native `.claude/worktrees/`
-location or `moai cc -w <absolute-path>` for a MoAI tree; `EnterWorktree(<path>)` and
-`ExitWorktree` are Claude Code session tools. Codex app users select Worktree when starting a
-chat. Codex CLI uses `codex -C <absolute-worktree-path>` for a new session; an active Codex
-session operates through `git -C <absolute-worktree-path>` and direct file operations.
-`moai codex -w` only launches a new Codex session in an existing tree. A Codex agent must not
-invoke `moai cc -w`, `EnterWorktree`, or `ExitWorktree`. Never create a tree with bare
-`git worktree add`.
+`moai worktree new <name>` creates a MoAI tree under `.moai/worktrees/`. Claude Code enters one with `moai cc -w <name>` (native `.claude/worktrees/`) or `moai cc -w <absolute-path>`; `EnterWorktree(<path>)` and `ExitWorktree` are Claude Code session tools. Codex app users select Worktree; Codex CLI starts a session with `codex -C <absolute-worktree-path>`, and an active Codex session works through `git -C <absolute-worktree-path>`. `moai codex -w` only launches a new Codex session in an existing tree. A Codex agent does not invoke `moai cc -w`, `EnterWorktree` or `ExitWorktree`. Never create a tree with bare `git worktree add`.
 
-**Codex factory lanes (`moai codex -l`)** use the card worktree
-selected by their supervising launcher. The launcher starts each interactive Codex child
-with that worktree as its working directory (`codex -C <absolute-worktree-path>`). A Codex
-child already in the card worktree continues there. A direct `codex -C` child reads the worktree's
-`CLAUDE.local.md` before card work; the `moai codex` launcher loads that file into
-`developer_instructions` automatically when `AGENTS.local.md` is absent.
+Inside a worktree session, pass the worktree's own absolute path to `git -C`; the worktree guard refuses `-C .`, relative paths and paths outside the tree.
 
-**From inside a worktree session, `<path>` must be that worktree's absolute path.** Measured on
-Claude Code 2.1.275: the guard refuses `-C .`, a relative path, a runtime-computed path, and any
-path outside this worktree; plain git, `git -C <own absolute path>` and `--git-dir=<own .git>` pass.
-`cd <own worktree> && git …` also passes, which does NOT make it advisable. A refusal here is the
-guard reading the command, not a runtime defect.
-
-**`moai worktree done` closes L2 trees only.** A tree under `.claude/worktrees/` or `.moai/worktrees/` is L1, is absent
-from the registry, and is disposed by the session-end prompt or by `git worktree unlock` +
-`git worktree remove`.
-
-**A card's branch is unpushed, so its worktree holds the only copy of the work.** Dispose of no
-worktree — L1 or L2 — until the branch is integrated and the remote merge has landed.
-
-**Start a new card in a new worktree from local `main`.** A Claude Code session exits its
-previous worktree first; a Codex lane starts a new session in the new card tree. Verify the new
-tree's HEAD equals the local `main` tip before editing; never reuse the previous card's tree.
-Where the new card depends on a prior card's unmerged code, merge that branch inside the new
-worktree. When complete, land the card branch on `main` through the serial integration window —
-the card PR goes to base `main` and the factory leader lands `main`; `develop` is legacy since
-the 2026-10-05 GitHub Flow cutover.
-
-**Card worktree branches carry the `WT-` prefix and a descriptive slug, never the card id.** Rename
-in place immediately after creating the tree: `git branch -m WT-<slug>`; re-entry resolves by tree
-name, and the worktree directory keeps the card id.
-
-**Three traceability carriers are then mandatory**, because the branch name no longer identifies
-the card: the dispatch's `card:` field, the card id in every commit message on the branch, and the
-card id in the evidence path (`.moai/reports/<card-id>/verdict.md`).
+`moai worktree done` closes registered (L2) trees only; trees under `.claude/worktrees/` or `.moai/worktrees/` are disposed by the session-end prompt or by `git worktree unlock` + `git worktree remove`. An unpushed branch's worktree holds the only copy of the work, so do not dispose of a worktree until its branch has been integrated. Start new work in a fresh worktree created from local `main`, and check that its HEAD equals the `main` tip before editing, rather than reusing an old tree.
 
 ---
 
-## 4. How verification is run
+## 4. Running verification
 
-**Scope verification to the change**: run the tests the change can affect, then push and let CI run
-the full suite. A full-suite run on a loaded developer machine measures the machine, not the code.
+Run the tests the change can affect, then let CI run the full suite. Bound any load you start: register cleanup with the test framework or wrap the process in `timeout`. Inside a worktree, run an environment-scrubbed command as a single `unset <VARS> && <command>` call, since each invocation is a fresh process. Run independent read-only checks together rather than one per turn.
 
-**Never spawn background load.** Where a verification needs contention, the load must be
-cleanup-guaranteed — kills registered with the test framework's cleanup hook, or a `timeout`
-wrapper bounding the process from outside. A trailing `kill` is not cleanup.
+`moai verify run` reuses a passing result for the same working-tree state within its TTL (default 10 minutes); declare what the result depends on with `--env NAME,...` and `--tool-version-cmd`. A reused result was not observed in this run, so name it as reused; run the command directly when you need its verbatim output.
 
-**Scrub the environment in one compound invocation.** Inside a worktree, an environment-scrubbed
-verification runs as a single `unset <VARS> && <command>` call; a separate `unset` does not carry
-into the next command — each invocation is a fresh process.
-
-**Batch independent read-only verifications rather than serializing them** across turns. Serialize
-only for a genuine dependency: one command's output feeding another, writes to the same path, or
-shared-state mutation.
-
-**Run repeated verification through `moai verify run`**: it executes a command once per
-working-tree state and reuses a passing result within its TTL (default 10 minutes), so list the
-environment variables (`--env NAME,...`) and the toolchain identity (`--tool-version-cmd`) the
-result depends on — a reuse is bounded by the TTL and by what is bound. A reuse is a prior
-observation, not one made in this run: a verdict citing it names the key and `recorded_at`
-from the reuse notice and lists "output not re-observed" under Gaps — a reused result is a Gap,
-not a Claim — and a claim that needs verbatim output runs the command directly.
-
-**A CodeRabbit row in `gh pr checks` is not evidence that a review ran** — the status reads
-`success` and prints `pass` identically whether or not one did. Count the row only when BOTH hold:
-(1) `gh api "repos/$repo/commits/$head_sha/status"` reports the `CodeRabbit` context with
-`state == "success"` and description `Review completed`; (2) a `Merge Risk:` line exists whose
-commit prefix matches the current `headRefOid`. Anything else is a gap, not a pass; `Review rate
-limited` means the review never started.
+A CodeRabbit row in `gh pr checks` reads `pass` whether or not a review ran. Count it only when `gh api "repos/$repo/commits/$head_sha/status"` shows the `CodeRabbit` context with `state == "success"` and description `Review completed`, and a `Merge Risk:` line names the current `headRefOid`.
 
 ---
 
-## 5. Core behaviors
+## 5. Working on the code
 
-**1. Surface assumptions.** Before implementing anything non-trivial, list assumptions explicitly
-as a short list, invite correction, and wait for confirmation.
+Push back when an approach has a concrete downside, contradicts an established convention or breaks a tested invariant: state the issue and its cost, propose an alternative, and accept the user's decision once they have the facts. Prefer the simplest thing that works — reuse what the codebase, the standard library or an installed dependency already provides before writing new code — but never simplify away input validation at trust boundaries, error handling that prevents data loss, security measures or accessibility.
 
-**2. Manage confusion actively.** On an inconsistency, a conflicting requirement, or an unclear
-specification: STOP — do not guess; name the confusion, present the tradeoff or question, and wait.
-
-**3. Push back when warranted.** Say so directly when an approach has a concrete downside,
-contradicts an established convention without justification, or breaks a tested invariant. State
-the issue, quantify the downside ("adds ~200 ms latency", not "might be slower"), propose an
-alternative, accept an override once the user has full information.
-
-**4. Enforce simplicity.** Actively resist overcomplexity; generation tends toward
-over-engineering. Before completing, ask: fewer lines without losing clarity? are these
-abstractions earning their complexity? would a staff engineer ask "why didn't you just…"? Apply the
-ladder in order, cheapest capability first: (1) does this need building at all? (2) does a helper,
-type, or pattern already exist here — reuse it; (3) does the standard library do it; (4) a native
-platform feature; (5) an already-installed dependency; (6) can it be one line; (7) only then, the
-minimum code that works. The ladder is language-neutral. **Never simplify away safety**: it MUST
-NOT be used to drop input validation at trust boundaries, error handling that prevents data loss,
-security measures, accessibility, or one runnable check behind non-trivial logic. If an
-implementation exceeds 3× the estimated minimum viable line count, stop and simplify first.
-
-**5. Maintain scope discipline.** Touch only what you were asked to touch. Do NOT remove comments
-you do not understand, clean up code orthogonal to the task, refactor adjacent systems as a side
-effect, delete seemingly-unused code without explicit approval, or add unrequested features because
-they seem useful. Match the existing style of the file being modified — naming, error handling,
-import organization; consistency within a file outranks personal preference.
-
-**6. Verify, don't assume.** Every task requires evidence of completion; "seems right" is never
-sufficient. Tests passing means showing the test output; a build succeeding, the build output; a
-file created, reading it back; behavior correct, the runtime evidence. For ad-hoc work without a
-spec, define the goal as a testable assertion first — "done when X produces Y" — then verify it.
+Touch only what the task needs. Don't refactor adjacent code, remove comments you don't understand, or delete code that looks unused without asking. Match the existing style of the file you are editing.
 
 ---
 
-## 6. Output, language, and format
+## 6. Output and language
 
-**Respond in the user's configured `conversation_language`.** Code, identifiers, paths, commands,
-and flags stay in their original form.
+Respond in the user's configured `conversation_language`; code, identifiers, paths, commands and flags stay as they are. Non-English output should read as natural native prose, not English mapped word for word: colloquial register in chat, clean written register in reports and docs.
 
-**Non-English output must be native idiom, not English mapped word-for-word.** When
-`conversation_language ≠ en`, every user-facing surface — chat, reports, README, docs, generated
-sites, question text — MUST read as natural native prose. Translation-style calques (carry-over of
-English syntax, metaphor, and figurative stock) are prohibited; native idiom is required. Chat uses
-the colloquial native register, artifacts the clean native written register. Deliberately-coined
-brand terms and established loanwords are not calques.
+Write non-ASCII text in tool-call payloads (commands, file content, question text) as native UTF-8, never as hand-written `\uXXXX` escapes — a malformed escape corrupts the payload into a validation error. If that happens, rewrite the text from its meaning rather than repairing the escape.
 
-**Write non-ASCII payloads as native UTF-8.** Every tool-call payload carrying
-`conversation_language` text — command strings, file content, question text — MUST be native UTF-8;
-hand-authored `\uXXXX` escapes are PROHIBITED, because a malformed escape corrupts the payload into
-a validation error and tends to be copied forward. On such a failure, re-author the text from its
-intended meaning rather than repairing the escape.
-
-**User-facing output is Markdown**; never display XML tags to users. **XML is reserved for
-agent-to-agent data transfer** — use semantic XML sections for structured data exchange between
-agents, never in user-facing output.
-
-**Never use time predictions in plans or reports.** Use priority labels (High / Medium / Low) and
-phase ordering ("complete A, then start B"). Prohibited: "2-3 days", "1 week", "as soon as
-possible".
+User-facing output is Markdown; XML tags are only for agent-to-agent data. Don't put time estimates in plans or reports; use priority and ordering instead.
 
 ---
 
 ## 7. Tools and command output
 
-**Follow tool usage patterns optimized for accuracy and efficiency.** Read a file before editing
-it. Locate before reading — find the file by pattern, find the line by content, then read that
-region rather than the whole file. Use absolute paths and verify a path exists rather than
-constructing it from an assumption. Prefer a targeted edit over rewriting a file, and a dedicated
-tool over a shell equivalent. Retry safety is asymmetric: read-only and idempotent calls may be
-retried, but a side-effecting one (write, commit, push, PR, deploy, external mutation) that fails
-ambiguously requires observing current state first and retrying only when the effect is confirmed
-absent — no success signal is not evidence the effect did not land. After three failures on one
-operation, report the blocker.
+Read a file before editing it, locate before reading, and use absolute paths. Read-only and idempotent calls may be retried; a side-effecting call (write, commit, push, PR, deploy, external change) that fails ambiguously needs its current state checked before any retry, because a missing success signal does not mean the effect did not land. After three failures on one operation, report the blocker.
 
-**Maintain effectiveness without MCP servers.** Where one is unavailable, fall back to web search
-and fetch for library documentation and established patterns, then continue — analysis quality must
-not depend on MCP availability.
-
-**Keep command output bounded**: quiet flags, targeted queries, or redirect-to-file with the exit
-code and a bounded tail. A runtime output limit is a backstop, not the target. **Prefer the quiet
-form of routine commands** — `--no-progress`, `-q`, machine-readable output plus a targeted filter
-— not forms emitting spinners, banners, tables, or color noise.
-
-**Weigh session length as a cost axis.** Prefer one warm session for the same work; a new or cold
-session re-pays the always-loaded prefix. Split only when the benefit justifies that cost.
+When an MCP server is unavailable, fall back to web search and fetch for documentation and continue. Keep command output bounded: quiet flags, targeted queries, or redirect to a file and show the exit code and a short tail. One warm session is cheaper than several cold ones for the same work.
 
 ---
 
 ## 8. Harness-local instructions
 
-`AGENTS.local.md` is the user-owned local instruction file both harnesses read; `CLAUDE.local.md`
-is its legacy predecessor. Claude Code reaches `AGENTS.local.md` through the final
-`@AGENTS.local.md` import in `CLAUDE.md`; this contract never imports either local file, which
-keeps them out of Codex's discovered chain. A linked worktree receives the import when
-`AGENTS.local.md` exists inside its checkout. An absent file, or one only outside the project,
-is skipped. Direct `codex -C <worktree>` loads this `AGENTS.md` but does not preload the sibling
-`AGENTS.local.md`. Direct sessions follow the startup rule above. The MoAI Codex launcher
-instead injects the content before the session starts.
-
-For every local launch shape (bare, `cli`, `app`, `--spawn`, and `-w`), `moai codex` reads the
-non-empty regular files from the project root — `AGENTS.local.md`, then `CLAUDE.local.md` —
-prefixes each body with its own provenance header, and passes the combined text as one session
-`developer_instructions` override. A `-w` child still reads the original project root. The
-launcher refuses links and non-regular inputs, reads through the descriptor it inspected, and fails
-before launch on an operator-supplied `developer_instructions` collision or an oversized
-direct/spawn argument. Codex Web sessions do not run the local MoAI launcher, so this injection is
-local-CLI-only.
+`AGENTS.local.md` is the user-owned local instruction file; Claude Code reaches it through the final `@AGENTS.local.md` import in `CLAUDE.md`, and this contract never imports it, which keeps it out of Codex's discovered chain. For every local launch shape (bare, `cli`, `app`, `--spawn`, `-w`), `moai codex` reads the non-empty regular files `AGENTS.local.md` and then the legacy `CLAUDE.local.md` from the project root, labels each body with its source, and passes the combined text as one session `developer_instructions` override; a `-w` child still reads the original project root. The launcher refuses links and non-regular inputs and fails before launch on a `developer_instructions` collision or an oversized argument. Direct `codex -C <worktree>` does not preload the local file (see the startup rule above). Codex Web sessions run none of this — no launcher injection, `.codex/hooks.json` or status line — so treat them as read-and-review first.
 
 ## 9. Hook Event Coverage
 
-Codex currently wires SessionStart, SessionEnd, UserPromptSubmit, PreToolUse, PostToolUse, Stop,
-SubagentStart, and SubagentStop. It does not wire PreCompact, PostCompact, PermissionRequest, or
-Interrupt; Claude-only Notification, PostToolUseFailure, TeammateIdle, and TaskCompleted never fire
-under Codex. Verify coverage before relying on a hook.
+Codex wires SessionStart, SessionEnd, UserPromptSubmit, PreToolUse, PostToolUse, Stop, SubagentStart and SubagentStop. It does not wire PreCompact, PostCompact, PermissionRequest or Interrupt, and the Claude-only Notification, PostToolUseFailure, TeammateIdle and TaskCompleted never fire under Codex. Check coverage before relying on a hook.
 
-## 10. Configuration Map
+## 10. Configuration
 
-Project configuration lives in `.moai/config/sections/*.yaml`. Harness, TRUST 5, and phase LSP
-thresholds come from `harness.yaml`, `quality.yaml`, `lsp.yaml`, and evaluator profiles; never
-duplicate those values inline.
+Project configuration lives in `.moai/config/sections/*.yaml`. Quality and LSP thresholds come from `quality.yaml`, `lsp.yaml` and `harness.yaml`; don't copy their values elsewhere.
 
-## 11. moai CLI Verbs
+## 11. moai CLI verbs
 
 | Verb | Purpose |
 |------|---------|
 | `moai init <project> --llm claude\|codex\|both` | Scaffold a project and select its LLM harness |
-| `moai update` | Sync templates and refresh already-enabled wiring |
+| `moai update` | Sync templates and refresh enabled wiring |
 | `moai tool enable codex` | Add or refresh Codex wiring in an existing project |
-| `moai hook <event>` | Hook dispatcher entry point (drives hooks.json / settings.json) |
-| `moai doctor` | Diagnose installation and wiring health |
+| `moai hook <event>` | Hook dispatcher entry point |
+| `moai doctor` | Diagnose installation and wiring |
 | `moai worktree` | Worktree lifecycle (sync / remove / clean / recover / done / snapshot / verify / restore) |
-| `moai cc` / `moai glm` | Explicit Claude or GLM session launchers |
-| `moai migrate cg` | Preview legacy CG migration; role changes require explicit acceptance |
-| `moai version` | Print build version and provenance |
-| `moai codex` | Codex session launcher — `cli` launch, `status` readout, `app` web; `-w <worktree>` enters an existing tree and never creates one |
+| `moai cc` / `moai glm` | Claude or GLM session launchers |
+| `moai codex` | Codex session launcher (`cli`, `status`, `app`; `-w <worktree>` enters an existing tree) |
+| `moai version` | Build version and provenance |
 
-Run `moai --help` for the generated, current command surface.
-
-## 12. Status Line Tokens
-
-`moai statusline` reads `.moai/state/` and honors `MOAI_STATUSLINE_CONTEXT_SIZE`. Read
-`internal/statusline` for the current token set; do not duplicate it here.
+`moai --help` lists the current command surface. `moai statusline` reads `.moai/state/` and honors `MOAI_STATUSLINE_CONTEXT_SIZE`.
