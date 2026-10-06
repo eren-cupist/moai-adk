@@ -1,346 +1,71 @@
 ---
 name: moai-foundation-core
 description: >
-  Provides MoAI-ADK foundational principles including TRUST 5 quality framework,
-  SPEC-First DDD methodology, delegation patterns, progressive disclosure,
-  agent catalog reference, and token budget management (absorbed from moai-foundation-context).
-  Use when referencing TRUST 5 gates, SPEC workflow, or context window optimization.
+  Shared MoAI working contract for the plan/run/sync agents: the SPEC lifecycle and
+  where its artifacts live, the TRUST 5 checks every change must pass, and how work is
+  delegated and carried across sessions. Not for SPEC authoring detail
+  (moai-workflow-spec) or quality scoring (moai-foundation-quality).
 
 when_to_use: >
-  Use for MoAI-ADK foundations: the TRUST 5 quality framework, SPEC-First
-  DDD methodology, delegation patterns, progressive disclosure,
-  token/context-window budget management, GEARS/EARS formats, and session
-  handoff.
+  Background context for agents working inside a /moai plan, run or sync workflow.
 
 license: Apache-2.0
 compatibility: Designed for Claude Code
 allowed-tools: Read, Grep, Glob
 user-invocable: false
 metadata:
-  version: "3.0.0"
+  version: "4.0.0"
   category: "foundation"
   status: "active"
   updated: "2026-07-10"
-  modularized: "true"
-  tags: "foundation, core, orchestration, agents, commands, trust-5, spec-first-ddd, token-budget, context-window, session-state"
+  modularized: "false"
+  tags: "foundation, spec-lifecycle, trust-5, delegation"
 
 # MoAI Extension: Progressive Disclosure
 progressive_disclosure:
   enabled: true
   level1_tokens: 100
-  level2_tokens: 5000
+  level2_tokens: 1500
 ---
 
 # MoAI Foundation Core
 
-Foundational principles and architectural patterns that power MoAI-ADK's AI-driven development workflow.
+The contract shared by the agents that author, implement, document and commit SPEC work. Each topic below names the file that owns it; read that file when you need more than this summary.
 
-Core Philosophy: Quality-first, domain-driven, modular, and efficient AI development through proven patterns and automated workflows.
+## SPEC lifecycle
 
-## Quick Reference
+Every SPEC moves through plan, run and sync. Artifacts live in `.moai/specs/SPEC-{ID}/`.
 
-What is MoAI Foundation Core?
+| Phase | Command | Agent | What it produces |
+|-------|---------|-------|------------------|
+| plan | `/moai plan` | manager-spec, then plan-auditor | `spec.md` and `plan.md` at every tier, `acceptance.md` from Tier M, `design.md` and `research.md` at Tier L; `spec.md` frontmatter `status: draft` |
+| run | `/moai run SPEC-{ID}` | manager-develop | code and tests; `status: draft` to `in-progress` |
+| sync | `/moai sync SPEC-{ID}` | manager-docs, sync-auditor, and manager-git when the route opens a PR | docs; `in-progress` to `implemented` to `completed` on the sync commit |
 
-Six essential principles that ensure quality, efficiency, and scalability in AI-powered development:
+Run starts only after the user approves the Implementation Kickoff. The run cycle follows `development_mode` in `.moai/config/sections/quality.yaml`: `tdd` by default, `ddd` for existing code with little test coverage, and `autofix` for `/moai fix`.
 
-1. TRUST 5 Framework - Quality gate system (Tested, Readable, Unified, Secured, Trackable)
-2. SPEC-First DDD - Specification-driven domain-driven development workflow
-3. Delegation Patterns - Task orchestration via specialized agents (never direct execution)
-4. Token Optimization - 200K budget management and context efficiency
-5. Progressive Disclosure - Three-tier knowledge delivery (Quick, Implementation, Advanced)
-6. Modular System - File splitting and reference architecture for scalability
+Only manager-spec edits SPEC body content. manager-develop and manager-docs change only the `status:` and `updated:` frontmatter fields; when a SPEC body needs to change, they return a blocker report so the orchestrator can send it back to manager-spec. Phase progress is recorded in `.moai/specs/SPEC-{ID}/progress.md`, which `/moai run` and `/moai sync` read.
 
-Quick Access:
+Where the details live: tiers and the commit/PR routes in `.claude/rules/moai/workflow/spec-workflow.md`; frontmatter keys, the status enum and transition ownership in `.claude/rules/moai/development/spec-frontmatter-schema.md`; requirement notation (GEARS) in the moai-workflow-spec skill.
 
-- Quality standards in modules/trust-5-framework.md
-- Development workflow in modules/spec-first-ddd.md
-- Agent coordination in modules/delegation-patterns.md
-- Budget management in modules/token-optimization.md
-- Content structure in modules/progressive-disclosure.md
-- File organization in modules/modular-system.md
-- Agent catalog in modules/agents-reference.md
-- Command reference in modules/commands-reference.md
-- Security and constraints in modules/execution-rules.md
+## TRUST 5
 
-Use Cases:
+The five questions every change answers before it is called done:
 
-- New agent creation with quality standards
-- New skill development with structural guidelines
-- Complex workflow orchestration
-- Token budget planning and optimization
-- Documentation architecture design
-- Quality gate configuration
+- Tested: the suite is green and coverage on changed code meets `constitution.test_coverage_target` in quality.yaml (85 by default). Untested code gets characterization tests before it is changed.
+- Readable: the linter is clean, names say what things are, and comments follow the `code_comments` language in `.moai/config/sections/language.yaml`.
+- Unified: the project's formatter has run and the change follows the conventions of the file it touches.
+- Secured: input is validated at trust boundaries and no secret is written to a file. Use moai-ref-owasp-checklist when reviewing.
+- Trackable: commits follow Conventional Commits and reference the SPEC ID.
 
----
+The thresholds are configuration, not judgment: `lsp_quality_gates` in quality.yaml allows zero errors, type errors and lint errors in run, and at most 10 warnings in sync. `moai gate` (also run by the git pre-commit hook) detects the language from marker files and runs vet, typecheck, lint and test, skipping tools that are not installed. The full rubric and how sync-auditor scores it are in moai-foundation-quality.
 
-## Implementation Guide
+## Delegation
 
-### 1. TRUST 5 Framework - Quality Assurance System
+Subagents multiply cost and time: each re-establishes context, re-explores and reports back. Do small work (a few reads, a handful of edits, simple verification) directly. Delegate large, genuinely independent tracks, and run independent agents in one message so they run in parallel. Brief a subagent fully the first time, and don't redo its work once it reports. Verification belongs in the main loop, not in an extra subagent.
 
-Purpose: Automated quality gates ensuring code quality, security, and maintainability.
+MoAI subagents have no Agent tool and cannot ask the user anything. When a decision belongs to the user, a subagent stops and returns a blocker report that states the question and the options; the orchestrator asks.
 
-Five Pillars:
+## Context and session continuity
 
-Tested Pillar: Maintain comprehensive test coverage with characterization tests ensuring behavior preservation. Execute the project's test runner with coverage (e.g. go test -cover, pytest --cov, cargo test, npm test -- --coverage). Block merge and generate missing tests on failure. Characterization tests capture current behavior for legacy code, while specification tests validate domain requirements for new code. High coverage ensures code reliability and reduces production defects, and preserves behavior during refactoring.
-
-Readable Pillar: Use clear and descriptive naming conventions. Run the project's linter (e.g. golangci-lint, ruff, eslint, clippy). Issue warning and suggest refactoring improvements on failure. Clear naming improves code comprehension, team collaboration, and maintenance velocity.
-
-Unified Pillar: Apply consistent formatting and import patterns. Run the project's formatter (e.g. gofmt, black, prettier, rustfmt). Auto-format code or issue warning on failure. Consistency eliminates style debates and merge conflicts and improves readability.
-
-Secured Pillar: Comply with OWASP security standards. Surface security findings via the appropriate agent or reference skill (e.g. spawn a per-spawn general-purpose agent with security instructions, or load the moai-ref-owasp-checklist reference). Block merge and require security review on failure. Security vulnerabilities create critical business and legal risks.
-
-Trackable Pillar: Write clear and structured commit messages. Match Git commit message regex patterns (Conventional Commits). Suggest proper commit message format on failure. Clear history enables debugging, auditing, and collaboration.
-
-Integration Points: Pre-commit hooks for automated validation, CI/CD pipelines for quality gate enforcement, Agent workflows for TRUST 5 validation (moai-foundation-quality orchestration), Documentation for quality metrics.
-
-Detailed Reference: modules/trust-5-framework.md
-
----
-
-### 2. SPEC-First DDD - Development Workflow
-
-Purpose: Specification-driven development ensuring clear requirements before implementation.
-
-Three-Phase Workflow:
-
-Phase 1 SPEC (/moai plan): workflow-spec generates GEARS format (primary; EARS retained as 6-month backward-compat legacy reference for the 88 pre-v3 SPECs). Output is .moai/specs/SPEC-XXX/spec.md. Execute /clear to save 45-50K tokens.
-
-Phase 2 DDD (/moai run): ANALYZE for requirements, PRESERVE for existing behavior, IMPROVE for enhancement. Validate with at least 85% coverage.
-
-Phase 3 Docs (/moai sync): API documentation, architecture diagrams, project reports.
-
-GEARS Format (current notation): Five patterns — Ubiquitous "The <subject> shall <behavior>" for system-wide always active requirements; Event-driven "When <event> the <subject> shall <behavior>" for trigger-response requirements; State-driven "While <state> the <subject> shall <behavior>" for conditional behavior; Where (capability gate) "Where <capability or feature flag>, the <subject> shall <behavior>" for capability-conditioned behavior; Event-detected (replaces the deprecated conditional modality) "When <undesired-condition-detected>, the <subject> shall <response>" for failure-mode handling. Unified compound clause: `[Where ...][While ...][When ...] The <subject> shall <behavior>` — any subset of the three modifiers may chain. The `<subject>` is generalized — any noun (system, component, service, agent, function, artifact). See the canonical authoring guide at `.claude/skills/moai-workflow-spec/SKILL.md` § "GEARS Format".
-
-EARS Format (legacy reference, 6-month backward-compat — expires 2026-11-22): Five patterns Ubiquitous / Event-driven (WHEN/THEN) / State-driven (WHILE) / Unwanted (SHALL NOT) / Optional (WHERE possible). The 88 pre-v3 SPECs continue to use EARS; the lint engine emits a `LegacyEARSKeyword` warning on residual deprecated conditional modality in NEW SPECs (warning non-strict, error under `moai spec lint --strict`). For NEW SPECs, use GEARS. See `modules/spec-ears-format.md` (legacy reference, deprecated — see GEARS Format guide).
-
-Token Budget: SPEC takes 30K, DDD takes 180K, Docs takes 40K, Total is 250K.
-
-Key Practice: Execute /clear after Phase 1 to initialize context.
-
-Detailed Reference: modules/spec-first-ddd.md
-
----
-
-### 3. Delegation Patterns - Agent Orchestration
-
-Purpose: Task delegation to specialized agents, avoiding direct execution.
-
-Core Principle: MoAI must delegate all work through Agent() to specialized agents. Direct execution bypasses specialization, quality gates, and token optimization. Proper delegation improves task success rate by 40 percent and enables parallel execution.
-
-Delegation Syntax: MoAI delegates via natural language — "Use the {agent} subagent to {task}" — carrying full context, constraints, and rationale. The orchestrator never passes a `subagent_type` code literal; it spawns `Agent()` (or `Agent(general-purpose)` for domain work) with a prose prompt.
-
-Three Patterns:
-
-Sequential for dependencies: Use the manager-spec subagent to author the SPEC, then the manager-develop subagent to implement it with the SPEC as context.
-
-Parallel for independent work: Spawn multiple Agent(general-purpose) teammates in one turn — e.g. one with backend instructions and one with frontend instructions — when the work is independent.
-
-Conditional for analysis-based: Use the Explore subagent for read-only diagnosis, then route the result to the appropriate retained agent (manager-develop for fixes, sync-auditor for quality scoring) based on the findings.
-
-Agent Selection: Simple tasks with 1 file use 1-2 agents sequential. Medium tasks with 3-5 files use 2-3 agents sequential. Complex tasks with 10+ files use 5+ agents mixed. Domain-specific work (backend / frontend / security / performance / refactoring) is handled in run-phase by manager-develop, or by a per-spawn Agent(general-purpose) with a domain whitelist.
-
-Detailed Reference: modules/delegation-patterns.md
-
----
-
-### 4. Token Optimization - Budget Management
-
-Purpose: Efficient 200K token budget through strategic context management.
-
-Budget Allocation:
-
-SPEC Phase takes 30K tokens. Strategy is to load requirements only and execute /clear after completion. Specification phase requires minimal context for requirement analysis. Saves 45-50K tokens for implementation phase.
-
-DDD Phase takes 180K tokens. Strategy is selective file loading, load only implementation-relevant files. Implementation requires deep context but not full codebase. Enables 70 percent larger implementations within budget.
-
-Docs Phase takes 40K tokens. Strategy is result caching and template reuse. Documentation builds on completed work artifacts. Reduces redundant file reads by 60 percent.
-
-Total Budget is 250K tokens across all phases. Phase separation with context reset between phases provides clean context boundaries and prevents token bloat. Enables 2-3x larger projects within same budget.
-
-Token Saving Strategies:
-
-Phase Separation: Execute /clear between phases, after /moai plan to save 45-50K, when context exceeds 150K, after 50+ messages.
-
-Selective Loading: Load only necessary files.
-
-Context Optimization: Target 20-30K tokens.
-
-Model Selection: Sonnet for quality, Haiku for speed and cost with 70% cheaper rates for 60-70% total savings.
-
-Detailed Reference: modules/token-optimization.md
-
----
-
-### 5. Progressive Disclosure - Content Architecture
-
-Purpose: Three-tier knowledge delivery balancing value with depth.
-
-Three Levels:
-
-Quick Reference Level: 30 seconds time investment, core principles and essential concepts, approximately 1,000 tokens. Rapid value delivery for time-constrained users. Users gain 80 percent understanding in 5 percent of time.
-
-Implementation Level: 5 minutes time investment, workflows, practical examples, integration patterns, approximately 3,000 tokens. Bridges concept to execution with actionable guidance. Enables immediate productive work without deep expertise.
-
-Advanced Level: 10+ minutes time investment, deep technical dives, edge cases, optimization techniques, approximately 5,000 tokens. Provides mastery-level knowledge for complex scenarios. Reduces escalations by 70 percent through comprehensive coverage.
-
-SKILL.md Structure (maximum 500 lines): Quick Reference section, Implementation Guide section, Advanced Patterns section, Works Well With section.
-
-Module Architecture: SKILL.md as entry point with cross-references, modules directory for deep dives with unlimited size, examples.md for working samples, reference.md for external links.
-
-File Splitting when exceeding 500 lines: SKILL.md contains Quick at 80-120 lines, Implementation at 180-250 lines, Advanced at 80-140 lines, References at 10-20 lines. Overflow content goes to modules/topic.md.
-
-Detailed Reference: modules/progressive-disclosure.md
-
----
-
-### 6. Modular System - File Organization
-
-Purpose: Scalable file structure enabling unlimited content.
-
-Standard Structure: Create .claude/skills/skill-name/ directory containing SKILL.md as core file under 500 lines, modules directory for extended content with unlimited size including patterns.md, examples.md for working samples, reference.md for external links, scripts directory for utilities (optional), templates directory (optional).
-
-File Principles: SKILL.md stays under 500 lines with progressive disclosure and cross-references. modules directory is topic-focused with no limits and self-contained content. examples.md is copy-paste ready with comments. reference.md contains API docs and resources.
-
-Cross-Reference Syntax: Reference modules as Details in modules/patterns.md, reference examples as Examples in examples.md#auth, reference external docs as External in reference.md#api.
-
-Discovery Flow: SKILL.md to Topic to modules/topic.md to Deep dive.
-
-Detailed Reference: modules/modular-system.md
-
----
-
-## Advanced Implementation
-
-Advanced patterns including cross-module integration, quality validation, and error handling are available in the detailed module references.
-
-Key Advanced Topics:
-
-- Cross-Module Integration: Combining TRUST 5 + SPEC-First DDD
-- Token-Optimized Delegation: Parallel execution with context reset
-- Progressive Agent Workflows: Escalation patterns
-- Quality Validation: Pre/Post execution validation
-- Error Handling: Delegation failure recovery
-
-Detailed Reference: references/examples.md for working code samples
-
----
-
-## Works Well With
-
-Agents: manager-spec for plan-phase authoring, manager-develop for run-phase implementation, manager-docs for sync-phase documentation, sync-auditor for independent TRUST 5 quality scoring.
-
-Skills: moai-workflow-spec for GEARS format specification (current; EARS retained as legacy reference), moai-workflow-ddd for ANALYZE-PRESERVE-IMPROVE execution, moai-workflow-tdd for RED-GREEN-REFACTOR cycles, moai-foundation-quality for TRUST 5 validation orchestration.
-
-Tools: AskUserQuestion for direct user interaction and clarification needs.
-
-Commands: /moai plan for SPEC-First Phase 1, /moai run for DDD Phase 2, /moai sync for Documentation Phase 3, /clear for token management.
-
-Foundation Modules (Extended Documentation): modules/agents-reference.md for the 7-agent retained catalog (6 MoAI-custom + 1 Anthropic built-in `Explore`), modules/commands-reference.md for 4 core commands workflow, modules/execution-rules.md for security, Git strategy, and compliance.
-
----
-
-## Quick Decision Guide
-
-New Agent: Primary principle is TRUST 5 and Delegation. Supporting principles are Token Optimization and Modular.
-
-New Skill: Primary principle is Progressive and Modular. Supporting principles are TRUST 5 and Token Optimization.
-
-Workflow: Primary principle is Delegation Patterns. Supporting principles are SPEC-First and Token Optimization.
-
-Quality: Primary principle is TRUST 5 Framework. Supporting principle is SPEC-First DDD.
-
-Budget: Primary principle is Token Optimization. Supporting principles are Progressive and Modular.
-
-Docs: Primary principle is Progressive and Modular. Supporting principle is Token Optimization.
-
-Module Deep Dives: modules/trust-5-framework.md, modules/spec-first-ddd.md, modules/delegation-patterns.md, modules/token-optimization.md, modules/progressive-disclosure.md, modules/modular-system.md, modules/agents-reference.md, modules/commands-reference.md, modules/execution-rules.md.
-
-Full Examples: references/examples.md
-External Resources: references/reference.md
-
-<!-- moai:evolvable-start id="rationalizations" -->
-## Common Rationalizations
-
-| Rationalization | Reality |
-|---|---|
-| "TRUST 5 is a guideline, not a gate" | TRUST 5 is a HARD quality gate. All five dimensions must pass before completion. |
-| "I can skip the SPEC for this small change" | Every change without a SPEC is untracked. SPEC-less changes accumulate into unmanageable technical debt. |
-| "Delegation to an agent is overhead for simple tasks" | MoAI is an orchestrator, not an implementer. Skipping delegation bypasses domain expertise and quality checks. |
-| "I will skip the quality gate, the code is clearly correct" | Clearly correct code still needs evidence. Tests and linting are mechanisms; confidence is not. |
-| "Progressive disclosure is not important for this project" | Even small projects benefit from token-efficient skill loading. Disclosure is about context budget, not project size. |
-
-<!-- moai:evolvable-end -->
-
-<!-- moai:evolvable-start id="red-flags" -->
-## Red Flags
-
-- MoAI executing implementation code directly instead of delegating to an agent
-- TRUST 5 dimensions partially checked (only Tested and Readable, ignoring Secured)
-- SPEC document exists but has no acceptance criteria
-- Agent selected without consulting the selection decision tree
-- Quality gate skipped with "will check later" comment
-
-<!-- moai:evolvable-end -->
-
-<!-- moai:evolvable-start id="verification" -->
-## Verification
-
-- [ ] All five TRUST 5 dimensions addressed (Tested, Readable, Unified, Secured, Trackable)
-- [ ] Agent selection documented with rationale matching the decision tree
-- [ ] SPEC document has acceptance criteria with observable evidence requirements
-- [ ] Delegation chain traceable: MoAI -> agent -> execution
-- [ ] Progressive disclosure levels configured in skill frontmatter
-
-<!-- moai:evolvable-end -->
-
----
-
-## Token Budget (absorbed from moai-foundation-context)
-
-Context window optimization, /clear strategy, session state persistence, and multi-agent handoff patterns.
-
-### Context Window Targets
-
-See `.claude/rules/moai/workflow/context-window-management.md` § Context Window Targets for the authoritative per-model-class `/clear` threshold table (1M/GLM = 50%, 200K/256K = 90%). Do not restate thresholds here (SSOT).
-
-### Phase Token Allocation
-
-| Phase | Budget | Strategy |
-|-------|--------|----------|
-| /moai plan | 30,000 | Load requirements only, /clear after completion |
-| /moai run | 180,000 | Selective file loading, on-demand skill loading |
-| /moai sync | 40,000 | Result caching, reduced redundant reads |
-
-### /clear Strategy
-
-Mandatory /clear points:
-1. After `/moai plan` completion (before `/moai run`)
-2. When context exceeds 150,000 tokens (Sonnet/standard)
-3. Before major phase transitions
-
-Never use /clear when: In the middle of an agent task, when session state has not been persisted.
-
-### Session State Persistence
-
-Before /clear, persist in-flight state to `.moai/specs/<SPEC-ID>/progress.md`:
-- Current task status (completed, in-progress, blocked)
-- File modification summary
-- Next action required
-- Resume message for paste-back after /clear
-
-Resume message format:
-```
-Wave <N> 이어서 진행. SPEC-<ID>부터 <approach>.
-progress.md: .moai/specs/<ID>/progress.md
-다음 단계: <command>.
-```
-
-### Multi-Agent Handoff
-
-When delegating to a sub-agent near context ceiling:
-1. Summarize findings in progress.md before Agent() call
-2. Pass only necessary context in spawn prompt (avoid full file dumps)
-3. Sub-agent result contributes to parent context on return — factor this in
-4. If parent context > 120,000 tokens after return, save and /clear
-
-Full optimization patterns: [modules/token-optimization.md](modules/token-optimization.md)
+Before a `/clear` or a session boundary, in-flight state goes into the SPEC's `progress.md` and the orchestrator emits a paste-ready resume message. Thresholds and format are in `.claude/rules/moai/workflow/context-window-management.md` and `.claude/rules/moai/workflow/session-handoff.md`.
