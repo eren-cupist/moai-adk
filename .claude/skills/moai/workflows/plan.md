@@ -18,8 +18,6 @@ metadata:
 
 A SPEC directory at `.moai/specs/SPEC-<ID>/` that the user can read and approve and that `/moai run SPEC-<ID>` can execute: GEARS requirements, acceptance criteria covering every requirement, the artifact set for the SPEC's tier, a passing plan-auditor report, the audit-ready signal in `progress.md` §E.1, and the user's Implementation Kickoff Approval. Planning writes no implementation code.
 
-Deliver what was asked, at the intended scope. Make routine judgment calls yourself and check in only when different readings would lead to materially different work. If the ask looks mistaken, say so in a sentence and continue as asked. Finish the whole task; if something genuinely can't be completed, do the rest and state plainly what is missing and why.
-
 ## Arguments
 
 `/moai plan "<description>" [--branch] [--issue] [--resume SPEC-<ID>]`
@@ -38,8 +36,6 @@ Deliver what was asked, at the intended scope. Make routine judgment calls yours
 ## How to get there
 
 **Understand the request and the code it touches.** Explore as much as the request needs. For a change confined to a few files, read them yourself. For wide work — several modules, unfamiliar territory, or a question about how things fit together — launch one or two Explore subagents in one message so they run in parallel, each with a distinct question; don't send a subagent to read what you could read in a few calls. Check `.moai/specs/` for an existing SPEC covering the same ground (extend or supersede it rather than duplicating it) and for SPECs this one depends on. Read `.moai/project/product.md`, `structure.md`, and `tech.md` when they exist.
-
-Subagents multiply cost and time: each re-establishes context, re-explores and reports back. Do small work (a few reads, a handful of edits, simple verification) directly. Delegate large, genuinely independent tracks, and run independent agents in one message so they run in parallel. Brief a subagent fully the first time, and don't redo its work once it reports. Verification belongs in the main loop, not in an extra subagent.
 
 **Ask only what changes the SPEC.** When different readings of the request would produce materially different SPECs — what is in or out of scope, which behavior is wanted, a constraint only the user knows — ask, all in one AskUserQuestion round (up to 4 questions, recommended option first, each option with a short description of what it implies). Everything else is a routine call: decide it and have manager-spec record it under Assumptions in plan.md. A question that cannot be settled now becomes a `[NEEDS CLARIFICATION: <topic>]` marker in plan.md (or research.md) — never in spec.md or acceptance.md — and must be answered before the Kickoff Approval.
 
@@ -79,4 +75,3 @@ These happen only when the user asks or the project config turns them on; the fa
 
 The SPEC directory holds the tier's artifacts and `progress.md`; `moai spec lint SPEC-<ID>` shows no errors; the latest plan-audit report says `Verdict: PASS`; no `[NEEDS CLARIFICATION` marker remains; `progress.md` §E.1 carries `plan_complete_at` and `plan_status: audit-ready`; and the user answered the Implementation Kickoff Approval.
 
-Your text between tool calls is what the user reads. Before the first tool call say in a sentence what you're about to do; give brief updates when you find something load-bearing or change direction. Lead the final report with the outcome, in complete sentences, then the detail a reader needs to act. Keep reports to the length the work needs.

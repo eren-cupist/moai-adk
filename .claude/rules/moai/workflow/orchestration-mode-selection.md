@@ -17,8 +17,6 @@ Where `workflow.autonomy.mode: contract` — a human signature of the SPEC's con
 <!-- moai:contract-mode-end -->
 ## The options
 
-Subagents multiply cost and time: each re-establishes context, re-explores and reports back. Do small work (a few reads, a handful of edits, simple verification) directly. Delegate large, genuinely independent tracks, and run independent agents in one message so they run in parallel. Brief a subagent fully the first time, and don't redo its work once it reports. Verification belongs in the main loop, not in an extra subagent.
-
 Applied to a run:
 
 - **Directly in the main session** — the default for small or tightly coupled SPECs: a handful of files, one area of the code, or changes that depend on each other so closely that splitting them would mean constant coordination. Most Tier S and many Tier M SPECs fit here.

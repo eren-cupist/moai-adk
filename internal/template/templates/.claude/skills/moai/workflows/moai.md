@@ -17,8 +17,6 @@ metadata:
 
 The requested change implemented, verified against its SPEC, and documented: plan → Implementation Kickoff Approval → run → sync, each phase following its own workflow file. The user approves once, at the plan→run boundary; after that the pipeline continues on its own unless a gate fails.
 
-Deliver what was asked, at the intended scope. Make routine judgment calls yourself and check in only when different readings would lead to materially different work. If the ask looks mistaken, say so in a sentence and continue as asked. Finish the whole task; if something genuinely can't be completed, do the rest and state plainly what is missing and why.
-
 A change too small to be worth a SPEC — a typo, a one-line fix with an obvious test — does not need the pipeline. Make it directly, verify it, and say that you skipped the SPEC and why.
 
 ## Flags
@@ -47,4 +45,3 @@ Where `workflow.autonomy.mode: contract` — the step 2 round carries no Kickoff
 
 When sync completes, report the outcome: what changed, how it was verified, the SPEC ID, and anything left open. If there is no real decision left for the user, end there rather than inventing a next-step question.
 
-Your text between tool calls is what the user reads. Before the first tool call say in a sentence what you're about to do; give brief updates when you find something load-bearing or change direction. Lead the final report with the outcome, in complete sentences, then the detail a reader needs to act. Keep reports to the length the work needs.

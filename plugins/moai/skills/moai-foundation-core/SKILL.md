@@ -62,8 +62,6 @@ The thresholds are configuration, not judgment: `lsp_quality_gates` in quality.y
 
 ## Delegation
 
-Subagents multiply cost and time: each re-establishes context, re-explores and reports back. Do small work (a few reads, a handful of edits, simple verification) directly. Delegate large, genuinely independent tracks, and run independent agents in one message so they run in parallel. Brief a subagent fully the first time, and don't redo its work once it reports. Verification belongs in the main loop, not in an extra subagent.
-
 MoAI subagents have no Agent tool and cannot ask the user anything. When a decision belongs to the user, a subagent stops and returns a blocker report that states the question and the options; the orchestrator asks.
 
 ## Context and session continuity
