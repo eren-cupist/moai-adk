@@ -556,29 +556,14 @@ func TestSettingsTemplateNewFields(t *testing.T) {
 	}
 }
 
-// === Default-model cost lever WITHOUT availableModels enforcement ===
+// === No project-level model pin, no availableModels enforcement ===
 //
-// The settings.json template pins the Default model to sonnet (the [1m]-safe
-// cost-routing lever) but deliberately does NOT set availableModels or
-// enforceAvailableModels. Two problems drove the removal of the closed
-// allowlist enforcement:
-//
-//  1. New-model lockout — enforceAvailableModels:true + a hand-maintained
-//     availableModels allowlist hides any model NOT in the list from the
-//     /model picker (CC v2.1.172 behavior). Every new Claude model (e.g.
-//     fable, and any future generation) was locked out until manually added.
-//  2. GLM allowlist maintenance — enforcement forced every GLM swap target
-//     (glm-5.2 etc.) to be enumerated, or the ANTHROPIC_DEFAULT_*_MODEL swap
-//     was declined and the session fell back to the Claude model.
-//
-// Removing enforceAvailableModels resolves both: all Claude models auto-appear
-// in the picker with no maintenance, and — per CC 2.1.176 redirect-blocking
-// semantics, which apply ONLY when enforceAvailableModels is true — the GLM
-// swap is admitted without needing an allowlist. The Default-Sonnet
-// cost-routing thesis is preserved by the model: sonnet key alone.
-//
-// This test therefore asserts: model == "sonnet" (Default preserved) AND that
-// availableModels / enforceAvailableModels are absent (enforcement removed).
+// The settings.json template sets no top-level "model": a project inherits the
+// user's own model choice (this fork targets Claude Opus 5.5, so a shipped
+// project pin would silently move every session in that project to another
+// model). It also deliberately does NOT set availableModels or
+// enforceAvailableModels: a hand-maintained closed allowlist hides any model
+// not in the list from the /model picker and blocks GLM swap targets.
 func TestSettingsTemplateDefaultModelLever(t *testing.T) {
 	ctx := testContext("darwin")
 	output := renderTemplate(t, ".claude/settings.json.tmpl", ctx)
@@ -588,13 +573,9 @@ func TestSettingsTemplateDefaultModelLever(t *testing.T) {
 		t.Fatalf("Unmarshal error: %v", err)
 	}
 
-	// Default model is sonnet (the [1m]-safe cost-routing lever, preserved).
-	model, ok := settings["model"]
-	if !ok {
-		t.Fatal(`missing top-level "model" key (Default model must be set to sonnet)`)
-	}
-	if model != "sonnet" {
-		t.Errorf(`model = %v, want "sonnet" (Default-Sonnet cost-routing thesis)`, model)
+	// No project-level model pin: the user's own model choice applies.
+	if model, ok := settings["model"]; ok {
+		t.Errorf(`model = %v present, want absent (a project pin would override the user's model)`, model)
 	}
 
 	// enforceAvailableModels must be ABSENT — the closed allowlist enforcement
